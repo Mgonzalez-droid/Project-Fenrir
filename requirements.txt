@@ -1,1 +1,1 @@
-arcade==2.5.7
+pygame

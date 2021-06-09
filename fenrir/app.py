@@ -1,11 +1,11 @@
 # import the pygame module, so you can use it
 import pygame
-import os
+from common import wsl as wsl
 
 
 def run():
     # this is required to set display for xserver and wsl
-    os.environ['DISPLAY'] = ': 0.0'
+    wsl.set_display_to_host()
 
     # initialize the pygame module
     pygame.init()

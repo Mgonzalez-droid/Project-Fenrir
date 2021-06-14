@@ -14,7 +14,6 @@ class CombatInitiativeSystem:
     def __init__(self, participants):
         """Constructor method
         """
-        # order participants then store them in private class variable
         self._ordered_initiative_list = sorted(list(participants), key=lambda p: p.speed, reverse=True)
         self._current_position = 0
 

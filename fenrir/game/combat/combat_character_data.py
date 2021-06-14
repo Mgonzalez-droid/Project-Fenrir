@@ -9,21 +9,22 @@ import math
 class CombatCharacterData:
     """Class representing individual characters, and their attributes for the combat scenes
 
-    :param id: given id value for the new character
-    :param type: the class the unit should be set to knight/archer/mage
-    :param level: level for the new character (can be updated later)
-    :param hp: hp for the new character (can be updated later)
-    :param speed: speed/initiative value for the new character (can be updated later)
-    :param attack: base attack value for new character (can be updated later)
-    :param enemy: boolean to determine if character is enemy. Defaults to false
+    :param id: (int) given id value for the new character
+    :param type: (string) the class the unit should be set to knight/archer/mage
+    :param level: (int) level for the new character (can be updated later)
+    :param hp: (float) hp for the new character (can be updated later)
+    :param speed: (float) speed/initiative value for the new character (can be updated later)
+    :param attack: (float) base attack value for new character (can be updated later)
+    :param enemy: (boolean) determine if character is enemy. Defaults to false
 
     Other non-param values:
-    :move_range: the distance the unit can move in a battle
-    :attack_range: the distance the unit can hit other units from
-    :mana: the total amount of energy available to a mage unit
-    :magic_attack: base damage for magic type attacks
-    :magic_defense: base magic defense from magic attacks
-    :defense: base defense from physical type attacks
+    :alive: (boolean) for checking if character died
+    :move_range: (int) the distance the unit can move in a battle
+    :attack_range: (int) the distance the unit can hit other units from
+    :mana: (float) the total amount of energy available to a mage unit
+    :magic_attack: (float) base damage for magic type attacks
+    :magic_defense: (float) base magic defense from magic attacks
+    :defense: (float) base defense from physical type attacks
     """
 
     def __init__(self, id, type, level, hp, speed, attack, enemy=False):
@@ -31,6 +32,7 @@ class CombatCharacterData:
         self._id = id
         self._type = type
         self._enemy = enemy
+        self._alive = True
 
         # general character traits
         self._level = level
@@ -56,6 +58,14 @@ class CombatCharacterData:
 
     def get_is_enemy(self):
         return self._enemy
+
+    @property
+    def alive(self):
+        return self._alive
+
+    @alive.setter
+    def alive(self, newState):
+        self._alive = newState
 
     @property
     def level(self):
@@ -138,7 +148,8 @@ class CombatCharacterData:
         self._defense = newDefense
 
     def character_class_setup_by_type(self):
-        # function sets non-defined traits based on given info when character is constructed
+        """function sets non-defined traits based on given info when character is constructed
+        """
         if self._type == 'knight':
             self.attack_range = 1
             self.move_range = 3
@@ -159,3 +170,20 @@ class CombatCharacterData:
             if self._enemy:
                 self.magic_defense = self.magic_attack
                 self.mana = self.level * 3
+
+    def take_damage(self, incomingAttackValue, attackType):
+        """Calculate the damage an attack does on the character and update the hp value
+        """
+        damage = 0
+        if attackType == 'magic':
+            damage = incomingAttackValue - self.magic_defense
+        elif attackType == 'physical':
+            damage = incomingAttackValue - self.defense
+
+        # call missed function
+        didTheyMiss = False
+        if not didTheyMiss:
+            self.hp -= damage
+            if self.hp <= 0:
+                self.hp = 0
+                self.alive = False

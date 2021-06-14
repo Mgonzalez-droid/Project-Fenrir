@@ -54,53 +54,108 @@ class CombatCharacterData:
     def get_type(self):
         return self._type
 
-    def get_level(self):
-        return self._level
-
-    def get_speed(self):
-        return self._speed
-
-    def get_hp(self):
-        return self._hp
-
-    def get_attack(self):
-        return self._attack
-
     def get_is_enemy(self):
         return self._enemy
 
-    def update_level(self, newLevel):
+    @property
+    def level(self):
+        return self._level
+
+    @level.setter
+    def level(self, newLevel):
         self._level = newLevel
 
-    def update_speed(self, newSpeed):
-        self._speed = newSpeed
+    @property
+    def hp(self):
+        return self._hp
 
-    def update_hp(self, newHp):
+    @hp.setter
+    def hp(self, newHp):
         self._hp = newHp
 
-    def update_attack(self, newAttack):
+    @property
+    def speed(self):
+        return self._speed
+
+    @speed.setter
+    def speed(self, newSpeed):
+        self._speed = newSpeed
+
+    @property
+    def move_range(self):
+        return self._move_range
+
+    @move_range.setter
+    def move_range(self, newMoveRange):
+        self._move_range = newMoveRange
+
+    @property
+    def attack_range(self):
+        return self._attack_range
+
+    @attack_range.setter
+    def attack_range(self, newAttackRange):
+        self._attack_range = newAttackRange
+
+    @property
+    def mana(self):
+        return self._mana
+
+    @mana.setter
+    def mana(self, newMana):
+        self._mana = newMana
+
+    @property
+    def magic_attack(self):
+        return self._magic_attack
+
+    @magic_attack.setter
+    def magic_attack(self, newMagicAttack):
+        self._magic_attack = newMagicAttack
+
+    @property
+    def magic_defense(self):
+        return self._magic_defense
+
+    @magic_defense.setter
+    def magic_defense(self, newMagicDefense):
+        self._magic_defense = newMagicDefense
+
+    @property
+    def attack(self):
+        return self._attack
+
+    @attack.setter
+    def attack(self, newAttack):
         self._attack = newAttack
+
+    @property
+    def defense(self):
+        return self._defense
+
+    @defense.setter
+    def defense(self, newDefense):
+        self._defense = newDefense
 
     def character_class_setup_by_type(self):
         # function sets non-defined traits based on given info when character is constructed
-
         if self._type == 'knight':
-            self._attack_range = 1
-            self._move_range = 3
-            self._defense = self._attack - 1
+            self.attack_range = 1
+            self.move_range = 3
+            self.defense = self.attack - 1
         elif self._type == 'archer':
-            self._attack_range = 4
-            self._move_range = 1
-            self._defense = self._attack - 3
+            self.attack_range = 4
+            self.move_range = 1
+            self.defense = self.attack - 3
             if self._enemy:
-                self._defense = self._attack - 2
+                self.defense = self.attack - 2
         elif self._type == 'mage':
-            self._attack_range = 3
-            self._move_range = 2
-            self._magic_attack = self._attack
-            self._attack = 1
-            self._magic_defense = self._magic_attack - 1
-            self._mana = math.floor(self._level * 2.5)
+            self.attack_range = 3
+            self.move_range = 2
+            self.magic_attack = self.attack
+            self.attack = 1
+            self.magic_defense = self.magic_attack - 1
+            self.mana = math.floor(self.level * 2.5)
             if self._enemy:
-                self._magic_defense = self._magic_attack
-                self._mana = self._level * 3
+                self.magic_defense = self.magic_attack
+                self.mana = self.level * 3

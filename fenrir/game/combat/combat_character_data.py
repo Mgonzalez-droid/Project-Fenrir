@@ -4,6 +4,7 @@
 """
 
 import math
+import pygame
 
 
 class CombatCharacterData:
@@ -19,6 +20,10 @@ class CombatCharacterData:
 
     Other non-param values:
     :alive: (boolean) for checking if character died
+    :xpos: (int) x coordinate of unit on battlefield
+    :ypos: (int) y coordinate of unit on battlefield
+    :sprite_sheet: (image) images that the character is pulled from
+    :character_image: (image) single image of the character
     :move_range: (int) the distance the unit can move in a battle
     :attack_range: (int) the distance the unit can hit other units from
     :mana: (float) the total amount of energy available to a mage unit
@@ -33,6 +38,10 @@ class CombatCharacterData:
         self._type = type
         self._enemy = enemy
         self._alive = True
+        self._xpos = 0
+        self._ypos = 0
+        self.sprite_sheet = None
+        self._character_image = None
 
         # general character traits
         self._level = level
@@ -66,6 +75,28 @@ class CombatCharacterData:
     @alive.setter
     def alive(self, newState):
         self._alive = newState
+
+    @property
+    def xpos(self):
+        return self._xpos
+
+    @xpos.setter
+    def xpos(self, newXPos):
+        self._xpos = newXPos
+
+    @property
+    def ypos(self):
+        return self._ypos
+
+    @ypos.setter
+    def ypos(self, newYPos):
+        self._ypos = newYPos
+
+    def set_character_image(self):
+        if self._type == 'knight':
+            self.sprite_sheet = pygame.image.load("../../resources/chars/gabe/gabe-idle-run.png").convert()
+        else:
+            self.sprite_sheet = pygame.image.load("../../resources/chars/gabe/gabe-idle-run.png").convert()
 
     @property
     def level(self):

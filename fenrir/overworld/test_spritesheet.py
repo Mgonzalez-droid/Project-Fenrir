@@ -9,12 +9,12 @@ window = pygame.display.set_mode(((DISPLAY_W,DISPLAY_H)))
 running = True
 ###########################################################################################
 
-my_spritesheet = Spritesheet('trainer_sheet.png')
-trainer = [my_spritesheet.parse_sprite('trainer1.png'), my_spritesheet.parse_sprite('trainer2.png'),my_spritesheet.parse_sprite('trainer3.png'),
-           my_spritesheet.parse_sprite('trainer4.png'),my_spritesheet.parse_sprite('trainer5.png')]
-f_trainer = [my_spritesheet.parse_sprite('f_trainer1.png'), my_spritesheet.parse_sprite('f_trainer2.png'),my_spritesheet.parse_sprite('f_trainer3.png'),
-           my_spritesheet.parse_sprite('f_trainer4.png'),my_spritesheet.parse_sprite('f_trainer5.png')]
-index = 0
+my_spritesheet = Spritesheet('gabe-idle-run 2.png')
+#gabe1 = my_spritesheet.get_sprite(0,0,25,25) #get metadata, in video: (x : 0, y: 0, w: 128, h: 128)
+gabe = [my_spritesheet.parse_sprite('gabe1.png'), my_spritesheet.parse_sprite('gabe2.png'), my_spritesheet.parse_sprite('gabe3.png'), my_spritesheet.parse_sprite('gabe4.png'), my_spritesheet.parse_sprite('gabe5.png'), my_spritesheet.parse_sprite('gabe6.png'), my_spritesheet.parse_sprite('gabe7.png')]#makes a list of sprite images
+
+inde = 0
+
 
 while running:
     ################################# CHECK PLAYER INPUT #################################
@@ -24,12 +24,11 @@ while running:
         if event.type == pygame.KEYDOWN:
             ############### UPDATE SPRITE IF SPACE IS PRESSED #################################
             if event.key == pygame.K_SPACE:
-                index = (index + 1) % len(trainer)
+                index = (index + 1) % len(gabe)
 
 
     ################################# UPDATE WINDOW AND DISPLAY #################################
     canvas.fill((255,255,255))
-    canvas.blit(trainer[index], (0, DISPLAY_H - 128))
-    canvas.blit(f_trainer[index], (128, DISPLAY_H - 128))
+    canvas.blit(gabe[index], (0, DISPLAY_H - 128))
     window.blit(canvas, (0,0))
     pygame.display.update()

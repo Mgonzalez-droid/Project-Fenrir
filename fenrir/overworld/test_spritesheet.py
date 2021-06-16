@@ -1,5 +1,9 @@
 import pygame
 from spritesheet import Spritesheet
+import os
+
+# this is required to set display for xserver and wsl
+os.environ['DISPLAY'] = ': 0.0'
 
 ################################# LOAD UP A BASIC WINDOW #################################
 pygame.init()

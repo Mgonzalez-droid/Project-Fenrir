@@ -1,5 +1,9 @@
 import pygame
 from pygame import mixer
+import os
+
+# this is required to set display for xserver and wsl
+os.environ['DISPLAY'] = ': 0.0'
 
 ## Global Variables ##
 pygame.init()

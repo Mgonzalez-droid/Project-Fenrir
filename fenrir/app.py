@@ -1,28 +1,36 @@
 # import the pygame module, so you can use it
 import pygame
-from common import wsl as wsl
+from fenrir.common.wsl import *
 
 
-def run():
+def run(scene):
     # this is required to set display for xserver and wsl
-    wsl.set_display_to_host()
+    set_display_to_host()
 
     # initialize the pygame module
     pygame.init()
+    resolution = (960, 540)
+    screen = pygame.display.set_mode(resolution)
+    pygame.display.set_caption("Project Fenrir")
 
-    pygame.display.set_caption("minimal program")
-
-    # create a surface on screen that has the size of 240 x 180
-    screen = pygame.display.set_mode((960, 540))
-
-    # define a variable to control the main loop
-    running = True
+    current_scene = scene
 
     # main loop
-    while running:
-        # event handling, gets all event from the event queue
+    while current_scene is not None:
+
+        # event handling
         for event in pygame.event.get():
-            # only do something if the event is of type QUIT
+
+            #  if the event is of type QUIT terminate game
             if event.type == pygame.QUIT:
-                # change the value to False, to exit the main loop
-                running = False
+                current_scene.terminate()
+            else:
+                current_scene.handle_event(event)
+
+        current_scene.update()
+        current_scene.render(screen)
+
+        current_scene = current_scene.next
+
+        pygame.display.flip()
+

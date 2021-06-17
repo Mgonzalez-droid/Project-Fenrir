@@ -1,19 +1,23 @@
 # import the pygame module, so you can use it
 import pygame
 from fenrir.common.wsl import *
+from fenrir.common.config import DisplaySettings
+from fenrir.game.menu.menu_scene import MainMenuScene
 
 
-def run(scene):
+def run():
     # this is required to set display for xserver and wsl
     set_display_to_host()
 
     # initialize the pygame module
     pygame.init()
-    resolution = (960, 540)
-    screen = pygame.display.set_mode(resolution)
+
+    screen = pygame.display.set_mode(DisplaySettings.SCREEN_RESOLUTION.value)
+    clock = pygame.time.Clock()
+
     pygame.display.set_caption("Project Fenrir")
 
-    current_scene = scene
+    current_scene = MainMenuScene(screen)
 
     # main loop
     while current_scene is not None:
@@ -28,9 +32,10 @@ def run(scene):
                 current_scene.handle_event(event)
 
         current_scene.update()
-        current_scene.render(screen)
+        current_scene.render()
 
         current_scene = current_scene.next
 
         pygame.display.flip()
+        clock.tick(DisplaySettings.FPS.value)
 

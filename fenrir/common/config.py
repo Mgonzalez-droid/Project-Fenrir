@@ -1,9 +1,12 @@
 """Common configurations for the game that can be reused throughout and changed in
 central location
 """
-
+import os
 from enum import Enum
 
+GAME_TITLE = "Project Fenrir"
+
+PATH_TO_RESOURCES = os.path.join("fenrir", "resources")
 
 # screen resolution for game to be displayed, set in app.py
 class DisplaySettings(Enum):

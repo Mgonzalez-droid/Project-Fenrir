@@ -1,9 +1,10 @@
 import pygame
-from pygame import mixer
+from fenrir.common.wsl import *
 
 ## Global Variables ##
 pygame.init()
 background = pygame.image.load("demo_overworld.png")
+set_display_to_host()
 win = pygame.display.set_mode((960, 540))
 
 

@@ -5,7 +5,8 @@
 
 import pygame
 import configparser
-
+from fenrir.common.wsl import *
+from math import floor
 
 MAP_TILE_W = 16
 MAP_TILE_H = 16
@@ -33,7 +34,7 @@ class TileCache:
         self.height = height
         self.cache = {}
 
-    def __get_item__(self, filename):
+    def __getitem__(self, filename):
         """Returns table of tiles"""
         key = (filename, self.width, self.height)
         try:
@@ -47,16 +48,18 @@ class TileCache:
         image = pygame.image.load(filename).convert()
         image_w, image_h = image.get_size()
         tile_map = []
-        for c_tile in range(0, image_w / width):
+        for c_tile in range(0, floor(image_w / width)):
             line = []
             tile_map.append(line)
-            for r_tile in range(0, image_h / height):
+            for r_tile in range(0, floor(image_h / height)):
                 rect = (c_tile * width, r_tile * height, width, height)
                 # subsurface returns tiles w/o creating copies in memory
                 line.append(image.subsurface(rect))
         return tile_map
 
+
 MAP_CACHE = TileCache(MAP_TILE_W, MAP_TILE_H)
+
 
 class Level(object):
     def load_file(self, filename="level_001.map"):
@@ -65,6 +68,7 @@ class Level(object):
         parser = configparser.ConfigParser()
         parser.read(filename)
         self.tileset = parser.get("level", "tileset")
+        print(self.tileset)
         self.map = parser.get("level", "map").split("\n")
         for sec in parser.sections():
             if len(sec) == 1:
@@ -145,6 +149,8 @@ class Level(object):
 
 
 if __name__ == "__main__":
+    set_display_to_host()
+
     pygame.init()
 
     game_over = False
@@ -171,4 +177,3 @@ if __name__ == "__main__":
                 game_over = True
             elif event.type == pygame.locals.KEYDOWN:
                 pressed_key = event.key
-

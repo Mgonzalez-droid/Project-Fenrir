@@ -1,7 +1,9 @@
 # import the pygame module, so you can use it
+import os
+
 import pygame
 from fenrir.common.wsl import *
-from fenrir.common.config import DisplaySettings
+from fenrir.common.config import *
 from fenrir.game.menu.menu_scene import MainMenuScene
 
 
@@ -15,7 +17,7 @@ def run():
     screen = pygame.display.set_mode(DisplaySettings.SCREEN_RESOLUTION.value)
     clock = pygame.time.Clock()
 
-    pygame.display.set_caption("Project Fenrir")
+    pygame.display.set_caption(GAME_TITLE)
 
     current_scene = MainMenuScene(screen)
 

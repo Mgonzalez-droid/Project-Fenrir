@@ -1,5 +1,6 @@
 import pygame
 from fenrir.common.scene import Scene
+from fenrir.game.overworld.overworld_scene import OverworldScene
 from fenrir.common.config import *
 
 
@@ -89,12 +90,10 @@ class MainMenuScene(MenuScene):
 
     def select_menu_item(self, index):
         if index == 0:
-            print(index, "new game")
             self.switch_to_scene(NewGameScene(self.screen))
         elif index == 1:
             self.switch_to_scene(LoadGameScene(self.screen))
         elif index == 2:
-            print(index, "credits")
             self.switch_to_scene(CreditsScene(self.screen))
         elif index == 3:
             self.terminate()
@@ -113,7 +112,8 @@ class LoadGameScene(MenuScene):
         if self._saved_games:
             for save in self._saved_games:
                 self._menu_items.append(save.title)
-
+        else:
+            self.starting_height = DisplaySettings.SCREEN_RESOLUTION.value[1] - 50
         self._menu_items.append("Main Menu")
 
     def update(self):
@@ -132,7 +132,8 @@ class LoadGameScene(MenuScene):
             if index == len(self._saved_games):
                 self.switch_to_scene(MainMenuScene(self.screen))
             else:
-                print("selected loaded game at index:", index)
+                # this is where game will be loaded
+                pass
 
 
 class CreditsScene(MenuScene):
@@ -189,7 +190,7 @@ class NewGameScene(MenuScene):
     def select_menu_item(self, index):
 
         if index == 0:
-            # switch to overworld scene
+            self.switch_to_scene(OverworldScene(self.screen))
             pass
         elif index == 1:
             # switch to combat scene

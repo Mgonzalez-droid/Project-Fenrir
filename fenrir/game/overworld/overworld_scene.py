@@ -1,9 +1,11 @@
-""" Template module
+"""Overworld module. Add class properties and args to constructor to change this to diff levels or starting points, etc
 
 """
 import os
 
 import pygame
+
+import fenrir.game.menu.menu_scene as menuscene
 from fenrir.common.scene import Scene
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 
@@ -20,8 +22,7 @@ class OverworldScene(Scene):
         """
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
-                from fenrir.game.menu.menu_scene import MainMenuScene
-                self.switch_to_scene(MainMenuScene(self.screen))
+                self.switch_to_scene(menuscene.MainMenuScene(self.screen))
 
     def render(self):
         self.screen.fill(Colors.WHITE.value)

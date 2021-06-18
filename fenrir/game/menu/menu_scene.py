@@ -1,6 +1,6 @@
 import pygame
 from fenrir.common.scene import Scene
-from fenrir.game.overworld.overworld_scene import OverworldScene
+import fenrir.game.overworld.overworld_scene as oscene
 from fenrir.common.config import *
 
 
@@ -78,6 +78,7 @@ class MainMenuScene(MenuScene):
         self._menu_title = "Project Fenrir"
         self._menu_items = ["New Game", "Load Game", "Credits", "Exit"]
         self._highlighted_items = [False for item in self._menu_items]
+
 
     def update(self):
         pass
@@ -190,7 +191,7 @@ class NewGameScene(MenuScene):
     def select_menu_item(self, index):
 
         if index == 0:
-            self.switch_to_scene(OverworldScene(self.screen))
+            self.switch_to_scene(oscene.OverworldScene(self.screen))
             pass
         elif index == 1:
             # switch to combat scene

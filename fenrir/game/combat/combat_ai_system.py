@@ -1,17 +1,63 @@
+"""
+.. module:: combat_ai_system
+  :synopsis: module for controlling ai attack and move choices
+"""
+
 import math
 
 
 class CombatAISystem:
-    def __init__(self, participants):
+    """Class representing ai combat information and decisions.
+
+    :param participants: (list of obj) list of all characters in the combat scene
+    :param currentParticipant: (character obj) the character obj for the current ai that is making decisions
+
+    Other non-param values:
+    :list_of_enemies: (list of obj) local copy of the list of characters in the combat scene
+    :me: (character obj) local copy of the character obj for the current ai that is making decisions
+    :myXPos: (int) local x coord of the ai position
+    :myYPos: (int) local y coord of the ai position
+    :target: (character obj) the current best target for this ai to attack
+    :opponentScore: (int) the value rating of the current best target
+    """
+    def __init__(self, participants, currentParticipant):
         self._list_of_enemies = participants
+        self._me = currentParticipant
+        self._myXPos = self._me.xpos
+        self._myYPos = self._me.ypos
         self._target = participants[0]
+        self._opponentScore = 0
 
     def decide_who_to_attack(self):
+        """Function to decide on what character to attack. Based on distance, hp, type
+        """
         for i in self._list_of_enemies:
-            if i.get_is_enemy():
-                self._target = i
-                print("Potential Target")
+            if not i.get_is_enemy() and i.hp > 0:
+                tempScore = 0
+                xDist = abs(self._myXPos - i.xpos)
+                yDist = abs(self._myYPos - i.ypos)
+                totalDist = xDist + yDist
+                if totalDist <= self._me.attck_range:
+                    tempScore += 10
+                elif totalDist <= self._me.move_range:
+                    if totalDist < self._me.move_range:
+                        tempScore += 8
+                    else:
+                        tempScore += 5
+                if i.hp < self._me.attack or i.hp < self._me.magic_attack:
+                    tempScore += 10
+                elif i.hp <= self._me.hp:
+                    tempScore += 8
+                else:
+                    tempScore += 5
+
+                if tempScore >= self._opponentScore:
+                    self._opponentScore = tempScore
+                    self._target = i
+
 
 
     def decide_where_to_move(self):
+        """Function to decide where to move the ai on the map
+        """
         print("Where to move")

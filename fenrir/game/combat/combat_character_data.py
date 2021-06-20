@@ -26,6 +26,7 @@ class CombatCharacterData:
     :character_image: (image) single image of the character
     :move_range: (int) the distance the unit can move in a battle
     :attack_range: (int) the distance the unit can hit other units from
+    :luck: (int) value provided to the combat system for a chance of an incoming attack to miss
     :mana: (float) the total amount of energy available to a mage unit
     :magic_attack: (float) base damage for magic type attacks
     :magic_defense: (float) base magic defense from magic attacks
@@ -49,6 +50,7 @@ class CombatCharacterData:
         self._speed = speed
         self._move_range = 0
         self._attack_range = 0
+        self._luck = 1
 
         # type specific traits
         self._mana = 0
@@ -137,6 +139,14 @@ class CombatCharacterData:
     @attack_range.setter
     def attack_range(self, newAttackRange):
         self._attack_range = newAttackRange
+
+    @property
+    def luck(self):
+        return self._luck
+
+    @luck.setter
+    def luck(self, newLuck):
+        self._luck = newLuck
 
     @property
     def mana(self):

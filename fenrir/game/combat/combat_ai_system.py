@@ -21,7 +21,7 @@ class CombatAISystem:
     :opponentScore: (int) the value rating of the current best target
     :targetNextToMe: (boolean) true if any non-enemy is directly next to the ai
     """
-    def __init__(self, participants, currentParticipant):
+    def __init__(self, participants, currentParticipant, tileMap):
         self._list_of_enemies = participants
         self._me = currentParticipant
         self._myXPos = self._me.xpos
@@ -30,6 +30,7 @@ class CombatAISystem:
         self._opponentScore = 0
         self._targetDistance = 0
         self._targetNextToMe = False
+        self._tileMap = tileMap
 
     def decide_who_to_attack(self):
         """Function to decide on what character to attack. Based on distance, hp, type
@@ -63,7 +64,6 @@ class CombatAISystem:
                     self._opponentScore = tempScore
                     self._target = i
                     self._targetDistance = totalDist
-
 
 
     def decide_where_to_move(self):

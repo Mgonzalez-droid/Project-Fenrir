@@ -95,11 +95,21 @@ class CombatCharacterData:
     def ypos(self, newYPos):
         self._ypos = newYPos
 
-    def set_character_image(self):
-        if self._type == 'knight':
-            self.sprite_sheet = pygame.image.load("../../resources/chars/gabe/gabe-idle-run.png").convert()
-        else:
-            self.sprite_sheet = pygame.image.load("../../resources/chars/gabe/gabe-idle-run.png").convert()
+    @property
+    def character_image(self):
+        return self.character_image
+
+    @character_image.setter
+    def character_image(self, newImage):
+        self.character_image = newImage
+
+    @property
+    def sprite_sheet(self):
+        return self.sprite_sheet
+
+    @sprite_sheet.setter
+    def sprite_sheet(self, newSheet):
+        self.sprite_sheet = newSheet
 
     @property
     def level(self):

@@ -5,7 +5,6 @@
 
 import math
 import pygame
-from numpy.random import random
 import random
 
 
@@ -215,32 +214,35 @@ class CombatCharacterData:
                 self.mana = self.level * 3
 
     def check_if_incoming_attack_misses(self, incomingAttackValue, attackType):
-        """function to calculate chance that an attack misses the character (calculated value must be less than 2)
+        """function to calculate chance that an attack misses the character (calculated value must be less than 2 to miss)
         """
         attackModifier = incomingAttackValue / 100
         if attackType == 'magic':
             attackModifier *= 2
         else:
             attackModifier *= 1.5
-
         chanceTheyMissed = random.uniform(0, 10) + attackModifier - (self.luck / 5)
-
         if chanceTheyMissed <= 2:
             return True
         return False
 
     def take_damage(self, incomingAttackValue, attackType):
-        """Calculate the damage an attack does on the character and update the hp value
+        """Calculate the damage an incoming attack does on the character and update the hp value. Returns 0, 1 or 2 for
+        miss, hit or critical hit respectively.
         """
         damage = 0
         if attackType == 'magic':
             damage = incomingAttackValue - self.magic_defense
         elif attackType == 'physical':
             damage = incomingAttackValue - self.defense
-
         didTheyMiss = self.check_if_incoming_attack_misses(incomingAttackValue, attackType)
         if not didTheyMiss:
+            damageSuccess = 1
             self.hp -= damage
             if self.hp <= 0:
                 self.hp = 0
                 self.alive = False
+                damageSuccess = 2
+        else:
+            damageSuccess = 0
+        return damageSuccess

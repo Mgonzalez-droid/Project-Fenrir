@@ -19,6 +19,7 @@ class CombatAISystem:
     :myYPos: (int) local y coord of the ai position
     :target: (character obj) the current best target for this ai to attack
     :opponentScore: (int) the value rating of the current best target
+    :targetNextToMe: (boolean) true if any non-enemy is directly next to the ai
     """
     def __init__(self, participants, currentParticipant):
         self._list_of_enemies = participants
@@ -27,6 +28,8 @@ class CombatAISystem:
         self._myYPos = self._me.ypos
         self._target = participants[0]
         self._opponentScore = 0
+        self._targetDistance = 0
+        self._targetNextToMe = False
 
     def decide_who_to_attack(self):
         """Function to decide on what character to attack. Based on distance, hp, type
@@ -37,6 +40,11 @@ class CombatAISystem:
                 xDist = abs(self._myXPos - i.xpos)
                 yDist = abs(self._myYPos - i.ypos)
                 totalDist = xDist + yDist
+                if totalDist == 1:
+                    self._targetNextToMe = True
+                    self._targetDistance = 1
+                    self._target = i
+                    break
                 if totalDist <= self._me.attck_range:
                     tempScore += 10
                 elif totalDist <= self._me.move_range:
@@ -54,10 +62,21 @@ class CombatAISystem:
                 if tempScore >= self._opponentScore:
                     self._opponentScore = tempScore
                     self._target = i
+                    self._targetDistance = totalDist
 
 
 
     def decide_where_to_move(self):
-        """Function to decide where to move the ai on the map
+        """Function to decide where to move the ai on the map. Returns x Coord to move to, y Coord to move to, target id
+        to attack this turn
         """
         print("Where to move")
+
+    def decide_ai_action(self):
+        self.decide_who_to_attack()
+        if self.targetNextToMe:
+            return self._myXPos, self._myYPos, self._target.get_id()
+        elif self._targetDistance > (self._me.move_range + self._me.attck_range):
+            print("move + math.floor(move * .5)")
+        else:
+            print("move then attack")

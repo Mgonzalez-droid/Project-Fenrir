@@ -1,30 +1,36 @@
 import pygame
+import os
 from fenrir.common.config import *
 from fenrir.common.wsl import *
 
 
 class TextBox:
-    show_box = False
+
+    def __init__(self, screen):
+        self.screen = screen
+
+        # Default TextBox values
+        self.text_box = " "
+        self.text_box_x_scale = 600
+        self.text_box_y_scale = 100
 
     # Load and scale Text box for dialogue
-    @staticmethod
-    def load_textbox():
+    def load_textbox(self):
         # Load text box png
-        text_box = pygame.image.load("../resources/UI/generic-rpg-ui-text-box.png")
-        # Scale image to a proper size
-        # For now, the text box width is 600 and the height 100
-        text_box = pygame.transform.scale(text_box, (600, 100))
-        return text_box
+        self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "UI/generic-rpg-ui-text-box.png"))
 
-    @staticmethod
-    def display_textbox(screen, text_box):
-        # Print text box
-        screen.blit(text_box, (790 - text_box.get_width(), text_box.get_height() + 300))
+        # Default Text box position on window
+        text_box_x_pos = 300 - self.text_box.get_width()
+        text_box_y_pos = self.text_box.get_height() + 370
+
+        # Scale image to a proper size
+        text_box = pygame.transform.scale(self.text_box, (self.text_box_x_scale, self.text_box_y_scale))
+
+        # Display on window
+        self.screen.blit(text_box, (text_box_x_pos, text_box_y_pos))
 
     # Draw text
-    @staticmethod
-    def draw_dialogue(screen, text, text_box):
-        # text = "This is all the dialogue that I want to display for now so that I can make sure it works"
+    def draw_dialogue(self, text):
 
         # The current text box can take 72 characters per line
         # keys = pygame.key.get_pressed()
@@ -36,7 +42,7 @@ class TextBox:
 
         for line in lines:
             dialogue = font.render(line, True, (0, 0, 0))
-            screen.blit(dialogue, (200, 407 - line_height))
+            self.screen.blit(dialogue, (200, 407 - line_height))
             # Next line of text will be below the line before it
             line_height = line_height - 16
 

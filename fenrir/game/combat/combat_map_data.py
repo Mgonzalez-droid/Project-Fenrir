@@ -148,3 +148,14 @@ class MapData:
     @property
     def tilemap(self):
         return self._tilemap
+
+def load_charmap(filename):
+    filename = str(filename)
+    __in_file = open(filename + ".txt", "r")
+    __char_map = []
+    __in_lines = __in_file.readlines()
+    for line in __in_lines:
+        line_split = []
+        line_split = line.split()
+        __char_map.append(line_split)
+    return __char_map

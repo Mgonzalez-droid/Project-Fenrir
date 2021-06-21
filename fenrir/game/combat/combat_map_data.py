@@ -159,3 +159,4 @@ def load_charmap(filename):
         line_split = line.split()
         __char_map.append(line_split)
     return __char_map
+  

@@ -1,28 +1,43 @@
 # import the pygame module, so you can use it
+import os
+
 import pygame
-from common import wsl as wsl
+from fenrir.common.wsl import *
+from fenrir.common.config import *
+from fenrir.game.menu.menu_scene import MainMenuScene
 
 
 def run():
     # this is required to set display for xserver and wsl
-    wsl.set_display_to_host()
+    set_display_to_host()
 
     # initialize the pygame module
     pygame.init()
 
-    pygame.display.set_caption("minimal program")
+    screen = pygame.display.set_mode(DisplaySettings.SCREEN_RESOLUTION.value)
+    clock = pygame.time.Clock()
 
-    # create a surface on screen that has the size of 240 x 180
-    screen = pygame.display.set_mode((960, 540))
+    pygame.display.set_caption(GAME_TITLE)
 
-    # define a variable to control the main loop
-    running = True
+    current_scene = MainMenuScene(screen)
 
     # main loop
-    while running:
-        # event handling, gets all event from the event queue
+    while current_scene is not None:
+
+        # event handling
         for event in pygame.event.get():
-            # only do something if the event is of type QUIT
+
+            #  if the event is of type QUIT terminate game
             if event.type == pygame.QUIT:
-                # change the value to False, to exit the main loop
-                running = False
+                current_scene.terminate()
+            else:
+                current_scene.handle_event(event)
+
+        current_scene.update()
+        current_scene.render()
+
+        current_scene = current_scene.next
+
+        pygame.display.flip()
+        clock.tick(DisplaySettings.FPS.value)
+

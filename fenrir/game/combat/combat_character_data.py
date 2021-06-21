@@ -4,6 +4,8 @@
 """
 
 import math
+import pygame
+import random
 
 
 class CombatCharacterData:
@@ -19,8 +21,13 @@ class CombatCharacterData:
 
     Other non-param values:
     :alive: (boolean) for checking if character died
+    :xpos: (int) x coordinate of unit on battlefield
+    :ypos: (int) y coordinate of unit on battlefield
+    :sprite_sheet: (image) images that the character is pulled from
+    :character_image: (image) single image of the character
     :move_range: (int) the distance the unit can move in a battle
     :attack_range: (int) the distance the unit can hit other units from
+    :luck: (int) value provided to the combat system for a chance of an incoming attack to miss
     :mana: (float) the total amount of energy available to a mage unit
     :magic_attack: (float) base damage for magic type attacks
     :magic_defense: (float) base magic defense from magic attacks
@@ -33,6 +40,10 @@ class CombatCharacterData:
         self._type = type
         self._enemy = enemy
         self._alive = True
+        self._xpos = 0
+        self._ypos = 0
+        self.sprite_sheet = None
+        self._character_image = None
 
         # general character traits
         self._level = level
@@ -40,6 +51,7 @@ class CombatCharacterData:
         self._speed = speed
         self._move_range = 0
         self._attack_range = 0
+        self._luck = 1
 
         # type specific traits
         self._mana = 0
@@ -66,6 +78,38 @@ class CombatCharacterData:
     @alive.setter
     def alive(self, newState):
         self._alive = newState
+
+    @property
+    def xpos(self):
+        return self._xpos
+
+    @xpos.setter
+    def xpos(self, newXPos):
+        self._xpos = newXPos
+
+    @property
+    def ypos(self):
+        return self._ypos
+
+    @ypos.setter
+    def ypos(self, newYPos):
+        self._ypos = newYPos
+
+    @property
+    def character_image(self):
+        return self.character_image
+
+    @character_image.setter
+    def character_image(self, newImage):
+        self.character_image = newImage
+
+    @property
+    def sprite_sheet(self):
+        return self.sprite_sheet
+
+    @sprite_sheet.setter
+    def sprite_sheet(self, newSheet):
+        self.sprite_sheet = newSheet
 
     @property
     def level(self):
@@ -106,6 +150,14 @@ class CombatCharacterData:
     @attack_range.setter
     def attack_range(self, newAttackRange):
         self._attack_range = newAttackRange
+
+    @property
+    def luck(self):
+        return self._luck
+
+    @luck.setter
+    def luck(self, newLuck):
+        self._luck = newLuck
 
     @property
     def mana(self):
@@ -171,19 +223,36 @@ class CombatCharacterData:
                 self.magic_defense = self.magic_attack
                 self.mana = self.level * 3
 
+    def check_if_incoming_attack_misses(self, incomingAttackValue, attackType):
+        """function to calculate chance that an attack misses the character (calculated value must be less than 2 to miss)
+        """
+        attackModifier = incomingAttackValue / 100
+        if attackType == 'magic':
+            attackModifier *= 2
+        else:
+            attackModifier *= 1.5
+        chanceTheyMissed = random.uniform(0, 10) + attackModifier - (self.luck / 5)
+        if chanceTheyMissed <= 2:
+            return True
+        return False
+
     def take_damage(self, incomingAttackValue, attackType):
-        """Calculate the damage an attack does on the character and update the hp value
+        """Calculate the damage an incoming attack does on the character and update the hp value. Returns 0, 1 or 2 for
+        miss, hit or critical hit respectively.
         """
         damage = 0
         if attackType == 'magic':
             damage = incomingAttackValue - self.magic_defense
         elif attackType == 'physical':
             damage = incomingAttackValue - self.defense
-
-        # call missed function
-        didTheyMiss = False
+        didTheyMiss = self.check_if_incoming_attack_misses(incomingAttackValue, attackType)
         if not didTheyMiss:
+            damageSuccess = 1
             self.hp -= damage
             if self.hp <= 0:
                 self.hp = 0
                 self.alive = False
+                damageSuccess = 2
+        else:
+            damageSuccess = 0
+        return damageSuccess

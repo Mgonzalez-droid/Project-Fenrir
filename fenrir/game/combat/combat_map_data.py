@@ -42,6 +42,7 @@ class MapTile:
             self._wall = False
             self._blocking = False
 
+    @property
     def t_type(self):
         return self._t_type
 
@@ -165,6 +166,14 @@ class MapData:
     @property
     def tilemap(self):
         return self._tilemap
+
+    @property
+    def enemyspawn(self):
+        return self._enemyspawn
+
+    @property
+    def playerspawn(self):
+        return self._playerspawn
 
 def load_charmap(filename):
     filename = str(filename)

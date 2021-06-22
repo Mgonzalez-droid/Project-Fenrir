@@ -4,7 +4,6 @@
 """
 import os
 import pygame
-
 from fenrir.common.scene import Scene
 import fenrir.game.menu.menu_scene as menuscene
 import fenrir.game.combat.combat_map_data as md
@@ -22,7 +21,7 @@ class CombatScene(Scene):
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you
 
-                """
+        """
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                 self.switch_to_scene(menuscene.MainMenuScene(self.screen))

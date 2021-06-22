@@ -42,6 +42,9 @@ class MapTile:
             self._wall = False
             self._blocking = False
 
+    def t_type(self):
+        return self._t_type
+
     def is_wall(self):
         return self._wall
 
@@ -122,8 +125,22 @@ class MapData:
                     _temp_list.append(MapTile("wall", i * MAP_TILE_W, j * MAP_TILE_H))
                 elif self._char_map[i][j] == "~":
                     _temp_list.append(MapTile("blocking", i * MAP_TILE_W, j * MAP_TILE_H))
+                elif self._char_map[i][j] == "a":
+                    _temp_list.append(MapTile("player_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
+                elif self._char_map[i][j] == "e":
+                    _temp_list.append(MapTile("enemy_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
             # Append our columns to each row
             self._tilemap.append(_temp_list)
+        # Create spawn lists
+        self._playerspawn = []
+        self._enemyspawn = []
+        for i in range(self._rows):
+            for j in range(self._columns):
+                if self._tilemap[i][j].t_type() == "player_spawn":
+                    self._playerspawn.append(self._tilemap[i][j])
+                elif self._tilemap[i][j].t_type() == "enemy_spawn":
+                    self._enemyspawn.append(self._tilemap[i][j])
+
 
     @property
     def name(self):

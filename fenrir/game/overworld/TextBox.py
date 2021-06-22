@@ -35,7 +35,7 @@ class TextBox:
         # keys = pygame.key.get_pressed()
         chars_per_line = 71
         lines = [text[i:i + chars_per_line] for i in range(0, len(text), chars_per_line)]
-        font = pygame.font.Font(None, size)
+        font = pygame.font.Font(os.path.join(PATH_TO_RESOURCES, "fonts/Peepo.ttf"), size)
 
         # line_height is used to make sure the next line of text goes below the one before it
         line_height = 0

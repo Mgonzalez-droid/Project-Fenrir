@@ -2,15 +2,16 @@
 .. module:: combat_map_data
   :synopsis: module for creating tilesets and reading maps for combat scenes.
 """
+
 import os
 from fenrir.common.config import PATH_TO_RESOURCES
+
 """
 :MAP_TILE_W: (int) holds standard width of tiles
 :MAP_TILE_H: (int) holds standard height of tiles
 """
-MAP_TILE_W = 16
-MAP_TILE_H = 16
-
+MAP_TILE_W = 40
+MAP_TILE_H = 40
 
 class MapTile:
     """
@@ -28,7 +29,7 @@ class MapTile:
     def __init__(self, t_type, x_coord, y_coord):
         # Standard Types: ground, wall, blocking
         self._t_type = t_type
-        # Coordinates are in increments of 16, top left corner of each tile
+        # Coordinates are in increments of 40, top left corner of each tile
         self._x_coord = x_coord
         self._y_coord = y_coord
         self._occupied = False
@@ -43,6 +44,10 @@ class MapTile:
         else:
             self._wall = False
             self._blocking = False
+
+    @property
+    def t_type(self):
+        return self._t_type
 
     def is_wall(self):
         return self._wall
@@ -84,14 +89,14 @@ class MapData:
 
         :param name: (string) file name associated with the map
                               used to load .png map images and .txt map data
-        :param columns: (int) how many tiles in the vertical (height divided by 16)
-        :param rows: (int) how many tiles in the horizontal (width divided by 16)
+        :param columns: (int) how many tiles in the vertical (height divided by 40)
+        :param rows: (int) how many tiles in the horizontal (width divided by 40)
         :char_map: (string)  2D list of characters representing tiles, used to populate
                         and define tilemap
                         (we can use files associated with map images to populate this)
 
-        :height: (int) height of the map .png (should be a multiple of 16)
-        :width: (int) width of the map .png (should be a multiple of 16)
+        :height: (int) height of the map .png (should be a multiple of 40)
+        :width: (int) width of the map .png (should be a multiple of 40)
         :tilemap: (MapTile) 2D list of all the tiles on the map
 
         Note: Each map should not be edited after it is created. Tilemap data should be taken from the object
@@ -106,11 +111,13 @@ class MapData:
         self._columns = columns
         self._rows = rows
         # Map should be a 2D List of strings (single chars)
+        # Char map txt file MUST BE 23w x 13h!
         self._char_map = self.load_charmap()
         # Dimensions based off of tile numbers
         self._height = self._rows * MAP_TILE_H
         self._width = self._columns * MAP_TILE_W
         # Tilemap population and definition
+        # Tilemap PNG MUST be 960 x 540!
         self._tilemap = []
         for i in range(self._rows):
             # Create a temp list to append to our first list so we can make it 2D
@@ -124,8 +131,21 @@ class MapData:
                     _temp_list.append(MapTile("wall", i * MAP_TILE_W, j * MAP_TILE_H))
                 elif self._char_map[i][j] == "~":
                     _temp_list.append(MapTile("blocking", i * MAP_TILE_W, j * MAP_TILE_H))
+                elif self._char_map[i][j] == "a":
+                    _temp_list.append(MapTile("player_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
+                elif self._char_map[i][j] == "e":
+                    _temp_list.append(MapTile("enemy_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
             # Append our columns to each row
             self._tilemap.append(_temp_list)
+        # Create spawn lists
+        self._playerspawn = []
+        self._enemyspawn = []
+        for i in range(self._rows):
+            for j in range(self._columns):
+                if self._tilemap[i][j].t_type() == "player_spawn":
+                    self._playerspawn.append(self._tilemap[i][j])
+                elif self._tilemap[i][j].t_type() == "enemy_spawn":
+                    self._enemyspawn.append(self._tilemap[i][j])
 
     @property
     def name(self):
@@ -161,3 +181,12 @@ class MapData:
             line_split = line.split()
             __char_map.append(line_split)
         return __char_map
+
+    @property
+    def enemyspawn(self):
+        return self._enemyspawn
+
+    @property
+    def playerspawn(self):
+        return self._playerspawn
+

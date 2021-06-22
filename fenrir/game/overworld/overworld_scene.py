@@ -26,7 +26,7 @@ class OverworldScene(Scene):
             if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                 self.switch_to_scene(menuscene.MainMenuScene(self.screen))
             if event.key == pygame.K_SPACE:
-                self.show_textbox = not self.show_textbox
+                self.show_textbox = True
             if event.key == pygame.K_1 and self.show_textbox:
                 print("Going to combat phase")
             if event.key == pygame.K_2 and self.show_textbox:

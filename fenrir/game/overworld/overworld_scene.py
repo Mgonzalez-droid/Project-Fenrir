@@ -23,10 +23,32 @@ class OverworldScene(Scene):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                 self.switch_to_scene(menuscene.MainMenuScene(self.screen))
+            if event.key == pygame.K_q:
+                print("Entered menu")
+            if event.key == pygame.K_w or event.key == pygame.K_UP:
+                # gabe.yPos += 10
+                print("+10 in y direction")
+            if event.key == pygame.K_s or event.key == pygame.K_DOWN:
+                # gabe.yPos -= 10
+                print("-10 in y direction")
+            if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                # gabe.xPos -= 10
+                print("-10 in x direction")
+            if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                # gabe.yPos += 10
+                print("+10 in x direction")
+            if event.key == pygame.K_SPACE:
+                print("scan for interaction")
+                # try to interact with object
+                # if object.interactable
+                # initiate_battle = load_dialogue()
+                # if initiate_battle
+                # self.switch_to_scene(CombatScene(self.screen))
 
     def render(self):
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self.background, (0, 0))
+        #render character
 
     def update(self):
         pass

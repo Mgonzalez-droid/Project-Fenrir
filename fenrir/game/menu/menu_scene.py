@@ -1,9 +1,12 @@
 import pygame
 from fenrir.common.scene import Scene
-import fenrir.game.overworld.overworld_scene as oscene
+import fenrir.game.overworld.overworld_scene as overscene
+import fenrir.game.combat.combat_scene as combscene
 from fenrir.common.config import *
 
-
+##########################################################
+#   ABSTRACT MENU SCENE - USED CREATE MENUS W/CURSORS    #
+##########################################################
 class MenuScene(Scene):
 
     def __init__(self, screen):
@@ -70,7 +73,9 @@ class MenuScene(Scene):
             if self.cursor_pos != 0:
                 self.cursor_pos -= 1
 
-
+##########################################################
+#       MAIN MENU SCENE - LOADED WHEN GAME STARTS        #
+##########################################################
 class MainMenuScene(MenuScene):
 
     def __init__(self, screen):
@@ -78,7 +83,6 @@ class MainMenuScene(MenuScene):
         self._menu_title = "Project Fenrir"
         self._menu_items = ["New Game", "Load Game", "Credits", "Exit"]
         self._highlighted_items = [False for item in self._menu_items]
-
 
     def update(self):
         pass
@@ -99,7 +103,9 @@ class MainMenuScene(MenuScene):
         elif index == 3:
             self.terminate()
 
-
+##########################################################
+#       LOAD GAME SCENE - USED TO LOAD SAVED GAME        #
+##########################################################
 class LoadGameScene(MenuScene):
 
     def __init__(self, screen):
@@ -136,7 +142,9 @@ class LoadGameScene(MenuScene):
                 # this is where game will be loaded
                 pass
 
-
+##########################################################
+#          CREDITS SCENE - USED TO VIEW CREDITS          #
+##########################################################
 class CreditsScene(MenuScene):
 
     def __init__(self, screen):
@@ -171,7 +179,9 @@ class CreditsScene(MenuScene):
             self.switch_to_scene(MainMenuScene(self.screen))
             pass
 
-
+##########################################################
+#        NEW GAME SCENE - USED TO START NEW GAME         #
+##########################################################
 class NewGameScene(MenuScene):
 
     def __init__(self, screen):
@@ -191,10 +201,10 @@ class NewGameScene(MenuScene):
     def select_menu_item(self, index):
 
         if index == 0:
-            self.switch_to_scene(oscene.OverworldScene(self.screen))
+            self.switch_to_scene(overscene.OverworldScene(self.screen))
             pass
         elif index == 1:
-            # switch to combat scene
+            self.switch_to_scene(combscene.CombatScene(self.screen, "combat_001"))
             pass
         elif index == 2:
             self.switch_to_scene(MainMenuScene(self.screen))

@@ -2,13 +2,15 @@
 .. module:: combat_map_data
   :synopsis: module for creating tilesets and reading maps for combat scenes.
 """
-
+import os
+from fenrir.common.config import PATH_TO_RESOURCES
 """
 :MAP_TILE_W: (int) holds standard width of tiles
 :MAP_TILE_H: (int) holds standard height of tiles
 """
 MAP_TILE_W = 16
 MAP_TILE_H = 16
+
 
 class MapTile:
     """
@@ -97,16 +99,16 @@ class MapData:
               altered
     """
 
-    def __init__(self, name, columns, rows, char_map):
+    def __init__(self, name, columns, rows):
         # Name will be used to append .png or .txt to pull data from
         self._name = name
         # Number of tiles horizontally and vertically respectively
         self._columns = columns
         self._rows = rows
         # Map should be a 2D List of strings (single chars)
-        self._char_map = char_map
+        self._char_map = self.load_charmap()
         # Dimensions based off of tile numbers
-        self._height = self._rows *  MAP_TILE_H
+        self._height = self._rows * MAP_TILE_H
         self._width = self._columns * MAP_TILE_W
         # Tilemap population and definition
         self._tilemap = []
@@ -149,14 +151,13 @@ class MapData:
     def tilemap(self):
         return self._tilemap
 
-def load_charmap(filename):
-    filename = str(filename)
-    __in_file = open(filename + ".txt", "r")
-    __char_map = []
-    __in_lines = __in_file.readlines()
-    for line in __in_lines:
-        line_split = []
-        line_split = line.split()
-        __char_map.append(line_split)
-    return __char_map
-  
+    def load_charmap(self):
+        filename = os.path.join(PATH_TO_RESOURCES, "combat_maps", self._name)
+        __in_file = open(filename + ".txt", "r")
+        __char_map = []
+        __in_lines = __in_file.readlines()
+        for line in __in_lines:
+            line_split = []
+            line_split = line.split()
+            __char_map.append(line_split)
+        return __char_map

@@ -142,9 +142,9 @@ class MapData:
         self._enemyspawn = []
         for i in range(self._rows):
             for j in range(self._columns):
-                if self._tilemap[i][j].t_type() == "player_spawn":
+                if self._tilemap[i][j].t_type == "player_spawn":
                     self._playerspawn.append(self._tilemap[i][j])
-                elif self._tilemap[i][j].t_type() == "enemy_spawn":
+                elif self._tilemap[i][j].t_type == "enemy_spawn":
                     self._enemyspawn.append(self._tilemap[i][j])
 
     @property

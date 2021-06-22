@@ -2,15 +2,16 @@
 .. module:: combat_map_data
   :synopsis: module for creating tilesets and reading maps for combat scenes.
 """
+
 import os
 from fenrir.common.config import PATH_TO_RESOURCES
+
 """
 :MAP_TILE_W: (int) holds standard width of tiles
 :MAP_TILE_H: (int) holds standard height of tiles
 """
 MAP_TILE_W = 16
 MAP_TILE_H = 16
-
 
 class MapTile:
     """
@@ -43,6 +44,10 @@ class MapTile:
         else:
             self._wall = False
             self._blocking = False
+
+    @property
+    def t_type(self):
+        return self._t_type
 
     def is_wall(self):
         return self._wall
@@ -124,8 +129,21 @@ class MapData:
                     _temp_list.append(MapTile("wall", i * MAP_TILE_W, j * MAP_TILE_H))
                 elif self._char_map[i][j] == "~":
                     _temp_list.append(MapTile("blocking", i * MAP_TILE_W, j * MAP_TILE_H))
+                elif self._char_map[i][j] == "a":
+                    _temp_list.append(MapTile("player_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
+                elif self._char_map[i][j] == "e":
+                    _temp_list.append(MapTile("enemy_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
             # Append our columns to each row
             self._tilemap.append(_temp_list)
+        # Create spawn lists
+        self._playerspawn = []
+        self._enemyspawn = []
+        for i in range(self._rows):
+            for j in range(self._columns):
+                if self._tilemap[i][j].t_type() == "player_spawn":
+                    self._playerspawn.append(self._tilemap[i][j])
+                elif self._tilemap[i][j].t_type() == "enemy_spawn":
+                    self._enemyspawn.append(self._tilemap[i][j])
 
     @property
     def name(self):
@@ -161,3 +179,12 @@ class MapData:
             line_split = line.split()
             __char_map.append(line_split)
         return __char_map
+
+    @property
+    def enemyspawn(self):
+        return self._enemyspawn
+
+    @property
+    def playerspawn(self):
+        return self._playerspawn
+

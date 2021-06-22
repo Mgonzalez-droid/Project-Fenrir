@@ -42,7 +42,7 @@ class OverworldScene(Scene):
             options = ["[1] Yes, I want to enter to combat phase", "[2] No, I want to keep walking around"]
             size = 24
             x = 200
-            y = 407
+            y = 397
             TextBox.draw_options(tb, "Do you want to enter combat phase?", options, size, x, y)
 
     def update(self):

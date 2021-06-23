@@ -55,7 +55,8 @@ class OverworldScene(Scene):
         print(self.hero.y)
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self.background, (0, 0))
-        #render character
+        self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
+        self.screen.blit(self.npc.sprite, (self.npc.x, self.npc.y))
 
     def update(self):
         pass

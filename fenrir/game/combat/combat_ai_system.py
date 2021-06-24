@@ -33,7 +33,7 @@ class CombatAISystem:
         self._tileMap = tileMap
 
     def decide_who_to_attack(self):
-        """Function to decide on what character to attack. Based on distance, hp, type
+        """Function to decide on what character to attack. Based on distance, hp, (type based considerations
         """
         for i in self._list_of_enemies:
             if not i.get_is_enemy() and i.hp > 0:
@@ -48,7 +48,7 @@ class CombatAISystem:
                     break
                 if totalDist <= self._me.attck_range:
                     tempScore += 10
-                elif totalDist <= self._me.move_range:
+                elif totalDist <= self._me.move_range + self._me.attck_range:
                     if totalDist < self._me.move_range:
                         tempScore += 8
                     else:
@@ -66,17 +66,25 @@ class CombatAISystem:
                     self._targetDistance = totalDist
 
 
-    def decide_where_to_move(self):
+    def decide_where_to_move(self, numberOfTilesToMove):
         """Function to decide where to move the ai on the map. Returns x Coord to move to, y Coord to move to, target id
         to attack this turn
         """
+        myX = self._myXPos
+        myY = self._myYPos
+        targetX = self._target.xpos
+        targetY = self._target.ypos
         print("Where to move")
 
     def decide_ai_action(self):
+        """Function decides if ai should only attack (next to enemy already), move twice (no enemy in range), or move then
+        attack. Returns desired ai xcoord, ycoord, and target id"""
         self.decide_who_to_attack()
         if self.targetNextToMe:
             return self._myXPos, self._myYPos, self._target.get_id()
         elif self._targetDistance > (self._me.move_range + self._me.attck_range):
-            print("move + math.floor(move * .5)")
+            self.decide_where_to_move(self._me.move_range + math.floor(self._me.move_range * .5))
+            return self._myXPos, self._myYPos, None
         else:
-            print("move then attack")
+            self.decide_where_to_move(self._me.move_range)
+            return self._myXPos, self._myYPos, self._target.get_id()

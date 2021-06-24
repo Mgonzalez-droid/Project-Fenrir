@@ -266,7 +266,8 @@ class CombatCharacterData:
         range_counter = input_range
         if range_counter > 0:
             for tile in combat_map.tilemap[int(self._xpos / 60)][int(self._ypos / 60)].adjacencies:
-                selectable_tiles.append(tile)
+                if not tile.is_wall or not tile.is_blocking:
+                    selectable_tiles.append(tile)
             range_counter -= 1
             selectable_tiles = self.find_tiles_in_range(range_counter, selectable_tiles, combat_map)
             return selectable_tiles

@@ -262,14 +262,18 @@ class CombatCharacterData:
 
     # NOTE: selectable_tiles should be an EMPTY list (either movable or attackable tiles)
     # If they aren't empty they SHOULD BE CLEARED before using them as a param for this function
-    def find_tiles_in_range(self, input_range, selectable_tiles, combat_map):
+    def find_tiles_in_range(self, input_range, selectable_tiles, combat_map, select_type="movement"):
         range_counter = input_range
         if range_counter > 0:
             for tile in combat_map.tilemap[int(self._xpos / 60)][int(self._ypos / 60)].adjacencies:
-                if not tile.is_wall or not tile.is_blocking:
-                    selectable_tiles.append(tile)
+                if select_type == "movement":
+                    if not tile.is_blocking or not tile.is_wall:
+                        selectable_tiles.append(tile)
+                elif select_type == "attack":
+                    if not tile.is_wall:
+                        selectable_tiles.append(tile)
             range_counter -= 1
-            selectable_tiles = self.find_tiles_in_range(range_counter, selectable_tiles, combat_map)
+            selectable_tiles = self.find_tiles_in_range(range_counter, selectable_tiles, combat_map, select_type)
             return selectable_tiles
         else:
             return selectable_tiles

@@ -13,7 +13,6 @@ class DisplaySettings(Enum):
     """Returns common colors defined with RGB values. This will allow a central location to
         change game themes and color schemes. can add things like MENU_COLOR, BACKGROUND_COLOR
         and more to keep themes consistent.
-
         After import call with Colors.White.value or whatever color
     """
 
@@ -27,7 +26,6 @@ class Colors(Enum):
     """Returns common colors defined with RGB values. This will allow a central location to
     change game themes and color schemes. can add things like MENU_COLOR, BACKGROUND_COLOR
     and more to keep themes consistent.
-
     After import call with Colors.White.value or whatever color
     """
 

@@ -18,7 +18,7 @@ class CombatScene(Scene):
     def __init__(self, screen, map_name):
         super().__init__(screen)
         self._map_name = map_name
-        self._map = md.MapData(map_name, 23, 13)
+        self._map = md.MapData(map_name, 16, 9)
         self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(map_name + ".png")))
         self._participants = []
         self._player_list = pygame.sprite.Group()
@@ -77,11 +77,11 @@ class CombatScene(Scene):
         for player in self._participants:
             if player.get_is_enemy():
                 for tile in self._map.enemyspawn:
-                    if not tile.is_occupied():
+                    if not tile.is_occupied:
                         player.rect.center = (tile.x_coord + 30, tile.y_coord + 30)
                         break
             else:
                 for tile in self._map.playerspawn:
-                    if not tile.is_occupied():
+                    if not tile.is_occupied:
                         player.rect.center = (tile.x_coord + 30, tile.y_coord + 30)
                         break

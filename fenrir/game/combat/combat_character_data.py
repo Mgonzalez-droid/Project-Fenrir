@@ -5,7 +5,6 @@
 
 import math
 import random
-import combat_map_data
 
 
 class CombatCharacterData():

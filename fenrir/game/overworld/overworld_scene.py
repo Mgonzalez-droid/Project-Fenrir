@@ -8,7 +8,7 @@ import pygame
 import fenrir.game.menu.menu_scene as menuscene
 from fenrir.common.scene import Scene
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
-from fenrir.game.overworld.TextBox import TextBox
+from fenrir.common.TextBox import TextBox
 
 
 class OverworldScene(Scene):

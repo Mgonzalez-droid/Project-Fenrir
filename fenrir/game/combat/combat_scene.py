@@ -79,9 +79,11 @@ class CombatScene(Scene):
                 for tile in self._map.enemyspawn:
                     if not tile.is_occupied:
                         player.rect.center = (tile.x_coord + 30, tile.y_coord + 30)
+                        tile.occupy(player.get_id())
                         break
             else:
                 for tile in self._map.playerspawn:
                     if not tile.is_occupied:
                         player.rect.center = (tile.x_coord + 30, tile.y_coord + 30)
+                        tile.occupy(player.get_id())
                         break

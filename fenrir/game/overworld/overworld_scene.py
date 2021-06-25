@@ -31,25 +31,25 @@ class OverworldScene(Scene):
         """
         ## Track Movement ##
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
+        if keys[pygame.K_w] and not self.in_controls:
             self.hero.y -= 10
             self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
             #self.hero.adjust_movement()
-        if keys[pygame.K_s]:
+        if keys[pygame.K_s] and not self.in_controls:
             self.hero.y += 10
             self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
             #self.hero.adjust_movement()
-        if keys[pygame.K_a]:
+        if keys[pygame.K_a] and not self.in_controls:
             self.hero.x -= 10
             self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
             #self.hero.adjust_movement()
-        if keys[pygame.K_d]:
+        if keys[pygame.K_d]and not self.in_controls:
             self.hero.x += 10
             self.hero.move()
             #self.hero.animate = True
@@ -71,7 +71,7 @@ class OverworldScene(Scene):
                     self.in_controls = True
                     self.show_characters = False
 
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE and not self.in_controls:
                 print("scan for interaction")
                 # try to interact with object
                 # if object.interactable

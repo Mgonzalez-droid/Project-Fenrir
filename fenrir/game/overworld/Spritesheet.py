@@ -4,7 +4,8 @@ import json
 class Spritesheet:
     def __init__(self, filename):
         self.filename = filename
-        self.sprite_sheet = pygame.image.load(filename).convert()
+        #self.sprite_sheet = pygame.image.load(filename).convert()
+        self.sprite_sheet = pygame.image.load(filename).convert_alpha()
         self.metadata = self.filename.replace('png', 'json') # removes current png filetype and replaces with json
         with open(self.metadata) as f:
             self.data = json.load(f) #puts all of our data from the json file into a python dictionary, puts into data

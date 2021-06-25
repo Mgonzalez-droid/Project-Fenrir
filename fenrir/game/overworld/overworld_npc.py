@@ -1,11 +1,11 @@
 import pygame
+from fenrir.game.overworld.Spritesheet import Spritesheet
 
 class overworld_npc:
-    def __init__(self, x, y, filename, animated=False):
+    def __init__(self, x, y, filename):
         self.__x = x
         self.__y = y
-        self.__sprite = filename
-        self.__animated = animated
+        self.__sprite = pygame.image.load(filename)
 
     @property
     def x(self):
@@ -30,5 +30,3 @@ class overworld_npc:
     @sprite.setter
     def sprite(self, sprite):
         self.__sprite = sprite
-
-    #def adjust_movement(self):

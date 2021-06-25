@@ -4,6 +4,7 @@
 import os
 
 from fenrir.game.overworld.overworld_npc import overworld_npc as character
+from fenrir.game.overworld.overworld_npc_animated import  overworld_npc_animated as character_animated
 
 import pygame
 
@@ -17,8 +18,10 @@ class OverworldScene(Scene):
     def __init__(self, screen):
         super().__init__(screen)
         self.background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_resized_controls.png"))
-        self.hero = character(560, 170, pygame.image.load(os.path.join(PATH_TO_RESOURCES, "gabe_resized.png")))
-        self.npc = character(890, 230, pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Resized_Sensei.png")))
+        self.hero = character_animated(560, 170, os.path.join(PATH_TO_RESOURCES, "gabe_running.png"))
+        self.hero.sprite_names = ["gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png", "gabe_stance_4.png",
+                                  "gabe_stance_5.png", "gabe_stance_6.png", "gabe_stance_7.png"]
+        self.npc = character(890, 230, os.path.join(PATH_TO_RESOURCES, "Resized_Sensei.png"))
         self.in_controls = False
         self.show_characters = True
 
@@ -30,22 +33,20 @@ class OverworldScene(Scene):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
             self.hero.y -= 10
+            #self.hero.play_animation()
+            self.hero.adjust_movement()
         if keys[pygame.K_s]:
             self.hero.y += 10
+            #self.hero.play_animation()
+            self.hero.adjust_movement()
         if keys[pygame.K_a]:
             self.hero.x -= 10
+            #self.hero.play_animation()
+            self.hero.adjust_movement()
         if keys[pygame.K_d]:
             self.hero.x += 10
-        '''
-        if keys[pygame.K_UP]:
-            self.hero.y -= 10
-        if keys[pygame.K_DOWN]:
-            self.hero.y += 10
-        if keys[pygame.K_LEFT]:
-            self.hero.x -= 10
-        if keys[pygame.K_RIGHT]:
-            self.hero.x += 10
-        '''
+            #self.hero.play_animation()
+            self.hero.adjust_movement()
 
         ## Track Interaction ##
         if event.type == pygame.KEYDOWN:

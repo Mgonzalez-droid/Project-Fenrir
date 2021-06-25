@@ -17,20 +17,12 @@ class Node:
     :neighbors: (list of tuples of int) a list of the neighboring Nodes by coordinates
     :parent: (Node) the Node that the current Node was reached from
     """
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y):
         self._xPos = x
         self._yPos = y
         self._value = None
         self._neighbors = []
         self._myParent = None
-        if (y - 1) >= 0:
-            self._neighbors.append((x, y - 1))
-        if (x + 1) < width:
-            self._neighbors.append((x + 1, y))
-        if (y + 1) < height:
-            self._neighbors.append((x, y + 1))
-        if (x - 1) >= 0:
-            self._neighbors.append((x - 1, y))
 
     def get_xPos(self):
         return self._xPos
@@ -53,6 +45,9 @@ class Node:
     def get_neighbors(self):
         return self._neighbors
 
+    def set_neighbors(self, newNeighborNode):
+        self._neighbors.append(newNeighborNode)
+
     def clear_data(self):
         self._value = None
         self._myParent = None
@@ -68,12 +63,36 @@ class CombatAINodeTree:
     :AINodeTree: (list of Node objects) the NodeTree object that has all the Nodes for the battle scene
     """
     def __init__(self, width, height):
-        self.AINodeTree = []
+        self.AINodeTree = {}
+        # create all the nodes
         for x in range(width):
             for y in range(height):
                 if FAKE_FUNCTION_IS_TILE_ACCESSABLE():
-                    newNode = Node(x, y, width, height)
+                    newNode = Node(x, y)
                     AINodeTree.append(newNode)
+
+        # set all the neighbors for each node
+        for node in self.AINodeTree:
+            if (node.get_yPos() - 1) >= 0 and FAKE_FUNCTION_IS_TILE_ACCESSABLE():
+                for otherNode in self.AINodeTree:
+                    if otherNode.get_xPos() == node.get_xPos() and otherNode.get_yPos() == (node.get_yPos() - 1):
+                        node.set_neighbor(otherNode)
+                        break
+            if (node.get_xPos() + 1) < width and FAKE_FUNCTION_IS_TILE_ACCESSABLE():
+                for otherNode in self.AINodeTree:
+                    if otherNode.get_xPos() == (node.get_xPos() + 1) and otherNode.get_yPos() == node.get_yPos():
+                        node.set_neighbor(otherNode)
+                        break
+            if (node.get_yPos() + 1) < height and FAKE_FUNCTION_IS_TILE_ACCESSABLE():
+                for otherNode in self.AINodeTree:
+                    if otherNode.get_xPos() == node.get_xPos() and otherNode.get_yPos() == (node.get_yPos() + 1):
+                        node.set_neighbor(otherNode)
+                        break
+            if (node.get_xPos() - 1) >= 0 and FAKE_FUNCTION_IS_TILE_ACCESSABLE():
+                for otherNode in self.AINodeTree:
+                    if otherNode.get_xPos() == (node.get_xPos() - 1) and otherNode.get_yPos() == node.get_yPos():
+                        node.set_neighbor(otherNode)
+                        break
 
     def get_ai_node_tree(self):
         return self.AINodeTree

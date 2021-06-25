@@ -21,7 +21,7 @@ class CombatAISystem:
     :opponentScore: (int) the value rating of the current best target
     :targetNextToMe: (boolean) true if any non-enemy is directly next to the ai
     """
-    def __init__(self, participants, currentParticipant):
+    def __init__(self, participants, currentParticipant, nodeTree):
         self._list_of_enemies = participants
         self._me = currentParticipant
         self._myX = (self._me.xpos - 30) / 60
@@ -36,6 +36,7 @@ class CombatAISystem:
         self._targetNextToMe = False
         self._openList = []
         self._closedList = []
+        self._nodeTree = nodeTree
 
     def decide_who_to_attack(self):
         """Function to decide on what character to attack. Based on distance, hp, type.
@@ -75,15 +76,21 @@ class CombatAISystem:
         """Function to decide where to move the ai on the map. Returns x Coord to move to, y Coord to move to, target id
         to attack this turn
         """
-        openList = [(startX, startY)]
+        openList = []
         closedList = []
+        for node in self._nodeTree:
+            if node.get_xPos() == startX and node.get_yPos() == startY:
+                openList.append(node)
+                node.set_value(self._targetDistance)
+                break
 
         while len(openList) > 0:
             currentTile = openList[0]
             openList.pop(0)
-            closedList.append((startX, startY))
-            if currentTile[0] == self._targetX and currentTile[1] == self._targetY:
+            closedList.append(currentTile)
+            if currentTile.get_xPos() == self._targetX and currentTile.get_yPos() == self._targetY:
                 return  # found the end
+
             for i in range(4):
                 alreadySearched = False
                 if i == 0:                          # tile above current

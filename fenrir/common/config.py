@@ -18,7 +18,7 @@ class DisplaySettings(Enum):
     """
 
     SCREEN_RESOLUTION = (960, 540)
-    FPS = 60
+    FPS = 30
     CENTER_WIDTH = SCREEN_RESOLUTION[0] / 2  # center x value of screen
     CENTER_HEIGHT = SCREEN_RESOLUTION[1] / 2  # center y value of screen
 
@@ -31,6 +31,8 @@ class Colors(Enum):
     After import call with Colors.White.value or whatever color
     """
 
+    ALPHA = (0, 255, 0)
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
+
     # add colors here with RGB values the list will lengthen as we go

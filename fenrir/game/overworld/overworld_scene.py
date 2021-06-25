@@ -33,20 +33,28 @@ class OverworldScene(Scene):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
             self.hero.y -= 10
+            self.hero.move()
+            #self.hero.animate = True
             #self.hero.play_animation()
-            self.hero.adjust_movement()
+            #self.hero.adjust_movement()
         if keys[pygame.K_s]:
             self.hero.y += 10
+            self.hero.move()
+            #self.hero.animate = True
             #self.hero.play_animation()
-            self.hero.adjust_movement()
+            #self.hero.adjust_movement()
         if keys[pygame.K_a]:
             self.hero.x -= 10
+            self.hero.move()
+            #self.hero.animate = True
             #self.hero.play_animation()
-            self.hero.adjust_movement()
+            #self.hero.adjust_movement()
         if keys[pygame.K_d]:
             self.hero.x += 10
+            self.hero.move()
+            #self.hero.animate = True
             #self.hero.play_animation()
-            self.hero.adjust_movement()
+            #self.hero.adjust_movement()
 
         ## Track Interaction ##
         if event.type == pygame.KEYDOWN:
@@ -77,6 +85,7 @@ class OverworldScene(Scene):
         print(self.hero.y)
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self.background, (0, 0))
+        self.hero.play_animation()
         if self.show_characters:
             self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
             self.screen.blit(self.npc.sprite, (self.npc.x, self.npc.y))

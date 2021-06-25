@@ -1,3 +1,5 @@
+import time
+
 from fenrir.game.overworld.overworld_npc import overworld_npc
 from fenrir.game.overworld.Spritesheet import Spritesheet
 import pygame
@@ -8,6 +10,15 @@ class overworld_npc_animated(overworld_npc):
         self.__spritesheet = Spritesheet(filename)
         self.__index = 0
         self.__sprite_names = []
+        self.__animate = False
+
+    @property
+    def animate(self):
+        return self.__animate
+
+    @animate.setter
+    def animate(self, animate):
+        self.__animate = animate
 
     @property
     def spritesheet(self):
@@ -26,10 +37,25 @@ class overworld_npc_animated(overworld_npc):
         for name in names:
             self.__sprite_names.append(self.__spritesheet.parse_sprite(name))
 
+        self.sprite = self.__sprite_names[0]
+
+    def move(self):
+        self.__animate = True
+
+    def update(self):
+        if self.__animate == True:
+            self.__index += 0.2
+            if int(self.__index) >= len(self.__sprite_names):
+                self.__index = 0
+                self.__animate = False
+
+        self.sprite = self.__sprite_names[int(self.__index)]
+
     def adjust_movement(self):
-        self.__index = (self.__index + 1) % len(self.__sprite_names)
+        self.__index = (int(self.__index + 0.2)) % len(self.__sprite_names)
         self.sprite = self.__sprite_names[self.__index]
 
     def play_animation(self):
-        for sprites in self.__sprite_names:
-            self.adjust_movement()
+        if self.__animate:
+            for sprites in self.__sprite_names:
+                self.adjust_movement()

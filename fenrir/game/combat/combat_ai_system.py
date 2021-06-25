@@ -24,64 +24,67 @@ class CombatAISystem:
     def __init__(self, participants, currentParticipant, tileMap):
         self._list_of_enemies = participants
         self._me = currentParticipant
-        self._myXPos = self._me.xpos
-        self._myYPos = self._me.ypos
-        self._target = participants[0]
+        self._myX = (self._me.xpos - 30) / 60
+        self._myY = (self._me.ypos - 30) / 60
+        self._targetX = None
+        self._targetY = None
+        self._target = None
         self._opponentScore = 0
         self._targetDistance = 0
         self._targetNextToMe = False
         self._tileMap = tileMap
 
     def decide_who_to_attack(self):
-        """Function to decide on what character to attack. Based on distance, hp, (type based considerations
+        """Function to decide on what character to attack. Based on distance, hp, type.
         """
         for i in self._list_of_enemies:
             if not i.get_is_enemy() and i.hp > 0:
-                tempScore = 0
-                xDist = abs(self._myXPos - i.xpos)
-                yDist = abs(self._myYPos - i.ypos)
-                totalDist = xDist + yDist
-                if totalDist == 1:
+                enemyValue = 0
+                distanceX = abs(self._myX - ((i.xpos - 30) / 60))
+                distanceY = abs(self._myY - ((i.ypos - 30) / 60))
+                totalDist = distanceX + distanceY
+
+                if totalDist == 1:                                              # enemy is next to a AI!
                     self._targetNextToMe = True
-                    self._targetDistance = 1
-                    self._target = i
-                    break
-                if totalDist <= self._me.attck_range:
-                    tempScore += 10
-                elif totalDist <= self._me.move_range + self._me.attck_range:
-                    if totalDist < self._me.move_range:
-                        tempScore += 8
-                    else:
-                        tempScore += 5
-                if i.hp < self._me.attack or i.hp < self._me.magic_attack:
-                    tempScore += 10
-                elif i.hp <= self._me.hp:
-                    tempScore += 8
+                    self._target = i                                            # set target and return
+                    return
+                elif totalDist <= self._me.attck_range:                         # enemy is not next to AI but is in attack range
+                    enemyValue += 10                                                # best option
+                elif totalDist <= self._me.attck_range + self._me.move_range:   # enemy is in range if AI moves closer
+                    enemyValue += 5                                                 # good option
+                else:                                                           # enemy is out of range. AI will have to move only
+                    enemyValue += 2                                                 # poor option
+
+                if i.hp < self._me.attack or i.hp < self._me.magic_attack:      # easy kill
+                    enemyValue += 10
+                elif i.hp < self._me.hp:                                        # good chance to kill
+                    enemyValue += 5
                 else:
-                    tempScore += 5
+                    enemyValue += 2
 
-                if tempScore >= self._opponentScore:
-                    self._opponentScore = tempScore
+                if self._target is None or enemyValue > self._opponentScore:    # current best target for the AI
                     self._target = i
+                    self._targetX = (i.xpos - 30) / 60
+                    self._targetY = (i.ypos - 30) / 60
                     self._targetDistance = totalDist
-
 
     def decide_where_to_move(self, numberOfTilesToMove):
         """Function to decide where to move the ai on the map. Returns x Coord to move to, y Coord to move to, target id
         to attack this turn
         """
-        myX = self._myXPos
-        myY = self._myYPos
-        targetX = self._target.xpos
-        targetY = self._target.ypos
-        print("Where to move")
+        if self._me.type == 'mage':
+            print('teleport')
+
+        elif self._me.type == 'knight':
+            print('move 1')
+
 
     def decide_ai_action(self):
         """Function decides if ai should only attack (next to enemy already), move twice (no enemy in range), or move then
         attack. Returns desired ai xcoord, ycoord, and target id"""
         self.decide_who_to_attack()
-        if self.targetNextToMe:
-            return self._myXPos, self._myYPos, self._target.get_id()
+        if self.targetNextToMe or self._targetDistance <= self._me.attck_range:
+            return self._me.xpos, self._me.ypos, self._target.get_id()
         elif self._targetDistance > (self._me.move_range + self._me.attck_range):
             self.decide_where_to_move(self._me.move_range + math.floor(self._me.move_range * .5))
             return self._myXPos, self._myYPos, None

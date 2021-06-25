@@ -2,15 +2,16 @@
 .. module:: combat_map_data
   :synopsis: module for creating tilesets and reading maps for combat scenes.
 """
+
 import os
 from fenrir.common.config import PATH_TO_RESOURCES
+
 """
 :MAP_TILE_W: (int) holds standard width of tiles
 :MAP_TILE_H: (int) holds standard height of tiles
 """
 MAP_TILE_W = 60
 MAP_TILE_H = 60
-
 
 class MapTile:
     """
@@ -46,6 +47,7 @@ class MapTile:
             self._wall = False
             self._blocking = False
 
+    @property
     def t_type(self):
         return self._t_type
 
@@ -161,7 +163,6 @@ class MapData:
                     self._playerspawn.append(self._tilemap[i][j])
                 elif self._tilemap[i][j].t_type == "enemy_spawn":
                     self._enemyspawn.append(self._tilemap[i][j])
-
 
     @property
     def name(self):

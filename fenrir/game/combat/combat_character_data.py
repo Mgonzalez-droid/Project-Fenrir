@@ -4,15 +4,14 @@
 """
 
 import math
-import pygame
 import random
 
 
-class CombatCharacterData:
+class CombatCharacterData():
     """Class representing individual characters, and their attributes for the combat scenes
 
-    :param id: (int) given id value for the new character
-    :param type: (string) the class the unit should be set to knight/archer/mage
+    :param char_id: (int) given id value for the new character
+    :param char_type: (string) the class the unit should be set to knight/archer/mage
     :param level: (int) level for the new character (can be updated later)
     :param hp: (float) hp for the new character (can be updated later)
     :param speed: (float) speed/initiative value for the new character (can be updated later)
@@ -34,16 +33,13 @@ class CombatCharacterData:
     :defense: (float) base defense from physical type attacks
     """
 
-    def __init__(self, id, type, level, hp, speed, attack, enemy=False):
+    def __init__(self, char_id, char_type, level, hp, speed, attack, enemy=False):
+
         # id info
-        self._id = id
-        self._type = type
+        self._id = char_id
+        self._type = char_type
         self._enemy = enemy
         self._alive = True
-        self._xpos = 0
-        self._ypos = 0
-        self.sprite_sheet = None
-        self._character_image = None
 
         # general character traits
         self._level = level
@@ -78,38 +74,6 @@ class CombatCharacterData:
     @alive.setter
     def alive(self, newState):
         self._alive = newState
-
-    @property
-    def xpos(self):
-        return self._xpos
-
-    @xpos.setter
-    def xpos(self, newXPos):
-        self._xpos = newXPos
-
-    @property
-    def ypos(self):
-        return self._ypos
-
-    @ypos.setter
-    def ypos(self, newYPos):
-        self._ypos = newYPos
-
-    @property
-    def character_image(self):
-        return self.character_image
-
-    @character_image.setter
-    def character_image(self, newImage):
-        self.character_image = newImage
-
-    @property
-    def sprite_sheet(self):
-        return self.sprite_sheet
-
-    @sprite_sheet.setter
-    def sprite_sheet(self, newSheet):
-        self.sprite_sheet = newSheet
 
     @property
     def level(self):
@@ -199,6 +163,14 @@ class CombatCharacterData:
     def defense(self, newDefense):
         self._defense = newDefense
 
+    @property
+    def xpos(self):
+        return self.rect.centerx
+
+    @property
+    def ypos(self):
+        return self.rect.centery
+
     def character_class_setup_by_type(self):
         """function sets non-defined traits based on given info when character is constructed
         """
@@ -211,7 +183,8 @@ class CombatCharacterData:
             self.move_range = 1
             self.defense = self.attack - 3
             if self._enemy:
-                self.defense = self.attack - 2
+                self.defense = self\
+                                   .attack - 2
         elif self._type == 'mage':
             self.attack_range = 3
             self.move_range = 2
@@ -256,3 +229,5 @@ class CombatCharacterData:
         else:
             damageSuccess = 0
         return damageSuccess
+
+

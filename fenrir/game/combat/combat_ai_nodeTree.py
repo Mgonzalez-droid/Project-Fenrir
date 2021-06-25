@@ -56,7 +56,8 @@ class Node:
         self._neighbors.append(newNeighborNode)
 
     def clear_data(self):
-        self._value = None
+        self._pastValue = 0
+        self._totalValue = 0
         self._myParent = None
 
 

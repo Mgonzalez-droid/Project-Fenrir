@@ -26,11 +26,12 @@ class CombatAISystem:
         self._me = currentParticipant
         self._myX = (self._me.xpos - 30) / 60
         self._myY = (self._me.ypos - 30) / 60
-        self.goalX = None
-        self.goalY = None
+        self._goalX = None
+        self._goalY = None
         self._targetX = None
         self._targetY = None
         self._target = None
+        self._targetNode = None
         self._opponentScore = 0
         self._targetDistance = 0
         self._targetNextToMe = False
@@ -72,17 +73,18 @@ class CombatAISystem:
                     self._targetY = (i.ypos - 30) / 60
                     self._targetDistance = totalDist
 
-    def decide_where_to_move(self, numberOfTilesToMove, startX, startY):
+    def decide_where_to_move(self):
         """Function to decide where to move the ai on the map. Returns x Coord to move to, y Coord to move to, target id
-        to attack this turn
+        to attack this turn. based on A*
         """
         # make list to search and list already searched
         openList = []
         closedList = []
+        self._nodeTree.clear_ai_node_tree_data()
 
         # find the first node and add it to the list to search. Set node's value to hold the distance to target
         for node in self._nodeTree:
-            if node.get_xPos() == startX and node.get_yPos() == startY:
+            if node.get_xPos() == self._myX and node.get_yPos() == self._myY:
                 openList.append(node)
                 node.set_value(self._targetDistance)
                 break
@@ -96,6 +98,7 @@ class CombatAISystem:
 
             # check if the current tile is the goal
             if currentTile.get_xPos() == self._targetX and currentTile.get_yPos() == self._targetY:
+                self._targetNode = currentTile
                 return  # found the end
 
             # loop and add all of the current node's neighbors to the list to search
@@ -133,6 +136,12 @@ class CombatAISystem:
                     neighbor.set_parent(currentTile)
                     openList.append(neighbor)
 
+    def find_ai_goal_from_tree(self, numberOfTilesToMove):
+        currentTile = self._targetNode
+        for i in range(self._targetDistance - numberOfTilesToMove):
+            currentTile = currentTile.get_parent()
+        self._goalX = currentTile.get_xPos()
+        self._goalY = currentTile.get_yPos()
 
     def decide_ai_action(self):
         """Function decides if ai should only attack (next to enemy already), move twice (no enemy in range), or move then
@@ -141,8 +150,10 @@ class CombatAISystem:
         if self.targetNextToMe or self._targetDistance <= self._me.attck_range:
             return self._me.xpos, self._me.ypos, self._target.get_id()
         elif self._targetDistance > (self._me.move_range + self._me.attck_range):
-            self.decide_where_to_move(self._me.move_range + math.floor(self._me.move_range * .5))
-            return self._myXPos, self._myYPos, None
+            self.decide_where_to_move()
+            self.find_ai_goal_from_tree(self._me.move_range + math.floor(self._me.move_range * .5))
+            return self._goalX, self._goalY, None
         else:
-            self.decide_where_to_move(self._me.move_range)
-            return self._myXPos, self._myYPos, self._target.get_id()
+            self.decide_where_to_move()
+            self.find_ai_goal_from_tree(self._me.move_range)
+            return self._goalX, self._goalY, self._target.get_id()

@@ -76,47 +76,62 @@ class CombatAISystem:
         """Function to decide where to move the ai on the map. Returns x Coord to move to, y Coord to move to, target id
         to attack this turn
         """
+        # make list to search and list already searched
         openList = []
         closedList = []
+
+        # find the first node and add it to the list to search. Set node's value to hold the distance to target
         for node in self._nodeTree:
             if node.get_xPos() == startX and node.get_yPos() == startY:
                 openList.append(node)
                 node.set_value(self._targetDistance)
                 break
 
+        # as long as there are nodes to search keep looping
         while len(openList) > 0:
+            # currently this takes the first tile off the list to search and makes it current/adds it to the searched list. This needs to be updated to pick based on distance
             currentTile = openList[0]
             openList.pop(0)
             closedList.append(currentTile)
+
+            # check if the current tile is the goal
             if currentTile.get_xPos() == self._targetX and currentTile.get_yPos() == self._targetY:
                 return  # found the end
 
-            for i in range(4):
+            # loop and add all of the current node's neighbors to the list to search
+            for neighbor in currentTile.get_neighbors():
                 alreadySearched = False
-                if i == 0:                          # tile above current
-                    childTileX = currentTile[0]
-                    childTileY = currentTile[1] - 1
-                elif i == 1:                        # tile right of current
-                    childTileX = currentTile[0] + 1
-                    childTileY = currentTile[1]
-                elif i == 2:                        # tile below current
-                    childTileX = currentTile[0]
-                    childTileY = currentTile[1] + 1
-                else:                               # tile left of current
-                    childTileX = currentTile[0] - 1
-                    childTileY = currentTile[1]
-
-                for pair in closedList:
-                    if pair[0] == childTileX and pair[1] == childTileY:
+                # loop through list of nodes we have searched to make sure we haven't seen this node before
+                for tileWeHaveSeen in closedList:
+                    # if the node we want to add matches one in the already search list, then break
+                    if neighbor.get_xPos() == tileWeHaveSeen.get_xPos() and neighbor.get_yPos() == tileWeHaveSeen.get_yPos():
                         alreadySearched = True
                         break
+                # if this node isn't new move to the next node in the list of neighbors
                 if alreadySearched:
                     continue
 
+                # if node is new to search, calculate the length traveled so far, the distance to the end and set the node values
+                distanceX = abs(neighbor.get_xPos() - self._targetX)
+                distanceY = abs(neighbor.get_yPos() - self._targetY)
+                totalDist = distanceX + distanceY + currentTile.get_pastValue() + 1
 
-
-                openList.append((childTileX, childTileY))
-
+                # check if the neighbor is in the open list. if so is this a better path?
+                inOpenList = False
+                for openNeighbor in openList:
+                    if openNeighbor.get_xPos() == neighbor.get_xPos() and openNeighbor.get_yPos() == neighbor.get_yPos():
+                        inOpenList = True
+                        if openNeighbor.get_total() > totalDist:
+                            neighbor.set_pastValue(currentTile.get_pastValue() + 1)
+                            neighbor.set_totalValue(totalDist)
+                            neighbor.set_parent(currentTile)
+                        else:
+                            break
+                if not inOpenList:
+                    neighbor.set_pastValue(currentTile.get_pastValue() + 1)
+                    neighbor.set_totalValue(totalDist)
+                    neighbor.set_parent(currentTile)
+                    openList.append(neighbor)
 
 
     def decide_ai_action(self):

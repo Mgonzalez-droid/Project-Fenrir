@@ -20,7 +20,8 @@ class Node:
     def __init__(self, x, y):
         self._xPos = x
         self._yPos = y
-        self._value = None
+        self._pastValue = 0
+        self._totalValue = 0
         self._neighbors = []
         self._myParent = None
 
@@ -30,11 +31,17 @@ class Node:
     def get_yPos(self):
         return self._yPos
 
-    def get_value(self):
-        return self._value
+    def get_pastValue(self):
+        return self._pastValue
 
-    def set_value(self, newValue):
-        self._value = newValue
+    def set_pastValue(self, newValue):
+        self._pastValue = newValue
+
+    def get_totalValue(self):
+        return self._totalValue
+
+    def set_totalValue(self, newValue):
+        self._totalValue = newValue
 
     def get_parent(self):
         return self._myParent

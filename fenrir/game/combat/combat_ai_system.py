@@ -53,7 +53,7 @@ class CombatAISystem:
                 elif totalDist <= self._me.attck_range + self._me.move_range:   # enemy is in range if AI moves closer
                     enemyValue += 5                                                 # good option
                 else:                                                           # enemy is out of range. AI will have to move only
-                    enemyValue += 2                                                 # poor option
+                    enemyValue -= 2                                                 # poor option
 
                 if i.hp < self._me.attack or i.hp < self._me.magic_attack:      # easy kill
                     enemyValue += 10
@@ -72,11 +72,32 @@ class CombatAISystem:
         """Function to decide where to move the ai on the map. Returns x Coord to move to, y Coord to move to, target id
         to attack this turn
         """
-        if self._me.type == 'mage':
-            print('teleport')
-
-        elif self._me.type == 'knight':
-            print('move 1')
+        if numberOfTilesToMove > self._me.move_range:
+            print("I'm moving not attacking")
+            if self._targetX > self._myX:
+                if self._targetY > self._myY:
+                    print("they are to the lower right")
+                elif self._targetY == self._myY:
+                    print("they are only right")
+                else:
+                    print("they are to the upper right")
+            elif self._targetX == self._myX:
+                if self._targetY > self._myY:
+                    print("they are below")
+                else:
+                    print("they are above")
+            else:
+                if self._targetY > self._myY:
+                    print("they are to the lower left")
+                elif self._targetY == self._myY:
+                    print("they are only left")
+                else:
+                    print("they are to the upper left")
+        else:
+            if self._me.type == 'mage':
+                print("I'm moving to then attack from afar")
+            elif self._me.type == 'knight':
+                print("I'm moving to then attack close")
 
 
     def decide_ai_action(self):

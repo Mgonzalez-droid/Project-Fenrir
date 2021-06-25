@@ -204,7 +204,7 @@ class CombatCharacterData:
         """
         if self._type == 'knight':
             self.attack_range = 1
-            self.move_range = 3
+            self.move_range = 4
             self.defense = self.attack - 1
         elif self._type == 'archer':
             self.attack_range = 4

@@ -5,6 +5,7 @@
 
 import math
 import random
+import combat_map_data
 
 
 class CombatCharacterData():
@@ -48,6 +49,8 @@ class CombatCharacterData():
         self._move_range = 0
         self._attack_range = 0
         self._luck = 1
+        self._movable_tiles = []
+        self._attackable_tiles = []
 
         # type specific traits
         self._mana = 0
@@ -230,4 +233,25 @@ class CombatCharacterData():
             damageSuccess = 0
         return damageSuccess
 
-
+    # NOTE: selectable_tiles should be an EMPTY list (either movable or attackable tiles)
+    # If they aren't empty they SHOULD BE CLEARED before using them as a param for this function
+    def find_tiles_in_range(self, input_range, selectable_tiles, combat_map, select_type="movement"):
+        range_counter = input_range
+        if range_counter > 0:
+            for tile in combat_map.tilemap[int(self._xpos / 60)][int(self._ypos / 60)].adjacencies:
+                _unique = True
+                for tile_c in selectable_tiles:
+                    if tile_c.id == tile.id:
+                        _unique = False
+                if _unique:
+                    if select_type == "movement":
+                        if not tile.is_blocking or not tile.is_wall:
+                            selectable_tiles.append(tile)
+                    elif select_type == "attack":
+                        if not tile.is_wall:
+                            selectable_tiles.append(tile)
+            range_counter -= 1
+            selectable_tiles = self.find_tiles_in_range(range_counter, selectable_tiles, combat_map, select_type)
+            return selectable_tiles
+        else:
+            return selectable_tiles

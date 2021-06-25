@@ -21,18 +21,21 @@ class CombatAISystem:
     :opponentScore: (int) the value rating of the current best target
     :targetNextToMe: (boolean) true if any non-enemy is directly next to the ai
     """
-    def __init__(self, participants, currentParticipant, tileMap):
+    def __init__(self, participants, currentParticipant):
         self._list_of_enemies = participants
         self._me = currentParticipant
         self._myX = (self._me.xpos - 30) / 60
         self._myY = (self._me.ypos - 30) / 60
+        self.goalX = None
+        self.goalY = None
         self._targetX = None
         self._targetY = None
         self._target = None
         self._opponentScore = 0
         self._targetDistance = 0
         self._targetNextToMe = False
-        self._tileMap = tileMap
+        self._openList = []
+        self._closedList = []
 
     def decide_who_to_attack(self):
         """Function to decide on what character to attack. Based on distance, hp, type.
@@ -68,36 +71,45 @@ class CombatAISystem:
                     self._targetY = (i.ypos - 30) / 60
                     self._targetDistance = totalDist
 
-    def decide_where_to_move(self, numberOfTilesToMove):
+    def decide_where_to_move(self, numberOfTilesToMove, startX, startY):
         """Function to decide where to move the ai on the map. Returns x Coord to move to, y Coord to move to, target id
         to attack this turn
         """
-        if numberOfTilesToMove > self._me.move_range:
-            print("I'm moving not attacking")
-            if self._targetX > self._myX:
-                if self._targetY > self._myY:
-                    print("they are to the lower right")
-                elif self._targetY == self._myY:
-                    print("they are only right")
-                else:
-                    print("they are to the upper right")
-            elif self._targetX == self._myX:
-                if self._targetY > self._myY:
-                    print("they are below")
-                else:
-                    print("they are above")
-            else:
-                if self._targetY > self._myY:
-                    print("they are to the lower left")
-                elif self._targetY == self._myY:
-                    print("they are only left")
-                else:
-                    print("they are to the upper left")
-        else:
-            if self._me.type == 'mage':
-                print("I'm moving to then attack from afar")
-            elif self._me.type == 'knight':
-                print("I'm moving to then attack close")
+        openList = [(startX, startY)]
+        closedList = []
+
+        while len(openList) > 0:
+            currentTile = openList[0]
+            openList.pop(0)
+            closedList.append((startX, startY))
+            if currentTile[0] == self._targetX and currentTile[1] == self._targetY:
+                return  # found the end
+            for i in range(4):
+                alreadySearched = False
+                if i == 0:                          # tile above current
+                    childTileX = currentTile[0]
+                    childTileY = currentTile[1] - 1
+                elif i == 1:                        # tile right of current
+                    childTileX = currentTile[0] + 1
+                    childTileY = currentTile[1]
+                elif i == 2:                        # tile below current
+                    childTileX = currentTile[0]
+                    childTileY = currentTile[1] + 1
+                else:                               # tile left of current
+                    childTileX = currentTile[0] - 1
+                    childTileY = currentTile[1]
+
+                for pair in closedList:
+                    if pair[0] == childTileX and pair[1] == childTileY:
+                        alreadySearched = True
+                        break
+                if alreadySearched:
+                    continue
+
+
+
+                openList.append((childTileX, childTileY))
+
 
 
     def decide_ai_action(self):

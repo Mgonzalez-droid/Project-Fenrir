@@ -142,15 +142,15 @@ class MapData:
             _temp_list.clear()
             for j in range(self._columns):
                 if self._char_map[i][j] == ".":
-                    _temp_list.append(MapTile("ground", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("ground", j * MAP_TILE_W, i * MAP_TILE_H))
                 elif self._char_map[i][j] == "#":
-                    _temp_list.append(MapTile("wall", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("wall", j * MAP_TILE_W, i * MAP_TILE_H))
                 elif self._char_map[i][j] == "~":
-                    _temp_list.append(MapTile("blocking", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("blocking", j * MAP_TILE_W, i * MAP_TILE_H))
                 elif self._char_map[i][j] == "a":
-                    _temp_list.append(MapTile("player_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("player_spawn", j * MAP_TILE_W, i * MAP_TILE_H))
                 elif self._char_map[i][j] == "e":
-                    _temp_list.append(MapTile("enemy_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("enemy_spawn", j * MAP_TILE_W, i * MAP_TILE_H))
             # Append our columns to each row
             self._tilemap.append(_temp_list)
         self.set_tile_adj()

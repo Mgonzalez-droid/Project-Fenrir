@@ -4,6 +4,7 @@ import fenrir.game.overworld.overworld_scene as overscene
 import fenrir.game.combat.combat_scene as combscene
 from fenrir.common.config import *
 
+
 ##########################################################
 #   ABSTRACT MENU SCENE - USED CREATE MENUS W/CURSORS    #
 ##########################################################
@@ -73,6 +74,7 @@ class MenuScene(Scene):
             if self.cursor_pos != 0:
                 self.cursor_pos -= 1
 
+
 ##########################################################
 #       MAIN MENU SCENE - LOADED WHEN GAME STARTS        #
 ##########################################################
@@ -102,6 +104,7 @@ class MainMenuScene(MenuScene):
             self.switch_to_scene(CreditsScene(self.screen))
         elif index == 3:
             self.terminate()
+
 
 ##########################################################
 #       LOAD GAME SCENE - USED TO LOAD SAVED GAME        #
@@ -142,6 +145,7 @@ class LoadGameScene(MenuScene):
                 # this is where game will be loaded
                 pass
 
+
 ##########################################################
 #          CREDITS SCENE - USED TO VIEW CREDITS          #
 ##########################################################
@@ -178,6 +182,7 @@ class CreditsScene(MenuScene):
         if index == 0:
             self.switch_to_scene(MainMenuScene(self.screen))
             pass
+
 
 ##########################################################
 #        NEW GAME SCENE - USED TO START NEW GAME         #

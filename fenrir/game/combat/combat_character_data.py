@@ -254,7 +254,7 @@ class CombatCharacterData:
     def find_tiles_in_range(self, input_range, selectable_tiles, combat_map, select_type="movement"):
         range_counter = input_range
         if range_counter > 0:
-            for tile in combat_map.tilemap[int(self._xpos / 60)][int(self._ypos / 60)].adjacencies:
+            for tile in combat_map.tilemap[int((self.xpos - 30) / 60)][int((self.ypos - 30) / 60)].adjacencies:
                 _unique = True
                 for tile_c in selectable_tiles:
                     if tile_c.id == tile.id:

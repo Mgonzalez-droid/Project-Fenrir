@@ -107,13 +107,15 @@ class MapData:
                               used to load .png map images and .txt map data
         :param columns: (int) how many tiles in the vertical (height divided by 60)
         :param rows: (int) how many tiles in the horizontal (width divided by 60)
+
         :char_map: (string)  2D list of characters representing tiles, used to populate
                         and define tilemap
-                        (we can use files associated with map images to populate this)
-
+                        (we use files associated with map images to populate this)
         :height: (int) height of the map .png (should be a multiple of 60)
         :width: (int) width of the map .png (should be a multiple of 60)
         :tilemap: (MapTile) 2D list of all the tiles on the map
+        :player_spawn: (MapTile) list of all tiles where a player can spawn
+        :enemy_spawn: (MapTile) list of all tiles where an enemy can spawn
 
         Note: Each map should not be edited after it is created. Tilemap data should be taken from the object
               and moved into a variable in the method that is running it so that the original map data isn't
@@ -135,30 +137,30 @@ class MapData:
         # Tilemap population and definition
         # Tilemap PNG MUST be 960 x 540!
         self._tilemap = []
-        for i in range(self._rows):
+        for i in range(self._columns):
             # Create a temp list to append to our first list so we can make it 2D
             _temp_list = []
             # Redundant, can be removed if necessary, but makes sure temp list is EMPTY before appending
             _temp_list.clear()
-            for j in range(self._columns):
+            for j in range(self._rows):
                 if self._char_map[i][j] == ".":
-                    _temp_list.append(MapTile("ground", j * MAP_TILE_W, i * MAP_TILE_H))
+                    _temp_list.append(MapTile("ground", i * MAP_TILE_W, j * MAP_TILE_H))
                 elif self._char_map[i][j] == "#":
-                    _temp_list.append(MapTile("wall", j * MAP_TILE_W, i * MAP_TILE_H))
+                    _temp_list.append(MapTile("wall", i * MAP_TILE_W, j * MAP_TILE_H))
                 elif self._char_map[i][j] == "~":
-                    _temp_list.append(MapTile("blocking", j * MAP_TILE_W, i * MAP_TILE_H))
+                    _temp_list.append(MapTile("blocking", i * MAP_TILE_W, j * MAP_TILE_H))
                 elif self._char_map[i][j] == "a":
-                    _temp_list.append(MapTile("player_spawn", j * MAP_TILE_W, i * MAP_TILE_H))
+                    _temp_list.append(MapTile("player_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
                 elif self._char_map[i][j] == "e":
-                    _temp_list.append(MapTile("enemy_spawn", j * MAP_TILE_W, i * MAP_TILE_H))
+                    _temp_list.append(MapTile("enemy_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
             # Append our columns to each row
             self._tilemap.append(_temp_list)
         self.set_tile_adj()
         # Create spawn lists
         self._playerspawn = []
         self._enemyspawn = []
-        for i in range(self._rows):
-            for j in range(self._columns):
+        for i in range(self._columns):
+            for j in range(self._rows):
                 if self._tilemap[i][j].t_type == "player_spawn":
                     self._playerspawn.append(self._tilemap[i][j])
                 elif self._tilemap[i][j].t_type == "enemy_spawn":
@@ -200,8 +202,8 @@ class MapData:
         return __char_map
 
     def set_tile_adj(self):
-        for i in range(self._rows):
-            for j in range(self._columns):
+        for i in range(self._columns):
+            for j in range(self._rows):
                 if i == 0:
                     if j == 0:
                         self._tilemap[i][j].set_adjacency(self._tilemap[i][j + 1])

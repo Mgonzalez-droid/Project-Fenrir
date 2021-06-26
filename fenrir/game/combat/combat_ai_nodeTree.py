@@ -65,6 +65,7 @@ class CombatAINodeTree:
 
     :param widthInTiles: (int) the maximum number of tile across the map
     :param heightInTiles: (int) the maximum number of tiles down the map
+    :param mapData: (obj) holds all the map information in the round
 
     Other non-param values:
     :AINodeTree: (list of Node objects) the NodeTree object that has all the Nodes for the battle scene
@@ -128,5 +129,5 @@ class CombatAINodeTree:
         return self.AINodeTree
 
     def clear_ai_node_tree_data(self):
-        for i in self.AINodeTree:
-            i.clear_data()
+        for node in self.AINodeTree:
+            node.clear_data()

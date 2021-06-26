@@ -1,3 +1,5 @@
+from fenrir.common.config import Colors
+
 """
 .. module:: scene
     :synopsis: module includes Scene class used for switching scenes and rendering content.

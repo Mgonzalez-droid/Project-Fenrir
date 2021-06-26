@@ -12,6 +12,8 @@ from fenrir.game.combat.combat_chars import MageChar, KnightChar
 import fenrir.game.combat.combat_map_data as md
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
+
+# Todo import ai node tree and instantiate it
 from fenrir.game.combat.combat_ai_system import CombatAISystem
 
 
@@ -59,7 +61,11 @@ class CombatScene(Scene):
 
         # used for player choices
         self.player_attacking = False
+        self.attack_complete = False
         self.player_moving = False
+        self.move_complete = False
+        self.movement_info = ""
+        self.attack_info = ""
 
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you press q
@@ -68,10 +74,9 @@ class CombatScene(Scene):
             if event.key == pygame.K_q:
                 # currently the q button will quit and return to main menu
                 # TODO make a dialogue with text box (Are you sure? Yes/No) ...
-                self.switch_to_scene(menuscene.MainMenuScene(self.screen))
+                self.switch_to_scene(menuscene.MainMenuScene)
             elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                 self.key_dict['DOWN'] = True
-                self.reset_keys()
             elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
                 self.key_dict['LEFT'] = True
             elif event.key == pygame.K_w or event.key == pygame.K_UP:
@@ -101,13 +106,17 @@ class CombatScene(Scene):
         if self.show_text_box:
             tb = TextBox(self.screen)
             tb.load_textbox()
-            tb.draw_options(self.prompt, self.prompt_options, 24, 200, 400)
+            tb.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
 
     def update(self):
         self.play_game()
 
         for player in self._player_list:
             player.update()
+
+    #########################################
+    # Helper functions for combat game play #
+    #########################################
 
     def spawn_participants(self):
         for player in self._participants:
@@ -144,12 +153,83 @@ class CombatScene(Scene):
         self.next_player = self.initiative_system.get_next_player_up()
 
     def next_move(self):
+        # this function resets all the logic needed to move to next turn
 
-        # this function handles all the logic needed to move to next turn
         self.update_initiative_system()
         self.clear_prompt()
         self.reset_keys()
         self.turn_counter += 1
+        self.player_attacking = False
+        self.attack_complete = False
+        self.player_moving = False
+        self.move_complete = False
+        self.attack_info = ""
+        self.movement_info = ""
+        self.get_prompt_directions()
+
+    def get_prompt_directions(self):
+        x, y = self.curr_player.get_tile_loc()
+
+        # this logic should be handled in the tile map data but there is bugs with indexs
+        # and return wrong results for adjacent tiles
+
+        return ["[w] Up --- [s] Down --- [a] Left --- [d] Right", "[b] Cancel"]
+
+    def process_player_move(self):
+        self.player_moving = True
+
+        if self.key_dict['BACK']:
+            self.player_moving = False
+            self.clear_prompt()
+        elif self.key_dict['UP']:
+            self.curr_player.move(0, -60)
+            self.movement_info = "UP"
+            self.move_complete = True
+        elif self.key_dict['DOWN']:
+            self.curr_player.move(0, 60)
+            self.movement_info = "DOWN"
+            self.move_complete = True
+        elif self.key_dict['LEFT']:
+            self.curr_player.move(-60, 0)
+            self.movement_info = "LEFT"
+            self.move_complete = True
+        elif self.key_dict['RIGHT']:
+            self.curr_player.move(60, 0)
+            self.movement_info = "RIGHT"
+            self.move_complete = True
+
+        if self.move_complete:
+            self.show_prompt(f"Player Moved {self.movement_info}!", [])
+            if not self.curr_player.is_animating():
+                self.next_move()
+
+    def process_player_attack(self):
+        self.player_attacking = True
+
+        if self.key_dict['BACK']:
+            self.player_attacking = False
+            self.attack_complete = True
+        elif self.key_dict['UP']:
+            self.curr_player.attack_enemy()
+            self.attack_info = "UP"
+            self.attack_complete = True
+        elif self.key_dict['DOWN']:
+            self.curr_player.attack_enemy()
+            self.attack_info = "DOWN"
+            self.attack_complete = True
+        elif self.key_dict['LEFT']:
+            self.curr_player.attack_enemy(True)
+            self.attack_info = "LEFT"
+            self.attack_complete = True
+        elif self.key_dict['RIGHT']:
+            self.curr_player.attack_enemy(False)
+            self.attack_info = "RIGHT"
+            self.attack_complete = True
+
+        if self.attack_complete:
+            self.show_prompt(f"Player Attacked {self.attack_info}", [])
+            if not self.curr_player.is_animating():
+                self.next_move()
 
     ##########################################################################
     # Co Routine that is called each time in the loop and handles game logic #
@@ -161,28 +241,21 @@ class CombatScene(Scene):
             self.show_prompt("Welcome to combat", ["Press [Enter] to get started"])
             if self.key_dict['SELECT']:
                 self.clear_prompt()
-                self.reset_keys()
                 self.turn_counter += 1
         else:
             if self.curr_player.get_is_enemy():
-                self.show_prompt("Enemy is deciding", [])
+                self.show_prompt("Enemy Turn", ["Enemy is deciding...", "***Temporary*** Press [Enter] for next turn"])
 
-                # wait 3 seconds to simulate enemy movement
-                # pygame.time.wait(3000)
-
-                ###############
-                # AI Decision #
-                ###############
+                ##############################################################
+                # AI Decision  - can make this separate function if possible #
+                ##############################################################
 
                 # CombatAISystem(self._participants, self.curr_player, self._map.tilemap)
                 if self.key_dict["SELECT"]:
-                    self.clear_prompt()
-                    self.update_initiative_system()
-                    self.reset_keys()
+                    self.next_move()
             else:
                 if not self.player_attacking and not self.player_moving:
                     self.show_prompt("Your turn!", ["[1] Attack", "[2] Move"])
-                    print(self.key_dict)
                     if self.key_dict['1']:
                         self.player_attacking = True
                         self.clear_prompt()
@@ -192,44 +265,10 @@ class CombatScene(Scene):
                         self.clear_prompt()
                         self.reset_keys()
                 elif self.player_attacking:
-                    self.player_attacking = True
-                    self.player_moving = False
-                    self.reset_keys()
-                    self.show_prompt("Which direction do you want to attack?",
-                                     ["[w] Up", "[s] Down", "[a] Left", "[d] Right", "[b] Back"])
-                    if self.key_dict['BACK']:
-                        self.player_attacking = False
-                    elif self.key_dict['UP']:
-                        print("attacking up")
-                        self.next_move()
-                    elif self.key_dict['DOWN']:
-                        print("attacking down")
-                        self.next_move()
-                    elif self.key_dict['LEFT']:
-                        print("attacking left")
-                        self.next_move()
-                    elif self.key_dict['RIGHT']:
-                        print("attacking right")
-                        self.next_move()
+                    self.show_prompt("Which direction do you want to attack?", self.get_prompt_directions())
+                    self.process_player_attack()
                 elif self.player_moving:
-                    self.player_moving = True
-                    self.player_attacking = False
-                    self.reset_keys()
-                    self.show_prompt("Which direction do you want to move?",
-                                     ["[w] Up", "[s] Down", "[a] Left", "[d] Right", "[b] Back"])
-                    if self.key_dict['b']:
-                        self.player_moving = False
-                    if self.key_dict['BACK']:
-                        self.player_attacking = False
-                    elif self.key_dict['UP']:
-                        print("moving up")
-                        self.next_move()
-                    elif self.key_dict['DOWN']:
-                        print("moving down")
-                        self.next_move()
-                    elif self.key_dict['LEFT']:
-                        print("moving left")
-                        self.next_move()
-                    elif self.key_dict['RIGHT']:
-                        print("moving right")
-                        self.next_move()
+                    self.show_prompt("Which direction do you want to move?", self.get_prompt_directions())
+                    self.process_player_move()
+
+        self.reset_keys()

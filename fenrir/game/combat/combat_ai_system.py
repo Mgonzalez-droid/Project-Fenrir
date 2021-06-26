@@ -53,7 +53,6 @@ class CombatAISystem:
         self._openList = []
         self._closedList = []
 
-
     def decide_who_to_attack(self):
         """A* based function to decide on what character to attack. Based on distance.
         """
@@ -180,7 +179,6 @@ class CombatAISystem:
                     currentTile = currentTile.get_parent()
                 self._goalX = (currentTile.get_xPos() * 60) + 30
                 self._goalY = (currentTile.get_yPos() * 60) + 30
-
 
     def decide_ai_action(self):
         """Function decides if ai should only attack (next to enemy already), move twice (no enemy in range), or move then

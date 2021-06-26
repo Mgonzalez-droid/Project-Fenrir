@@ -4,7 +4,7 @@
 """
 
 import math
-import combat_map_data
+
 
 
 class CombatAISystem:
@@ -162,7 +162,7 @@ class CombatAISystem:
                     neighbor.set_parent(currentTile)
                     openList.append(neighbor)
 
-    def set_ai_goal_position(self, numberOfTilesICanMove):
+    def set_ai_goal_position(self, numberOfTilesToMove):
         currentTile = self._targetNode
         if self._targetNode.get_xPos() == self._targetX and self._targetNode.get_yPos() == self._targetY:
             numberOfTilesToMove -= 1
@@ -171,11 +171,11 @@ class CombatAISystem:
             self._goalX = (currentTile.get_xPos() * 60) + 30
             self._goalY = (currentTile.get_yPos() * 60) + 30
         elif self._targetNodeLessThanTargetPosition:
-            if self._targetDistance < numberOfTilesICanMove:
+            if self._targetDistance < numberOfTilesToMove:
                 self._goalX = (self._targetNode.get_xPos() * 60) + 30
                 self._goalY = (self._targetNode.get_yPos() * 60) + 30
             else:
-                for i in range(self._targetDistance - numberOfTilesICanMove):
+                for i in range(self._targetDistance - numberOfTilesToMove):
                     currentTile = currentTile.get_parent()
                 self._goalX = (currentTile.get_xPos() * 60) + 30
                 self._goalY = (currentTile.get_yPos() * 60) + 30

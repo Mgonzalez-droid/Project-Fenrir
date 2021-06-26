@@ -78,7 +78,7 @@ class CombatAINodeTree:
             for y in range(heightInTiles):
                 if self.is_tile_accessible(x, y):
                     newNode = Node(x, y)
-                    AINodeTree.append(newNode)
+                    self.AINodeTree.append(newNode)
 
         # set the neighbors for each node
         for node in self.AINodeTree:
@@ -88,10 +88,10 @@ class CombatAINodeTree:
                 y = otherNode.get_yPos()
                 # if the 1 coordinate matches and the other is +-1 then it must be a neighbor
                 if x == node.get_xPos() and (y == (node.get_yPos() - 1) or y == (node.get_yPos() + 1)):
-                    node.set_neighbor(otherNode)
+                    node.set_neighbors(otherNode)
                     counter += 1
                 elif y == node.get_yPos() and (x == (node.get_xPos() - 1) or x == (node.get_xPos() + 1)):
-                    node.set_neighbor(otherNode)
+                    node.set_neighbors(otherNode)
                     counter += 1
                 # max of 4 neighbors possible
                 if counter == 4:
@@ -121,7 +121,7 @@ class CombatAINodeTree:
         #                 break
 
     def is_tile_accessible(self, x, y):
-        if not self._copyOfMapData.tilemap[x][y].is_blocking() and not self._copyOfMapData.tilemap[x][y].is_wall():
+        if not self._copyOfMapData.tilemap[y][x].is_blocking() and not self._copyOfMapData.tilemap[y][x].is_wall():
             return True
         return False
 

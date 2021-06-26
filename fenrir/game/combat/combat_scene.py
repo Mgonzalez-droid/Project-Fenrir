@@ -66,6 +66,9 @@ class CombatScene(Scene):
         self.attack_complete = False
         self.player_moving = False
         self.move_complete = False
+        self.ai_thinking = False
+        self.ai_completed_decision = False
+        self.enemy_attack_after_move = False
         self.movement_info = ""
         self.attack_info = ""
 
@@ -258,19 +261,25 @@ class CombatScene(Scene):
                     self.curr_player.move_to(ai_new_x, ai_new_y)
                 else:
                     if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
-                        self.curr_player.move_to(0, 0)
+                        self.curr_player.move_to(ai_new_x, ai_new_y)
                     for character in self._participants:
                         if character.get_id() == target_to_attack:
                             if self.curr_player.get_type() == 'mage':
                                 character.take_damage(self.curr_player.magic_attack, 'magic')
                             else:
                                 character.take_damage(self.curr_player.attack, 'physical')
+                                self.enemy_attack_after_move = True
+
                             break
                 #####################
                 # AI Turn  - Finish #
                 #####################
 
-                if self.key_dict["SELECT"]:
+                if self.enemy_attack_after_move and not self.curr_player.is_animating():
+                    self.curr_player.attack_enemy()
+                    self.ai_completed_decision = False
+
+                if not self.curr_player.is_animating() and self.ai_completed_decision:
                     self.next_move()
             else:
                 if not self.player_attacking and not self.player_moving:

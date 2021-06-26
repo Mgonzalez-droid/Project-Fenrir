@@ -129,38 +129,39 @@ class MapData:
         self._columns = columns
         self._rows = rows
         # Map should be a 2D List of strings (single chars)
-        # Char map txt file MUST BE 23w x 13h!
+        # Char map txt file MUST BE 16w x 9h!
         self._char_map = self.load_charmap()
         # Dimensions based off of tile numbers
         self._height = self._rows * MAP_TILE_H
         self._width = self._columns * MAP_TILE_W
         # Tilemap population and definition
         # Tilemap PNG MUST be 960 x 540!
+        # Tilemap index is [y][x], it has to be backwards
         self._tilemap = []
-        for i in range(self._columns):
+        for i in range(self._rows):
             # Create a temp list to append to our first list so we can make it 2D
             _temp_list = []
             # Redundant, can be removed if necessary, but makes sure temp list is EMPTY before appending
             _temp_list.clear()
-            for j in range(self._rows):
+            for j in range(self._columns):
                 if self._char_map[i][j] == ".":
-                    _temp_list.append(MapTile("ground", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("ground", j * MAP_TILE_W, i * MAP_TILE_H))
                 elif self._char_map[i][j] == "#":
-                    _temp_list.append(MapTile("wall", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("wall", j * MAP_TILE_W, i * MAP_TILE_H))
                 elif self._char_map[i][j] == "~":
-                    _temp_list.append(MapTile("blocking", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("blocking", j * MAP_TILE_W, i * MAP_TILE_H))
                 elif self._char_map[i][j] == "a":
-                    _temp_list.append(MapTile("player_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("player_spawn", j * MAP_TILE_W, i * MAP_TILE_H))
                 elif self._char_map[i][j] == "e":
-                    _temp_list.append(MapTile("enemy_spawn", i * MAP_TILE_W, j * MAP_TILE_H))
+                    _temp_list.append(MapTile("enemy_spawn", j * MAP_TILE_W, i * MAP_TILE_H))
             # Append our columns to each row
             self._tilemap.append(_temp_list)
         self.set_tile_adj()
         # Create spawn lists
         self._playerspawn = []
         self._enemyspawn = []
-        for i in range(self._columns):
-            for j in range(self._rows):
+        for i in range(self._rows):
+            for j in range(self._columns):
                 if self._tilemap[i][j].t_type == "player_spawn":
                     self._playerspawn.append(self._tilemap[i][j])
                 elif self._tilemap[i][j].t_type == "enemy_spawn":
@@ -202,8 +203,8 @@ class MapData:
         return __char_map
 
     def set_tile_adj(self):
-        for i in range(self._columns):
-            for j in range(self._rows):
+        for i in range(self._rows):
+            for j in range(self._columns):
                 if i == 0:
                     if j == 0:
                         self._tilemap[i][j].set_adjacency(self._tilemap[i][j + 1])

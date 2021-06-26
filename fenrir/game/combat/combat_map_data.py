@@ -143,6 +143,7 @@ class MapData:
             # Redundant, can be removed if necessary, but makes sure temp list is EMPTY before appending
             _temp_list.clear()
             for j in range(self._rows):
+                print(i, j)
                 if self._char_map[i][j] == ".":
                     _temp_list.append(MapTile("ground", i * MAP_TILE_W, j * MAP_TILE_H))
                 elif self._char_map[i][j] == "#":

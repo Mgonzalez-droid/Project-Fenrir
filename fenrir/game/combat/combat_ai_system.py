@@ -4,19 +4,21 @@
 """
 
 import math
+import combat_map_data
 
 
 class CombatAISystem:
     """Class representing ai combat information and decisions.
 
-    :param participants: (list of obj) list of all characters in the combat scene
-    :param currentParticipant: (character obj) the character obj for the current ai that is making decisions
+    :param participants: (list of character objects) list of all characters in the combat scene
+    :param currentParticipant: (character object) the character object for the current ai that is making decisions
+    :param nodeTree: (list of Node objects) the list of all nodes for the battle scene
 
     Other non-param values:
-    :list_of_enemies: (list of obj) local copy of the list of characters in the combat scene
-    :me: (character obj) local copy of the character obj for the current ai that is making decisions
-    :myXPos: (int) local x coord of the ai position
-    :myYPos: (int) local y coord of the ai position
+    :list_of_enemies: (list of character objects) local copy of the list of characters in the combat scene
+    :me: (character object) local copy of the character object for the current ai that is making decisions
+    :myX: (int) local x coord of the ai position
+    :myY: (int) local y coord of the ai position
     :target: (character obj) the current best target for this ai to attack
     :opponentScore: (int) the value rating of the current best target
     :targetNextToMe: (boolean) true if any non-enemy is directly next to the ai

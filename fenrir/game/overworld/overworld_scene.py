@@ -33,28 +33,28 @@ class OverworldScene(Scene):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w] and not self.in_controls:
             self.hero.y -= 10
-            self.hero.move()
+            #self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
-            #self.hero.adjust_movement()
+            self.hero.adjust_movement()
         if keys[pygame.K_s] and not self.in_controls:
             self.hero.y += 10
-            self.hero.move()
+            #self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
-            #self.hero.adjust_movement()
+            self.hero.adjust_movement()
         if keys[pygame.K_a] and not self.in_controls:
             self.hero.x -= 10
-            self.hero.move()
+            #self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
-            #self.hero.adjust_movement()
+            self.hero.adjust_movement()
         if keys[pygame.K_d]and not self.in_controls:
             self.hero.x += 10
-            self.hero.move()
+            #self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
-            #self.hero.adjust_movement()
+            self.hero.adjust_movement()
 
         ## Track Interaction ##
         if event.type == pygame.KEYDOWN:

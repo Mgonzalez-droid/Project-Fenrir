@@ -52,7 +52,9 @@ class overworld_npc_animated(overworld_npc):
         self.sprite = self.__sprite_names[int(self.__index)]
 
     def adjust_movement(self):
-        self.__index = (int(self.__index + 0.2)) % len(self.__sprite_names)
+        #self.__index = (int(self.__index + 0.2)) % len(self.__sprite_names)
+        #self.sprite = self.__sprite_names[self.__index]
+        self.__index = (self.__index + 1) % len(self.__sprite_names)
         self.sprite = self.__sprite_names[self.__index]
 
     def play_animation(self):

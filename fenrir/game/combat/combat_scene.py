@@ -15,6 +15,7 @@ from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
 
 # Todo import ai node tree and instantiate it
 from fenrir.game.combat.combat_ai_system import CombatAISystem
+from fenrir.game.combat.combat_ai_nodeTree import CombatAINodeTree
 
 
 class CombatScene(Scene):
@@ -23,6 +24,7 @@ class CombatScene(Scene):
         super().__init__(screen)
         self._map_name = map_name
         self._map = md.MapData(map_name, 16, 9)
+        self._ai_Tree = CombatAINodeTree(16, 9, self._map)
         self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(map_name + ".png")))
         self._participants = []
         self._player_list = pygame.sprite.Group()
@@ -246,11 +248,28 @@ class CombatScene(Scene):
             if self.curr_player.get_is_enemy():
                 self.show_prompt("Enemy Turn", ["Enemy is deciding...", "***Temporary*** Press [Enter] for next turn"])
 
-                ##############################################################
-                # AI Decision  - can make this separate function if possible #
-                ##############################################################
+                #####################
+                # AI Turn  - Start  #
+                #####################
+                # Determines target, builds path to target
+                ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
+                ai_new_x, ai_new_y, target_to_attack = ai_brain.decide_ai_action()
+                if target_to_attack is None:
+                    self.curr_player.move(ai_new_x, ai_new_y)
+                else:
+                    if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
+                        self.curr_player.move(ai_new_x, ai_new_y)
+                    for character in self._participants:
+                        if character.get_id() == target_to_attack:
+                            if self.curr_player.get_type() == 'mage':
+                                character.take_damage(self.curr_player.magic_attack, 'magic')
+                            else:
+                                character.take_damage(self.curr_player.attack, 'physical')
+                            break
+                #####################
+                # AI Turn  - Finish #
+                #####################
 
-                # CombatAISystem(self._participants, self.curr_player, self._map.tilemap)
                 if self.key_dict["SELECT"]:
                     self.next_move()
             else:

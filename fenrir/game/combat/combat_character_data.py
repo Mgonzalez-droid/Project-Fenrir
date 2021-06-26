@@ -248,7 +248,6 @@ class CombatCharacterData:
                 damageSuccess = 2
         else:
             damageSuccess = 0
-        return damageSuccess
 
     # NOTE: selectable_tiles should be an EMPTY list (either movable or attackable tiles)
     # If they aren't empty they SHOULD BE CLEARED before using them as a param for this function

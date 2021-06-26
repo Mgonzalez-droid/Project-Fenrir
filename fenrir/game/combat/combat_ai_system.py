@@ -127,7 +127,7 @@ class CombatAISystem:
 
             # loop and add all of the current node's neighbors to the list to search if not occupied
             for neighbor in currentTile.get_neighbors():
-                if self._copyOfMapData.tilemap[neighbor.get_xPos()][neighbor.get_yPos()].is_occupied():
+                if self._copyOfMapData.tilemap[neighbor.get_yPos()][neighbor.get_xPos()].is_occupied():
                     continue
                 alreadySearched = False
                 # loop through list of nodes we have searched to make sure we haven't seen this node before

@@ -121,7 +121,7 @@ class CombatAINodeTree:
         #                 break
 
     def is_tile_accessible(self, x, y):
-        if not self._copyOfMapData.tilemap[x][y].is_blocking() and not self._copyOfMapData.tilemap[x][y].is_wall():
+        if not self._copyOfMapData.tilemap[y][x].is_blocking() and not self._copyOfMapData.tilemap[y][x].is_wall():
             return True
         return False
 

@@ -83,7 +83,7 @@ class MainMenuScene(MenuScene):
     def __init__(self, screen):
         super().__init__(screen)
         self._menu_title = "Project Fenrir"
-        self._menu_items = ["New Game", "Load Game", "Credits", "Exit"]
+        self._menu_items = ["New Game", "Credits", "Exit"]
         self._highlighted_items = [False for item in self._menu_items]
 
     def update(self):
@@ -99,10 +99,8 @@ class MainMenuScene(MenuScene):
         if index == 0:
             self.switch_to_scene(NewGameScene(self.screen))
         elif index == 1:
-            self.switch_to_scene(LoadGameScene(self.screen))
-        elif index == 2:
             self.switch_to_scene(CreditsScene(self.screen))
-        elif index == 3:
+        elif index == 2:
             self.terminate()
 
 

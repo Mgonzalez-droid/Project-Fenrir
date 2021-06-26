@@ -10,6 +10,7 @@ from fenrir.common.TextBox import TextBox
 from fenrir.game.overworld.overworld_npc import overworld_npc as character
 from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
 from fenrir.game.overworld.overworld_boundaries import Boundaries
+from fenrir.game.overworld.overworld_collisions import Collision
 
 
 class OverworldScene(Scene):
@@ -55,9 +56,13 @@ class OverworldScene(Scene):
                 self.hero.adjust_movement()
 
         # Check of collision
-        if (820 <= self.hero.x <= 900) and (190 <= self.hero.y <= 250):
+        # if (820 <= self.hero.x <= 900) and (190 <= self.hero.y <= 250):
+        collision = Collision()
+        if Collision.check_collisions(collision, self.hero, self.npc):
             # Show exclamation mark
             self.show_interaction = True
+        else:
+            self.show_interaction = False
 
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
@@ -77,7 +82,8 @@ class OverworldScene(Scene):
 
             if event.key == pygame.K_SPACE and not self.show_controls:  # Checks if the space bar is pressed
                 # Check for collision
-                if (820 <= self.hero.x <= 900) and (190 <= self.hero.y <= 250):
+                # if (820 <= self.hero.x <= 900) and (190 <= self.hero.y <= 250):
+                if Collision.check_collisions(collision, self.hero, self.npc):
                     # if text box is displayed, stop characters movements
                     self.show_textbox = True
 

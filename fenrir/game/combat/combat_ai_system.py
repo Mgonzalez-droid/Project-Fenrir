@@ -92,7 +92,14 @@ class CombatAISystem:
         # as long as there are nodes to search keep looping
         while len(openList) > 0:
             # currently this takes the first tile off the list to search and makes it current/adds it to the searched list. This needs to be updated to pick based on distance
-            currentTile = openList[0]
+            bestTile = openList[0]
+            bestTileIndex = 0
+            for tile in openList:
+                if bestTile.get_totalValue() > tile.get_totalValue():
+                    bestTile = tile
+                bestTileIndex += 1
+
+            currentTile = bestTile
             openList.pop(0)
             closedList.append(currentTile)
 
@@ -140,8 +147,8 @@ class CombatAISystem:
         currentTile = self._targetNode
         for i in range(self._targetDistance - numberOfTilesToMove):
             currentTile = currentTile.get_parent()
-        self._goalX = currentTile.get_xPos()
-        self._goalY = currentTile.get_yPos()
+        self._goalX = (currentTile.get_xPos() * 60) + 30
+        self._goalY = (currentTile.get_yPos() * 60) + 30
 
     def decide_ai_action(self):
         """Function decides if ai should only attack (next to enemy already), move twice (no enemy in range), or move then

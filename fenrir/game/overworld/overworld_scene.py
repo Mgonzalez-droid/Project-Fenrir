@@ -23,9 +23,12 @@ class OverworldScene(Scene):
                                   "gabe_stance_5.png", "gabe_stance_6.png", "gabe_stance_7.png"]
 
         self.npc = character(890, 230, os.path.join(PATH_TO_RESOURCES, "Resized_Sensei.png"))
+        self.exclamation_mark = character(860, 170, os.path.join(PATH_TO_RESOURCES, "exclamation.png"))
+        self.exclamation_mark.sprite = pygame.transform.scale(self.exclamation_mark.sprite, (100,100))
         self.in_controls = False
         self.show_characters = True
         self.combat_phase = False
+        self.show_interaction = False
 
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you
@@ -63,6 +66,9 @@ class OverworldScene(Scene):
             this will trigger combat
         '''
 
+        if (self.hero.x >= 820 and self.hero.x <=900) and (self.hero.y >= 190 and self.hero.y <= 250):
+            #Show exclamation mark#
+            self.show_interaction = True
 
         ## Track Interaction ##
         if event.type == pygame.KEYDOWN:
@@ -96,6 +102,8 @@ class OverworldScene(Scene):
         if self.show_characters:
             self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
             self.screen.blit(self.npc.sprite, (self.npc.x, self.npc.y))
+        if self.show_interaction:
+            self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
 
     def update(self):
         pass

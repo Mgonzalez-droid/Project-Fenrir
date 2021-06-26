@@ -251,10 +251,11 @@ class CombatCharacterData:
 
     # NOTE: selectable_tiles should be an EMPTY list (either movable or attackable tiles)
     # If they aren't empty they SHOULD BE CLEARED before using them as a param for this function
+    # Tilemap has to be accessed as tilemap[y][x], it HAS to be backwards
     def find_tiles_in_range(self, input_range, selectable_tiles, combat_map, select_type="movement"):
         range_counter = input_range
         if range_counter > 0:
-            for tile in combat_map.tilemap[int((self.xpos - 30) / 60)][int((self.ypos - 30) / 60)].adjacencies:
+            for tile in combat_map.tilemap[int((self.ypos - 30) / 60)][int((self.xpos - 30) / 60)].adjacencies:
                 _unique = True
                 for tile_c in selectable_tiles:
                     if tile_c.id == tile.id:

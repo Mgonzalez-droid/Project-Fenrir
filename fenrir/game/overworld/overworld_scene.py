@@ -21,9 +21,11 @@ class OverworldScene(Scene):
         self.hero = character_animated(560, 170, os.path.join(PATH_TO_RESOURCES, "gabe_running.png"))
         self.hero.sprite_names = ["gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png", "gabe_stance_4.png",
                                   "gabe_stance_5.png", "gabe_stance_6.png", "gabe_stance_7.png"]
+
         self.npc = character(890, 230, os.path.join(PATH_TO_RESOURCES, "Resized_Sensei.png"))
         self.in_controls = False
         self.show_characters = True
+        self.combat_phase = False
 
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you
@@ -31,30 +33,36 @@ class OverworldScene(Scene):
         """
         ## Track Movement ##
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_w] and not self.in_controls:
+        if keys[pygame.K_w] and not self.in_controls and not self.combat_phase:
             self.hero.y -= 10
             #self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
             self.hero.adjust_movement()
-        if keys[pygame.K_s] and not self.in_controls:
+        if keys[pygame.K_s] and not self.in_controls and not self.combat_phase:
             self.hero.y += 10
             #self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
             self.hero.adjust_movement()
-        if keys[pygame.K_a] and not self.in_controls:
+        if keys[pygame.K_a] and not self.in_controls and not self.combat_phase:
             self.hero.x -= 10
             #self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
             self.hero.adjust_movement()
-        if keys[pygame.K_d]and not self.in_controls:
+        if keys[pygame.K_d] and not self.in_controls and not self.combat_phase:
             self.hero.x += 10
             #self.hero.move()
             #self.hero.animate = True
             #self.hero.play_animation()
             self.hero.adjust_movement()
+        #PLACE CODE HERE FOR MENU SELECTION
+        '''
+        if keys[pygame.K_SPACE] and self.combat_phase
+            this will trigger combat
+        '''
+
 
         ## Track Interaction ##
         if event.type == pygame.KEYDOWN:
@@ -72,17 +80,16 @@ class OverworldScene(Scene):
                     self.show_characters = False
 
             if event.key == pygame.K_SPACE and not self.in_controls:
-                print("scan for interaction")
-                # try to interact with object
-                # if object.interactable
-                # initiate_battle = load_dialogue()
-                # if initiate_battle
-                # self.switch_to_scene(CombatScene(self.screen))
+                #CODE TO ENTER COMBAT PHASE#
+                if (self.hero.x >= 820 and self.hero.x <=900) and (self.hero.y >= 190 and self.hero.y <= 250):
+                    print("Entering combat phase, locking player controls")
+                    #STOP CHARACTER MOVEMENT#
+                    self.combat_phase = True
 
     def render(self):
-        print("hero coordinates: ", end='')
-        print(self.hero.x, end='')
-        print(self.hero.y)
+        #print("hero coordinates: ", end='')
+        #print(self.hero.x, end='')
+        #print(self.hero.y)
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self.background, (0, 0))
         self.hero.play_animation()

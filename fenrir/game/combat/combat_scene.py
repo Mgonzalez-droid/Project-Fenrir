@@ -255,10 +255,10 @@ class CombatScene(Scene):
                 ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
                 ai_new_x, ai_new_y, target_to_attack = ai_brain.decide_ai_action()
                 if target_to_attack is None:
-                    self.curr_player.move(ai_new_x, ai_new_y)
+                    self.curr_player.move_to(ai_new_x, ai_new_y)
                 else:
                     if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
-                        self.curr_player.move(ai_new_x, ai_new_y)
+                        self.curr_player.move_to(0, 0)
                     for character in self._participants:
                         if character.get_id() == target_to_attack:
                             if self.curr_player.get_type() == 'mage':

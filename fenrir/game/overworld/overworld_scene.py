@@ -39,11 +39,13 @@ class OverworldScene(Scene):
         self.npc.sprite = pygame.transform.scale(self.npc.sprite, (75, 75))
         self.exclamation_mark = character(860, 170, os.path.join(PATH_TO_RESOURCES, "exclamation.png"))
         self.exclamation_mark.sprite = pygame.transform.scale(self.exclamation_mark.sprite, (100, 100))
+        self.show_controls = False
         self.in_controls = False
         self.show_characters = True
         self.combat_phase = False
         self.show_interaction = False
         self.show_hud = True
+        self.show_textbox = False
 
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you
@@ -106,8 +108,9 @@ class OverworldScene(Scene):
 
             if event.key == pygame.K_q:  # Press q to open/close controls menu
                 if self.show_controls:
-                    self.background = pygame.image.load(
-                        os.path.join(PATH_TO_RESOURCES, "overworld_resized_controls.png"))
+                    original_background = pygame.image.load(
+                        os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
+                    self.background = pygame.transform.scale(original_background, (960, 540))
                     self.show_controls = False
                     self.show_characters = True
                 else:
@@ -137,19 +140,14 @@ class OverworldScene(Scene):
         self.screen.blit(self.background, (0, 0))
         self.hero.play_animation()
 
-        """
         if self.show_hud:
             self.screen.blit(self.level_hud, (0, 0))
             self.screen.blit(self.level, (90, 10))
             self.screen.blit(self.control_hud, (733, 0))
 
-        if self.show_characters:
-            self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
-            self.screen.blit(self.npc.sprite, (self.npc.x, self.npc.y))
+        #if self.show_interaction:
+        #    self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
 
-        if self.show_interaction:
-            self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
-        """
         if self.show_characters:  # Display hero and npcs
             self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
             self.screen.blit(self.npc.sprite, (self.npc.x, self.npc.y))

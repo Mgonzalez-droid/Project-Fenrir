@@ -9,7 +9,7 @@ class GameState:
 
     def __init__(self, player_name=""):
         # when we start saving games and other data
-        self._player_name = ""
+        self._player_name = "Player 1"
         self._player_level = 1  # default starting point
 
         # overworld battle vars

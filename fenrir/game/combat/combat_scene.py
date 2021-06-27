@@ -7,7 +7,6 @@ import os
 import pygame
 from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
-import fenrir.game.menu.menu_scene as menuscene
 import fenrir.game.overworld.overworld_scene as overscene
 from fenrir.game.combat.combat_chars import MageChar, KnightChar
 import fenrir.game.combat.combat_map_data as md
@@ -73,6 +72,10 @@ class CombatScene(Scene):
         self.enemy_attack_after_move = False
         self.movement_info = ""
         self.attack_info = ""
+
+        # used for enemy choices
+        self.enemy_attacked = False
+        self.enemy_moved = False
 
         # game won info
         self.game_over = False
@@ -210,7 +213,7 @@ class CombatScene(Scene):
             self.move_complete = True
 
         if self.move_complete:
-            self.show_prompt(f"Player Moved {self.movement_info}!", [])
+            self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved {self.movement_info}!"])
             if not self.curr_player.is_animating():
                 self.next_move()
 
@@ -238,35 +241,49 @@ class CombatScene(Scene):
             self.attack_complete = True
 
         if self.attack_complete:
-            self.show_prompt(f"Player Attacked {self.attack_info}", [])
+            self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You attacked {self.attack_info}!"])
             if not self.curr_player.is_animating():
                 self.next_move()
 
     def check_for_winner(self):
-        player = True
-        enemy = True
+        player = False
+        enemy = False
+
         for player in self._participants:
             if player.alive:
                 if player.get_is_enemy():
-                    enemy = False
+                    enemy = True
                 else:
-                    player = False
+                    player = True
 
-        return enemy and player
+        if not player:
+            self.player_won = False
+            self.game_over = True
+        elif not enemy:
+            self.player_won = False
+            self.game_over = True
 
     ##########################################################################
     # Co Routine that is called each time in the loop and handles game logic #
     ##########################################################################
 
     def play_game(self):
+        self.check_for_winner()
 
-        if self.check_for_winner() or self.game_over:
-            self.game_over = True
+        if self.game_over:
             self.clear_prompt()
             # Need data to show who one ect...
-            self.show_prompt("Battle Complete", ["Press [enter] to return to overworld"])
+            if self.player_won:
+                winner = self.game_state.player_name
+            else:
+                winner = "Sensei"
+
+            self.show_prompt("Battle Complete",
+                             [f"{winner} won the battle!", "Press [enter] to return to overworld"])
 
             if self.key_dict['SELECT']:
+                # Todo this will increase player level now regardless of victory or not. Need to update this later
+                self.game_state.increase_player_level()
                 self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
 
         elif self.turn_counter == 0:
@@ -276,9 +293,9 @@ class CombatScene(Scene):
                 self.turn_counter += 1
         else:
             if self.curr_player.get_is_enemy():
-                self.show_prompt("Enemy Turn", ["Enemy is deciding...", "***Temporary*** Press [Enter] for next turn"])
-                print(self.enemy_attack_after_move, self.curr_player.is_animating())
+
                 if not self.ai_thinking:
+                    self.show_prompt("Sensei's Turn", ["Sensei is deciding..."])
                     self.ai_thinking = True
                     self.ai_completed_decision = False
                     #####################
@@ -292,6 +309,7 @@ class CombatScene(Scene):
                         self.game_over = True
                     elif target_to_attack is None:
                         self.curr_player.move_to(ai_new_x, ai_new_y)
+                        self.enemy_moved = True
                         self.ai_completed_decision = True
                     else:
                         if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
@@ -301,10 +319,12 @@ class CombatScene(Scene):
                             if character.get_id() == target_to_attack:
                                 if self.curr_player.get_type() == 'mage':
                                     character.take_damage(self.curr_player.magic_attack, 'magic')
+                                    self.enemy_attacked = True
                                     self.curr_player.attack_enemy()
                                     self.ai_completed_decision = True
                                 else:
                                     character.take_damage(self.curr_player.attack, 'physical')
+                                    self.enemy_attacked = True
                                     self.enemy_attack_after_move = True
                                     self.ai_completed_decision = True
                                 break
@@ -313,14 +333,26 @@ class CombatScene(Scene):
                     #####################
 
                 elif self.enemy_attack_after_move and not self.curr_player.is_animating():
+
                     self.curr_player.attack_enemy()
                     self.enemy_attack_after_move = False
                     self.ai_thinking = False
-                    self.next_move()
 
                 elif not self.curr_player.is_animating() and self.ai_completed_decision:
-                    self.ai_thinking = False
-                    self.next_move()
+                    self.clear_prompt()
+                    if self.enemy_moved and self.enemy_attacked:
+                        enemy_choice = "moved and attacked!"
+                    elif self.enemy_moved:
+                        enemy_choice = "moved!"
+                    else:
+                        enemy_choice = "attacked!"
+
+                    self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "Press [Enter] to continue..."])
+                    if self.key_dict['SELECT']:
+                        self.ai_thinking = False
+                        self.enemy_moved = False
+                        self.enemy_attacked = False
+                        self.next_move()
             else:
                 if not self.player_attacking and not self.player_moving:
                     self.show_prompt("Your turn!", ["[1] Attack", "[2] Move"])

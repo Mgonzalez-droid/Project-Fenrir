@@ -185,7 +185,8 @@ class CombatAISystem:
         """Function decides if ai should only attack (next to enemy already), move twice (no enemy in range), or move then
         attack. Returns desired ai xcoord, ycoord, and target id"""
         self.decide_who_to_attack()
-
+        if self._target is None:
+            return None, None, None
         if self._targetNextToMe or self._targetDistance <= self._me.attack_range:
             return self._me.xpos, self._me.ypos, self._target.get_id()
         elif self._targetDistance > (self._me.move_range + self._me.attack_range):

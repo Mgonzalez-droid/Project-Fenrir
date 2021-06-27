@@ -20,9 +20,9 @@ from fenrir.game.overworld.overworld_collisions import Collision
 
 
 class OverworldScene(Scene):
-
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
+
         original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
         self.background = pygame.transform.scale(original_background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
@@ -32,9 +32,10 @@ class OverworldScene(Scene):
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
-        # pygame.mixer.init()
-        # pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
-        # pygame.mixer.music.play()
+
+        #pygame.mixer.init()
+        #pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
+        #pygame.mixer.music.play()
 
         self.npc = character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"))
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)
@@ -125,7 +126,7 @@ class OverworldScene(Scene):
         # print("hero coordinates: ", end='')
         # print(self.hero.x, end='')
         # print(self.hero.y)
-
+        
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self.background, (0, 0))
         self.hero.play_animation()

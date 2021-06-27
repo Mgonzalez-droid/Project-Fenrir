@@ -2,12 +2,14 @@
 
 """
 import os
+
 """
 from fenrir.game.overworld.overworld_npc import overworld_npc as character
 from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
 """
 import pygame
 import fenrir.game.menu.menu_scene as menuscene
+import fenrir.game.combat.combat_scene as combscene
 from fenrir.common.scene import Scene
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.common.TextBox import TextBox
@@ -18,9 +20,9 @@ from fenrir.game.overworld.overworld_collisions import Collision
 
 
 class OverworldScene(Scene):
+    def __init__(self, screen, game_state):
+        super().__init__(screen, game_state)
 
-    def __init__(self, screen):
-        super().__init__(screen)
         original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
         self.background = pygame.transform.scale(original_background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
@@ -29,6 +31,7 @@ class OverworldScene(Scene):
         self.hero = character_animated(555, 180, os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"))
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
+
 
         #pygame.mixer.init()
         #pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
@@ -83,7 +86,7 @@ class OverworldScene(Scene):
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
             if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER or event.key == pygame.K_ESCAPE:
                 self.switch_to_scene(menuscene.MainMenuScene(self.screen))
-            if event.key == pygame.K_q: # Press q to open/close controls menu
+            if event.key == pygame.K_q:  # Press q to open/close controls menu
                 if self.show_controls:
                     original_background = pygame.image.load(
                         os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
@@ -133,7 +136,7 @@ class OverworldScene(Scene):
             self.screen.blit(self.level, (90, 10))
             self.screen.blit(self.control_hud, (733, 0))
 
-        #if self.show_interaction:
+        # if self.show_interaction:
         #    self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
 
         if self.show_characters:  # Display hero and npcs

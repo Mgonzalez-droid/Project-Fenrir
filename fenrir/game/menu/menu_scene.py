@@ -1,17 +1,21 @@
 import pygame
 from fenrir.common.scene import Scene
-import fenrir.game.overworld.overworld_scene as oscene
+import fenrir.game.overworld.overworld_scene as overscene
+import fenrir.game.combat.combat_scene as combscene
 from fenrir.common.config import *
 
 
+##########################################################
+#   ABSTRACT MENU SCENE - USED CREATE MENUS W/CURSORS    #
+##########################################################
 class MenuScene(Scene):
 
-    def __init__(self, screen):
-        super().__init__(screen)
+    def __init__(self, screen, game_state):
+        super().__init__(screen, game_state)
         # default variables that will be implemented in subclasses
         self._menu_title = ""  # title attr
         self._menu_items = []  # menu items that work with cursor
-        self.menu_item_rects = []  # used for cursor placement and possible collision detection for mouse events (todo)
+        self.menu_item_rects = []  # used for cursor placement and possible collision detection for mouse events TODO
         self.cursor_pos = 0  # initial pos of cursor on first menu option
 
         # default alignment values
@@ -71,14 +75,16 @@ class MenuScene(Scene):
                 self.cursor_pos -= 1
 
 
+##########################################################
+#       MAIN MENU SCENE - LOADED WHEN GAME STARTS        #
+##########################################################
 class MainMenuScene(MenuScene):
 
-    def __init__(self, screen):
-        super().__init__(screen)
+    def __init__(self, screen, game_state):
+        super().__init__(screen, game_state)
         self._menu_title = "Project Fenrir"
-        self._menu_items = ["New Game", "Load Game", "Credits", "Exit"]
+        self._menu_items = ["New Game", "Credits", "Exit"]
         self._highlighted_items = [False for item in self._menu_items]
-
 
     def update(self):
         pass
@@ -91,19 +97,20 @@ class MainMenuScene(MenuScene):
 
     def select_menu_item(self, index):
         if index == 0:
-            self.switch_to_scene(NewGameScene(self.screen))
+            self.switch_to_scene(NewGameScene(self.screen, self.game_state))
         elif index == 1:
-            self.switch_to_scene(LoadGameScene(self.screen))
+            self.switch_to_scene(CreditsScene(self.screen, self.game_state))
         elif index == 2:
-            self.switch_to_scene(CreditsScene(self.screen))
-        elif index == 3:
             self.terminate()
 
 
+##########################################################
+#       LOAD GAME SCENE - USED TO LOAD SAVED GAME        #
+##########################################################
 class LoadGameScene(MenuScene):
 
-    def __init__(self, screen):
-        super().__init__(screen)
+    def __init__(self, screen, game_state):
+        super().__init__(screen, game_state)
         self._menu_title = "Saved Games"
         self._saved_games = []
         self._menu_items = []
@@ -128,19 +135,22 @@ class LoadGameScene(MenuScene):
 
     def select_menu_item(self, index):
         if not self._saved_games:
-            self.switch_to_scene(MainMenuScene(self.screen))
+            self.switch_to_scene(MainMenuScene(self.screen, self.game_state))
         else:
             if index == len(self._saved_games):
-                self.switch_to_scene(MainMenuScene(self.screen))
+                self.switch_to_scene(MainMenuScene(self.screen, self.game_state))
             else:
                 # this is where game will be loaded
                 pass
 
 
+##########################################################
+#          CREDITS SCENE - USED TO VIEW CREDITS          #
+##########################################################
 class CreditsScene(MenuScene):
 
-    def __init__(self, screen):
-        super().__init__(screen)
+    def __init__(self, screen, game_state):
+        super().__init__(screen, game_state)
         self._menu_title = "Credits"
         self._credit_names = ["Barry Congressi", "Bryan Kristofferson", "Michel Gonzalez",
                               "Roberto Rafael Edde Verde", "Victor Sotomayor"]
@@ -168,14 +178,17 @@ class CreditsScene(MenuScene):
 
     def select_menu_item(self, index):
         if index == 0:
-            self.switch_to_scene(MainMenuScene(self.screen))
+            self.switch_to_scene(MainMenuScene(self.screen, self.game_state))
             pass
 
 
+##########################################################
+#        NEW GAME SCENE - USED TO START NEW GAME         #
+##########################################################
 class NewGameScene(MenuScene):
 
-    def __init__(self, screen):
-        super().__init__(screen)
+    def __init__(self, screen, game_state):
+        super().__init__(screen, game_state)
         self._menu_title = " Choose Game Mode"
         self._menu_items = ["Overworld", "Combat", "Main Menu"]
 
@@ -191,10 +204,10 @@ class NewGameScene(MenuScene):
     def select_menu_item(self, index):
 
         if index == 0:
-            self.switch_to_scene(oscene.OverworldScene(self.screen))
+            self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
             pass
         elif index == 1:
-            # switch to combat scene
+            self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state, "combat_001"))
             pass
         elif index == 2:
-            self.switch_to_scene(MainMenuScene(self.screen))
+            self.switch_to_scene(MainMenuScene(self.screen, self.game_state))

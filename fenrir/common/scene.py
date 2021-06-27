@@ -13,9 +13,10 @@ class Scene:
         :param screen: screen object used for rendering content. A reference is passed to each scene.
     """
 
-    def __init__(self, screen):
+    def __init__(self, screen, game_state):
         self.screen = screen
         self.next = self
+        self._game_state = game_state
 
     def handle_event(self, event):
         """This is an abstract method that will handle all events in the queue. This will be
@@ -63,3 +64,8 @@ class Scene:
         """
 
         self.switch_to_scene(None)
+
+    # should only access and not set to new game state will be passed in constructor of scene
+    @property
+    def game_state(self):
+        return self._game_state

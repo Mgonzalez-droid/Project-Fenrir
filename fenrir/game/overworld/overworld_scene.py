@@ -27,15 +27,22 @@ class OverworldScene(Scene):
         self.background = pygame.transform.scale(original_background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
         self.level_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "level_HUD.png"))
-        self.level = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "level_1.png"))
-        self.hero = character_animated(555, 180, os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"))
+
+        # level needs to be updated but this will keep from breaking
+        if self.game_state.player_level >= 2:
+            level = 2
+        else:
+            level = self.game_state.player_level
+
+        self.level = pygame.image.load(os.path.join(PATH_TO_RESOURCES, f"level_{str(level)}.png"))
+        self.hero = character_animated(self.game_state.game_state_location_x, self.game_state.game_state_location_y,
+                                       os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"))
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
-
-        #pygame.mixer.init()
-        #pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
-        #pygame.mixer.music.play()
+        # pygame.mixer.init()
+        # pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
+        # pygame.mixer.music.play()
 
         self.npc = character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"))
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)
@@ -105,7 +112,6 @@ class OverworldScene(Scene):
                 # CODE TO ENTER COMBAT PHASE#
                 # if (self.npc.x <= self.hero.x <= 795) and (100 <= self.hero.y <= self.npc.y):
                 if Collision.check_collisions(collision, self.hero, self.npc):
-                    print("Entering combat phase, locking player controls")
                     # STOP CHARACTER MOVEMENT#
                     self.combat_phase = True
 
@@ -118,15 +124,13 @@ class OverworldScene(Scene):
 
             # Select options from the text box
             if event.key == pygame.K_1 and self.show_textbox:
-                print("Going to combat phase")
+                self.update_game_state()
+                self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state, "combat_001"))
             if event.key == pygame.K_2 and self.show_textbox:
                 self.show_textbox = False
 
     def render(self):
-        # print("hero coordinates: ", end='')
-        # print(self.hero.x, end='')
-        # print(self.hero.y)
-        
+
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self.background, (0, 0))
         self.hero.play_animation()
@@ -165,3 +169,7 @@ class OverworldScene(Scene):
         to main menu: self.switch_to_scene(MainMenuScene(self.screen))
 
     """
+
+    def update_game_state(self):
+        self.game_state.game_state_location_x = self.hero.x
+        self.game_state.game_state_location_y = self.hero.y

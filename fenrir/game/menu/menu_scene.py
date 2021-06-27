@@ -190,7 +190,7 @@ class NewGameScene(MenuScene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
         self._menu_title = " Choose Game Mode"
-        self._menu_items = ["Overworld", "Combat", "Main Menu"]
+        self._menu_items = ["Start New Game", "Main Menu"]
 
     def render(self):
         self.screen.fill(Colors.BLACK.value)
@@ -204,10 +204,7 @@ class NewGameScene(MenuScene):
     def select_menu_item(self, index):
 
         if index == 0:
+            self.game_state.reset_game_state()
             self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
-            pass
         elif index == 1:
-            self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state, "combat_001"))
-            pass
-        elif index == 2:
             self.switch_to_scene(MainMenuScene(self.screen, self.game_state))

@@ -12,13 +12,9 @@ class GameState:
         self._player_name = "Player 1"
         self._player_level = 1  # default starting point
 
-        # overworld battle vars
-        self._in_battle = False
-        self._won_battle = False
-
         # overworld player location variables
-        self._overworld_location_x = DisplaySettings.CENTER_WIDTH.value
-        self._overworld_location_y = DisplaySettings.CENTER_HEIGHT.value
+        self._game_state_location_x = 555
+        self._game_state_location_y = 180
 
     @property
     def player_name(self):
@@ -36,33 +32,25 @@ class GameState:
         self._player_level += 1
 
     @property
-    def in_battle(self):
-        return self._in_battle
+    def game_state_location_x(self):
+        return self._game_state_location_x
 
-    @in_battle.setter
-    def in_battle(self, val: bool):
-        self._in_battle = val
-
-    @property
-    def won_battle(self):
-        return self._won_battle
-
-    @won_battle.setter
-    def won_battle(self, val: bool):
-        self._won_battle = val
+    @game_state_location_x.setter
+    def game_state_location_x(self, x_val):
+        self._game_state_location_x = x_val
 
     @property
-    def overworld_location_x(self):
-        return self._overworld_location_x
+    def game_state_location_y(self):
+        return self._game_state_location_y
 
-    @overworld_location_x.setter
-    def overworld_location_x(self, x_val: int):
-        self._overworld_location_x = x_val
+    @game_state_location_y.setter
+    def game_state_location_y(self, y_val):
+        self._game_state_location_y = y_val
 
-    @property
-    def overworld_location_y(self):
-        return self._overworld_location_y
+    def reset_game_state(self):
+        self._player_name = "Player 1"
+        self._player_level = 1  # default starting point
 
-    @overworld_location_y.setter
-    def overworld_location_y(self, y_val: int):
-        self._overworld_location_x = y_val
+        # overworld player location variables
+        self._game_state_location_x = 555
+        self._game_state_location_y = 180

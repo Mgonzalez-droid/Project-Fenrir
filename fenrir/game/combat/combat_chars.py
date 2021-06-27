@@ -179,6 +179,7 @@ class MageChar(CombatCharSprite):
         else:
             self.animation_state = "idle"
             self.attacking = False
+            self._animating = False
 
     def update(self):
         if self.animation_state == "idle":

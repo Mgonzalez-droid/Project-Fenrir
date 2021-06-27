@@ -8,6 +8,7 @@ import pygame
 from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
 import fenrir.game.menu.menu_scene as menuscene
+import fenrir.game.overworld.overworld_scene as overscene
 from fenrir.game.combat.combat_chars import MageChar, KnightChar
 import fenrir.game.combat.combat_map_data as md
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
@@ -20,8 +21,8 @@ from fenrir.game.combat.combat_ai_nodeTree import CombatAINodeTree
 
 class CombatScene(Scene):
 
-    def __init__(self, screen, map_name):
-        super().__init__(screen)
+    def __init__(self, screen, game_state, map_name):
+        super().__init__(screen, game_state)
         self._map_name = map_name
         self._map = md.MapData(map_name, 16, 9)
         self._ai_Tree_init = CombatAINodeTree(16, 9, self._map)
@@ -73,6 +74,10 @@ class CombatScene(Scene):
         self.movement_info = ""
         self.attack_info = ""
 
+        # game won info
+        self.game_over = False
+        self.player_won = False
+
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you press q
         """
@@ -80,7 +85,7 @@ class CombatScene(Scene):
             if event.key == pygame.K_q:
                 # currently the q button will quit and return to main menu
                 # TODO make a dialogue with text box (Are you sure? Yes/No) ...
-                self.switch_to_scene(menuscene.MainMenuScene)
+                self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
             elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                 self.key_dict['DOWN'] = True
             elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
@@ -237,13 +242,34 @@ class CombatScene(Scene):
             if not self.curr_player.is_animating():
                 self.next_move()
 
+    def check_for_winner(self):
+        player = True
+        enemy = True
+        for player in self._participants:
+            if player.alive:
+                if player.get_is_enemy():
+                    enemy = False
+                else:
+                    player = False
+
+        return enemy and player
+
     ##########################################################################
     # Co Routine that is called each time in the loop and handles game logic #
     ##########################################################################
 
     def play_game(self):
 
-        if self.turn_counter == 0:
+        if self.check_for_winner() or self.game_over:
+            self.game_over = True
+            self.clear_prompt()
+            # Need data to show who one ect...
+            self.show_prompt("Battle Complete", ["Press [enter] to return to overworld"])
+
+            if self.key_dict['SELECT']:
+                self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
+
+        elif self.turn_counter == 0:
             self.show_prompt("Welcome to combat", ["Press [Enter] to get started"])
             if self.key_dict['SELECT']:
                 self.clear_prompt()
@@ -251,7 +277,7 @@ class CombatScene(Scene):
         else:
             if self.curr_player.get_is_enemy():
                 self.show_prompt("Enemy Turn", ["Enemy is deciding...", "***Temporary*** Press [Enter] for next turn"])
-
+                print(self.enemy_attack_after_move, self.curr_player.is_animating())
                 if not self.ai_thinking:
                     self.ai_thinking = True
                     self.ai_completed_decision = False
@@ -261,7 +287,10 @@ class CombatScene(Scene):
                     # Determines target, builds path to target
                     ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
                     ai_new_x, ai_new_y, target_to_attack = ai_brain.decide_ai_action()
-                    if target_to_attack is None:
+                    if ai_new_x is None and ai_new_y is None and target_to_attack is None:
+                        self.ai_thinking = True
+                        self.game_over = True
+                    elif target_to_attack is None:
                         self.curr_player.move_to(ai_new_x, ai_new_y)
                         self.ai_completed_decision = True
                     else:
@@ -272,6 +301,7 @@ class CombatScene(Scene):
                             if character.get_id() == target_to_attack:
                                 if self.curr_player.get_type() == 'mage':
                                     character.take_damage(self.curr_player.magic_attack, 'magic')
+                                    self.curr_player.attack_enemy()
                                     self.ai_completed_decision = True
                                 else:
                                     character.take_damage(self.curr_player.attack, 'physical')
@@ -284,6 +314,7 @@ class CombatScene(Scene):
 
                 elif self.enemy_attack_after_move and not self.curr_player.is_animating():
                     self.curr_player.attack_enemy()
+                    self.enemy_attack_after_move = False
                     self.ai_thinking = False
                     self.next_move()
 

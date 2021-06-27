@@ -40,7 +40,6 @@ class OverworldScene(Scene):
         self.exclamation_mark = character(860, 170, os.path.join(PATH_TO_RESOURCES, "exclamation.png"))
         self.exclamation_mark.sprite = pygame.transform.scale(self.exclamation_mark.sprite, (100, 100))
         self.show_controls = False
-        self.in_controls = False
         self.show_characters = True
         self.combat_phase = False
         self.show_interaction = False
@@ -84,39 +83,28 @@ class OverworldScene(Scene):
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
             if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER or event.key == pygame.K_ESCAPE:
                 self.switch_to_scene(menuscene.MainMenuScene(self.screen))
-            if event.key == pygame.K_q:
-                if self.in_controls:
-                    original_background = pygame.image.load(
-                        os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
-                    self.background = pygame.transform.scale(original_background, (960, 540))
-                    self.in_controls = False
-                    self.show_characters = True
-                    self.show_hud = True
-                else:
-                    self.background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Simple_Control_menu.png"))
-                    self.in_controls = True
-                    self.show_characters = False
-                    self.show_interaction = False
-                    self.show_hud = False
-
-            if event.key == pygame.K_SPACE and not self.in_controls:
-                # CODE TO ENTER COMBAT PHASE#
-                if (self.hero.x >= self.npc.x and self.hero.x <= 795) and (self.hero.y >= 100 and self.hero.y <= self.npc.y):
-                    print("Entering combat phase, locking player controls")
-                    # STOP CHARACTER MOVEMENT#
-                    self.combat_phase = True
-
-            if event.key == pygame.K_q:  # Press q to open/close controls menu
+            if event.key == pygame.K_q: # Press q to open/close controls menu
                 if self.show_controls:
                     original_background = pygame.image.load(
                         os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
                     self.background = pygame.transform.scale(original_background, (960, 540))
                     self.show_controls = False
                     self.show_characters = True
-                else:
+                    self.show_hud = True
+                elif not self.show_controls and not self.show_textbox:
                     self.background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Simple_Control_menu.png"))
                     self.show_controls = True
                     self.show_characters = False
+                    self.show_interaction = False
+                    self.show_hud = False
+
+            if event.key == pygame.K_SPACE and not self.show_controls:
+                # CODE TO ENTER COMBAT PHASE#
+                # if (self.npc.x <= self.hero.x <= 795) and (100 <= self.hero.y <= self.npc.y):
+                if Collision.check_collisions(collision, self.hero, self.npc):
+                    print("Entering combat phase, locking player controls")
+                    # STOP CHARACTER MOVEMENT#
+                    self.combat_phase = True
 
             if event.key == pygame.K_SPACE and not self.show_controls:  # Checks if the space bar is pressed
                 # Check for collision
@@ -152,7 +140,7 @@ class OverworldScene(Scene):
             self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
             self.screen.blit(self.npc.sprite, (self.npc.x, self.npc.y))
 
-        if self.show_interaction:  # Show if you can interact with and npc
+        if self.show_interaction and not self.show_controls:  # Show if you can interact with and npc
             self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
 
         if self.show_textbox:  # Draw Text box

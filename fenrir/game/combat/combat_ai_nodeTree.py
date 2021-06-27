@@ -121,13 +121,13 @@ class CombatAINodeTree:
         #                 break
 
     def is_tile_accessible(self, x, y):
-        if not self._copyOfMapData.tilemap[y][x].is_blocking() and not self._copyOfMapData.tilemap[y][x].is_wall():
+        if not self._copyOfMapData.tilemap[y][x].is_blocking and not self._copyOfMapData.tilemap[y][x].is_wall:
             return True
         return False
 
     def get_ai_node_tree(self):
         return self.AINodeTree
 
-    def clear_ai_node_tree_data(self):
-        for node in self.AINodeTree:
-            node.clear_data()
+    # def clear_ai_node_tree_data(self):
+    #     for node in self.AINodeTree:
+    #         node.clear_data()

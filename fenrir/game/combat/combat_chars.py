@@ -162,6 +162,7 @@ class MageChar(CombatCharSprite):
             self.stop_movement()
             self.animation_state = "idle"
             self.teleporting = False
+            self._animating = False
 
     def attack_enemy(self, left=None):
 

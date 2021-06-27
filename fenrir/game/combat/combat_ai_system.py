@@ -6,7 +6,6 @@
 import math
 
 
-
 class CombatAISystem:
     """Class representing ai combat information and decisions.
 
@@ -33,6 +32,7 @@ class CombatAISystem:
     :openList: (list of Node objects) list of Nodes to check for pathing
     :closedList: (list of Node objects) list of Nodes already checked for pathing
     """
+
     def __init__(self, participants, currentParticipant, nodeTree, mapData):
         self._list_of_enemies = participants
         self._me = currentParticipant
@@ -63,18 +63,18 @@ class CombatAISystem:
                 totalDist = distanceX + distanceY
                 enemyValue = totalDist
 
-                if totalDist == 1:                                              # an enemy is next to a AI!
+                if totalDist == 1:  # an enemy is next to a AI!
                     self._targetNextToMe = True
-                    self._target = i                                            # set target and return
+                    self._target = i  # set target and return
                     return
-                elif totalDist <= self._me.attck_range:                         # enemy is not next to AI but is in attack range
-                    enemyValue += 0                                                 # best option
-                elif totalDist <= self._me.attck_range + self._me.move_range:   # enemy is in range if AI moves closer
-                    enemyValue -= (self._me.move_range - 1)                          # good option
-                else:                                                           # enemy is out of range. AI will have to move only
-                    enemyValue += 2                                                # poor option
+                elif totalDist <= self._me.attack_range:  # enemy is not next to AI but is in attack range
+                    enemyValue += 0  # best option
+                elif totalDist <= self._me.attack_range + self._me.move_range:  # enemy is in range if AI moves closer
+                    enemyValue -= (self._me.move_range - 1)  # good option
+                else:  # enemy is out of range. AI will have to move only
+                    enemyValue += 2  # poor option
 
-                if self._target is None or enemyValue < self._opponentScore:    # current best target for the AI
+                if self._target is None or enemyValue < self._opponentScore:  # current best target for the AI
                     self._target = i
                     self._targetX = int((i.xpos - 30) / 60)
                     self._targetY = int((i.ypos - 30) / 60)
@@ -88,7 +88,8 @@ class CombatAISystem:
         # make list to search and list already searched
         openList = []
         closedList = []
-        self._nodeTree.clear_ai_node_tree_data()
+        for node in self._nodeTree:
+            node.clear_data()
 
         # find the first node and add it to the list to search. Set node's value to hold the distance to target
         for node in self._nodeTree:
@@ -119,7 +120,7 @@ class CombatAISystem:
                 self._targetNode = currentTile
                 return  # found the end
             # check if the current tile is close enough to attack from
-            if currentTile.get_totalDistance() - currentTile.get_distanceFromStart() <= self._me.attck_range:
+            if currentTile.get_totalDistance() - currentTile.get_distanceFromStart() <= self._me.attack_range:
                 self._targetNode = currentTile
                 self._targetNodeLessThanTargetPosition = True
                 self._targetDistance = currentTile.get_distanceFromStart()
@@ -127,7 +128,7 @@ class CombatAISystem:
 
             # loop and add all of the current node's neighbors to the list to search if not occupied
             for neighbor in currentTile.get_neighbors():
-                if self._copyOfMapData.tilemap[neighbor.get_yPos()][neighbor.get_xPos()].is_occupied():
+                if self._copyOfMapData.tilemap[neighbor.get_yPos()][neighbor.get_xPos()].is_occupied:
                     continue
                 alreadySearched = False
                 # loop through list of nodes we have searched to make sure we haven't seen this node before
@@ -143,7 +144,7 @@ class CombatAISystem:
                 # if node is new to search, calculate the length traveled so far, the distance to the end and set the node values
                 distanceX = abs(neighbor.get_xPos() - self._targetX)
                 distanceY = abs(neighbor.get_yPos() - self._targetY)
-                totalDist = distanceX + distanceY + currentTile.get_pastValue() + 1
+                totalDist = distanceX + distanceY + currentTile.get_distanceFromStart() + 1
 
                 # check if the neighbor is in the open list. if so is this a better path?
                 inOpenList = False
@@ -157,7 +158,7 @@ class CombatAISystem:
                         else:
                             break
                 if not inOpenList:
-                    neighbor.set_distanceFromStart(currentTile.get_pastValue() + 1)
+                    neighbor.set_distanceFromStart(currentTile.get_distanceFromStart() + 1)
                     neighbor.set_totalDistance(totalDist)
                     neighbor.set_parent(currentTile)
                     openList.append(neighbor)
@@ -184,13 +185,22 @@ class CombatAISystem:
         """Function decides if ai should only attack (next to enemy already), move twice (no enemy in range), or move then
         attack. Returns desired ai xcoord, ycoord, and target id"""
         self.decide_who_to_attack()
-        if self.targetNextToMe or self._targetDistance <= self._me.attck_range:
+        if self._me.get_type() == 'mage':
+            self._me.mana += (self._me.mana * .03)
+
+        if self._targetNextToMe or self._targetDistance <= self._me.attack_range:
+            if self._me.get_type() == 'mage':
+                self._me.mana -= (self._me.mana * .05)
             return self._me.xpos, self._me.ypos, self._target.get_id()
-        elif self._targetDistance > (self._me.move_range + self._me.attck_range):
+        elif self._targetDistance > (self._me.move_range + self._me.attack_range):
             self.build_path_to_target()
             self.set_ai_goal_position(self._me.move_range + math.floor(self._me.move_range * .5))
+            if self._me.get_type() == 'mage':
+                self._me.mana += (self._me.mana * .03)
             return self._goalX, self._goalY, None
         else:
             self.build_path_to_target()
             self.set_ai_goal_position(self._me.move_range)
+            if self._me.get_type() == 'mage':
+                self._me.mana -= (self._me.mana * .05)
             return self._goalX, self._goalY, self._target.get_id()

@@ -68,7 +68,7 @@ class CombatScene(Scene):
         self.player_moving = False
         self.move_complete = False
         self.ai_thinking = False
-        self.ai_completed_decision = False
+        self.ai_completed_decision = True  # this flag will be set when AI is thinking and True when not thinking
         self.enemy_attack_after_move = False
         self.movement_info = ""
         self.attack_info = ""
@@ -252,35 +252,43 @@ class CombatScene(Scene):
             if self.curr_player.get_is_enemy():
                 self.show_prompt("Enemy Turn", ["Enemy is deciding...", "***Temporary*** Press [Enter] for next turn"])
 
-                #####################
-                # AI Turn  - Start  #
-                #####################
-                # Determines target, builds path to target
-                ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
-                ai_new_x, ai_new_y, target_to_attack = ai_brain.decide_ai_action()
-                if target_to_attack is None:
-                    self.curr_player.move_to(ai_new_x, ai_new_y)
-                else:
-                    if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
-                        self.curr_player.move_to(ai_new_x, ai_new_y)
-                    for character in self._participants:
-                        if character.get_id() == target_to_attack:
-                            if self.curr_player.get_type() == 'mage':
-                                character.take_damage(self.curr_player.magic_attack, 'magic')
-                            else:
-                                character.take_damage(self.curr_player.attack, 'physical')
-                                self.enemy_attack_after_move = True
-
-                            break
-                #####################
-                # AI Turn  - Finish #
-                #####################
-
-                if self.enemy_attack_after_move and not self.curr_player.is_animating():
-                    self.curr_player.attack_enemy()
+                if not self.ai_thinking:
+                    self.ai_thinking = True
                     self.ai_completed_decision = False
+                    #####################
+                    # AI Turn  - Start  #
+                    #####################
+                    # Determines target, builds path to target
+                    ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
+                    ai_new_x, ai_new_y, target_to_attack = ai_brain.decide_ai_action()
+                    if target_to_attack is None:
+                        self.curr_player.move_to(ai_new_x, ai_new_y)
+                        self.ai_completed_decision = True
+                    else:
+                        if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
+                            self.curr_player.move_to(ai_new_x, ai_new_y)
+                            self.ai_completed_decision = True
+                        for character in self._participants:
+                            if character.get_id() == target_to_attack:
+                                if self.curr_player.get_type() == 'mage':
+                                    character.take_damage(self.curr_player.magic_attack, 'magic')
+                                    self.ai_completed_decision = True
+                                else:
+                                    character.take_damage(self.curr_player.attack, 'physical')
+                                    self.enemy_attack_after_move = True
+                                    self.ai_completed_decision = True
+                                break
+                    #####################
+                    # AI Turn  - Finish #
+                    #####################
 
-                if not self.curr_player.is_animating() and self.ai_completed_decision:
+                elif self.enemy_attack_after_move and not self.curr_player.is_animating():
+                    self.curr_player.attack_enemy()
+                    self.ai_thinking = False
+                    self.next_move()
+
+                elif not self.curr_player.is_animating() and self.ai_completed_decision:
+                    self.ai_thinking = False
                     self.next_move()
             else:
                 if not self.player_attacking and not self.player_moving:

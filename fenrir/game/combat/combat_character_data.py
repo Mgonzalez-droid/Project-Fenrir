@@ -215,6 +215,14 @@ class CombatCharacterData:
             if self._enemy:
                 self.magic_defense = self.magic_attack
                 self.mana = self.level * 3
+        if self.magic_attack <= 0:
+            self.magic_attack = 1
+        if self.magic_defense < 0:
+            self.magic_defense = 1
+        if self.attack <= 0:
+            self.attack = 1
+        if self.defense < 0:
+            self.defense = 1
 
     def check_if_incoming_attack_misses(self, incomingAttackValue, attackType):
         """function to calculate chance that an attack misses the character (calculated value must be less than 2 to miss)

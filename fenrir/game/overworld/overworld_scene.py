@@ -8,13 +8,13 @@ import pygame
 import fenrir.game.menu.menu_scene as menuscene
 from fenrir.common.scene import Scene
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
-from fenrir.game.overworld.TextBox import TextBox
+from fenrir.common.TextBox import TextBox
 
 
 class OverworldScene(Scene):
 
-    def __init__(self, screen):
-        super().__init__(screen)
+    def __init__(self, screen, game_state):
+        super().__init__(screen, game_state)
         self.background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "demo_overworld.png"))
         self.show_textbox = False
 
@@ -24,7 +24,7 @@ class OverworldScene(Scene):
         """
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
-                self.switch_to_scene(menuscene.MainMenuScene(self.screen))
+                self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))
             if event.key == pygame.K_SPACE:
                 self.show_textbox = True
             if event.key == pygame.K_1 and self.show_textbox:

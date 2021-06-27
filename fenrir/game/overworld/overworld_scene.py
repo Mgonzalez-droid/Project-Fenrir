@@ -85,7 +85,7 @@ class OverworldScene(Scene):
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
             if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER or event.key == pygame.K_ESCAPE:
-                self.switch_to_scene(menuscene.MainMenuScene(self.screen))
+                self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))
             if event.key == pygame.K_q:  # Press q to open/close controls menu
                 if self.show_controls:
                     original_background = pygame.image.load(

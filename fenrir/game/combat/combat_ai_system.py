@@ -67,9 +67,9 @@ class CombatAISystem:
                     self._targetNextToMe = True
                     self._target = i                                            # set target and return
                     return
-                elif totalDist <= self._me.attck_range:                         # enemy is not next to AI but is in attack range
+                elif totalDist <= self._me.attack_range:                         # enemy is not next to AI but is in attack range
                     enemyValue += 0                                                 # best option
-                elif totalDist <= self._me.attck_range + self._me.move_range:   # enemy is in range if AI moves closer
+                elif totalDist <= self._me.attack_range + self._me.move_range:   # enemy is in range if AI moves closer
                     enemyValue -= (self._me.move_range - 1)                          # good option
                 else:                                                           # enemy is out of range. AI will have to move only
                     enemyValue += 2                                                # poor option
@@ -91,6 +91,7 @@ class CombatAISystem:
         self._nodeTree.clear_ai_node_tree_data()
 
         # find the first node and add it to the list to search. Set node's value to hold the distance to target
+        print(self._nodeTree)
         for node in self._nodeTree:
             if node.get_xPos() == self._myX and node.get_yPos() == self._myY:
                 openList.append(node)
@@ -184,9 +185,9 @@ class CombatAISystem:
         """Function decides if ai should only attack (next to enemy already), move twice (no enemy in range), or move then
         attack. Returns desired ai xcoord, ycoord, and target id"""
         self.decide_who_to_attack()
-        if self.targetNextToMe or self._targetDistance <= self._me.attck_range:
+        if self._targetNextToMe or self._targetDistance <= self._me.attack_range:
             return self._me.xpos, self._me.ypos, self._target.get_id()
-        elif self._targetDistance > (self._me.move_range + self._me.attck_range):
+        elif self._targetDistance > (self._me.move_range + self._me.attack_range):
             self.build_path_to_target()
             self.set_ai_goal_position(self._me.move_range + math.floor(self._me.move_range * .5))
             return self._goalX, self._goalY, None

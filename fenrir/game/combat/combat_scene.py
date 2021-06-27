@@ -24,7 +24,8 @@ class CombatScene(Scene):
         super().__init__(screen)
         self._map_name = map_name
         self._map = md.MapData(map_name, 16, 9)
-        self._ai_Tree = CombatAINodeTree(16, 9, self._map)
+        self._ai_Tree_init = CombatAINodeTree(16, 9, self._map)
+        self._ai_Tree = self._ai_Tree_init.get_ai_node_tree()
         self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(map_name + ".png")))
         self._participants = []
         self._player_list = pygame.sprite.Group()

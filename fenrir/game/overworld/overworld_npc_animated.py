@@ -38,6 +38,7 @@ class overworld_npc_animated(overworld_npc):
             self.__sprite_names.append(self.__spritesheet.parse_sprite(name))
 
         self.sprite = self.__sprite_names[0]
+        self.sprite = pygame.transform.scale(self.sprite, (80, 80))
 
     def move(self):
         self.__animate = True
@@ -56,6 +57,7 @@ class overworld_npc_animated(overworld_npc):
         #self.sprite = self.__sprite_names[self.__index]
         self.__index = (self.__index + 1) % len(self.__sprite_names)
         self.sprite = self.__sprite_names[self.__index]
+        self.sprite = pygame.transform.scale(self.sprite, (80,80))
 
     def play_animation(self):
         if self.__animate:

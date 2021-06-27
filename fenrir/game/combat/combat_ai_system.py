@@ -88,7 +88,8 @@ class CombatAISystem:
         # make list to search and list already searched
         openList = []
         closedList = []
-        self._nodeTree.clear_ai_node_tree_data()
+        for node in self._nodeTree:
+            node.clear_data()
 
         # find the first node and add it to the list to search. Set node's value to hold the distance to target
         print(self._nodeTree)

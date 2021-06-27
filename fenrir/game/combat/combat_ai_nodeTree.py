@@ -128,6 +128,6 @@ class CombatAINodeTree:
     def get_ai_node_tree(self):
         return self.AINodeTree
 
-    def clear_ai_node_tree_data(self):
-        for node in self.AINodeTree:
-            node.clear_data()
+    # def clear_ai_node_tree_data(self):
+    #     for node in self.AINodeTree:
+    #         node.clear_data()

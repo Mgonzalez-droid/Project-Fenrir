@@ -107,13 +107,15 @@ class MapData:
                               used to load .png map images and .txt map data
         :param columns: (int) how many tiles in the vertical (height divided by 60)
         :param rows: (int) how many tiles in the horizontal (width divided by 60)
+
         :char_map: (string)  2D list of characters representing tiles, used to populate
                         and define tilemap
-                        (we can use files associated with map images to populate this)
-
+                        (we use files associated with map images to populate this)
         :height: (int) height of the map .png (should be a multiple of 60)
         :width: (int) width of the map .png (should be a multiple of 60)
         :tilemap: (MapTile) 2D list of all the tiles on the map
+        :player_spawn: (MapTile) list of all tiles where a player can spawn
+        :enemy_spawn: (MapTile) list of all tiles where an enemy can spawn
 
         Note: Each map should not be edited after it is created. Tilemap data should be taken from the object
               and moved into a variable in the method that is running it so that the original map data isn't
@@ -127,13 +129,14 @@ class MapData:
         self._columns = columns
         self._rows = rows
         # Map should be a 2D List of strings (single chars)
-        # Char map txt file MUST BE 23w x 13h!
+        # Char map txt file MUST BE 16w x 9h!
         self._char_map = self.load_charmap()
         # Dimensions based off of tile numbers
         self._height = self._rows * MAP_TILE_H
         self._width = self._columns * MAP_TILE_W
         # Tilemap population and definition
         # Tilemap PNG MUST be 960 x 540!
+        # Tilemap index is [y][x], it has to be backwards
         self._tilemap = []
         for i in range(self._rows):
             # Create a temp list to append to our first list so we can make it 2D

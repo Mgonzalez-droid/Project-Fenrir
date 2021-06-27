@@ -7,30 +7,30 @@ import math
 import random
 
 
-class CombatCharacterData():
-    """Class representing individual characters, and their attributes for the combat scenes
+class CombatCharacterData:
+    """Class representing individual characters, and their attributes for the combat scene.
 
-    :param char_id: (int) given id value for the new character
-    :param char_type: (string) the class the unit should be set to knight/archer/mage
-    :param level: (int) level for the new character (can be updated later)
-    :param hp: (float) hp for the new character (can be updated later)
-    :param speed: (float) speed/initiative value for the new character (can be updated later)
-    :param attack: (float) base attack value for new character (can be updated later)
-    :param enemy: (boolean) determine if character is enemy. Defaults to false
+    :param char_id: (int) given id value for the new character.
+    :param char_type: (string) the class the unit should be set to 'knight','archer', or 'mage'.
+    :param level: (int) level for the new character (can be updated later).
+    :param hp: (float) hp for the new character (can be updated later).
+    :param speed: (float) speed/initiative value for the new character (can be updated later).
+    :param attack: (float) base attack value for new character (can be updated later).
+    :param enemy: (boolean) determine if character is enemy. Defaults to false.
 
     Other non-param values:
-    :alive: (boolean) for checking if character died
-    :xpos: (int) x coordinate of unit on battlefield
-    :ypos: (int) y coordinate of unit on battlefield
-    :sprite_sheet: (image) images that the character is pulled from
-    :character_image: (image) single image of the character
-    :move_range: (int) the distance the unit can move in a battle
-    :attack_range: (int) the distance the unit can hit other units from
-    :luck: (int) value provided to the combat system for a chance of an incoming attack to miss
-    :mana: (float) the total amount of energy available to a mage unit
-    :magic_attack: (float) base damage for magic type attacks
-    :magic_defense: (float) base magic defense from magic attacks
-    :defense: (float) base defense from physical type attacks
+    :alive: (boolean) for checking if character died.
+    :xpos: (int) x pixel coordinate of unit on battlefield.
+    :ypos: (int) y pixel coordinate of unit on battlefield.
+    :move_range: (int) the distance the unit can move in a battle turn.
+    :attack_range: (int) the distance the unit can hit other units from.
+    :luck: (int) value provided to the combat system for a chance of an incoming attack to miss.
+    :moveable_tiles: (???)
+    :attackable_tiles: (???)
+    :mana: (float) the total amount of energy available to a mage unit.
+    :magic_attack: (float) base damage for magic type attacks.
+    :magic_defense: (float) base magic defense from magic attacks.
+    :defense: (float) base defense from physical type attacks.
     """
 
     def __init__(self, char_id, char_type, level, hp, speed, attack, enemy=False):
@@ -173,20 +173,38 @@ class CombatCharacterData():
     def ypos(self):
         return self.rect.centery
 
+    def level_up(self, numberOfLevels=1):
+        """Updates character attributes a number of times = numberOfLevels. This updates: level, hp, speed, luck, mana,
+        magic_attack, magic_defense, attack, and defense."""
+        self.level += numberOfLevels
+        self.speed += numberOfLevels
+        self.luck += numberOfLevels
+        self.hp += (numberOfLevels * 5)
+        if self._type == 'mage':
+            self._mana += (numberOfLevels * 5)
+            self.magic_attack += (numberOfLevels * 5)
+            self.magic_defense += (numberOfLevels * 3)
+            self.attack += numberOfLevels
+        elif self._type == 'knight':
+            self.attack += (numberOfLevels * 5)
+            self.defense += (numberOfLevels * 4)
+        elif self._type == 'archer':
+            self.attack += (numberOfLevels * 5)
+            self.defense += (numberOfLevels * 3)
+
     def character_class_setup_by_type(self):
         """function sets non-defined traits based on given info when character is constructed
         """
         if self._type == 'knight':
             self.attack_range = 1
-            self.move_range = 3
+            self.move_range = 4
             self.defense = self.attack - 1
         elif self._type == 'archer':
             self.attack_range = 4
             self.move_range = 1
             self.defense = self.attack - 3
             if self._enemy:
-                self.defense = self\
-                                   .attack - 2
+                self.defense = self.attack - 2
         elif self._type == 'mage':
             self.attack_range = 3
             self.move_range = 2
@@ -230,14 +248,14 @@ class CombatCharacterData():
                 damageSuccess = 2
         else:
             damageSuccess = 0
-        return damageSuccess
 
     # NOTE: selectable_tiles should be an EMPTY list (either movable or attackable tiles)
     # If they aren't empty they SHOULD BE CLEARED before using them as a param for this function
+    # Tilemap has to be accessed as tilemap[y][x], it HAS to be backwards
     def find_tiles_in_range(self, input_range, selectable_tiles, combat_map, select_type="movement"):
         range_counter = input_range
         if range_counter > 0:
-            for tile in combat_map.tilemap[int(self._xpos / 60)][int(self._ypos / 60)].adjacencies:
+            for tile in combat_map.tilemap[int((self.ypos - 30) / 60)][int((self.xpos - 30) / 60)].adjacencies:
                 _unique = True
                 for tile_c in selectable_tiles:
                     if tile_c.id == tile.id:

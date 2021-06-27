@@ -16,9 +16,10 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         self._animation_state = "idle"  # default state of all chars
         self._move_x = 0  # amount char sprite needs to move on x-axis
         self._move_y = 0  # value char sprite needs to move on y-axis
-        self.frame = 0  # value used for changing images in frames
-        self.animation_speed = 3  # number of frames to show image
-        self.face_left = False
+        self._frame = 0  # value used for changing images in frames
+        self._animation_speed = 3  # number of frames to show image
+        self._face_left = False
+        self._animating = False
 
     @property
     def animation_state(self):
@@ -43,6 +44,9 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
     @move_y.setter
     def move_y(self, val):
         self._move_y = val
+
+    def is_animating(self):
+        return self._animating
 
     ###############################################
     # Abstract functions that must be implemented #
@@ -73,6 +77,13 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
     def move(self, x, y):
         self.move_x = x
         self.move_y = y
+        self._animating = True
+
+    # return x,y tile location for combat map
+    def get_tile_loc(self):
+        x = int((self.xpos - 30) / 60)
+        y = int((self.ypos - 30) / 60)
+        return x, y
 
 
 class MageChar(CombatCharSprite):
@@ -92,9 +103,10 @@ class MageChar(CombatCharSprite):
         self.rect = self.image.get_rect()
 
         self.teleporting = False
+        self.attacking = False
 
         if enemy:
-            self.face_left = True
+            self._face_left = True
 
         # default values that will need to be formulated with map tile data depending on tile location
         self.rect.center = (90, 90)
@@ -130,26 +142,43 @@ class MageChar(CombatCharSprite):
 
     def animate(self, images):
 
-        if self.frame > (len(images) - 1) * self.animation_speed:  # num of animations in idle
-            self.frame = 0  # reset to first frame
+        if self._frame > (len(images) - 1) * self._animation_speed:  # num of animations in idle
+            self._frame = 0  # reset to first frame
         else:
-            self.frame += 1
+            self._frame += 1
 
-        if self.face_left:
-            self.image = pygame.transform.flip(images[self.frame // self.animation_speed], True, False)
+        if self._face_left:
+            self.image = pygame.transform.flip(images[self._frame // self._animation_speed], True, False)
         else:
-            self.image = images[self.frame // self.animation_speed]
+            self.image = images[self._frame // self._animation_speed]
 
     def animate_teleport(self):
-        if self.frame < len(self.death_images):
+        if self._frame < len(self.death_images):
             self.animate(self.death_images)
-            self.frame += 1
+            self._frame += 1
         else:
             self.rect.centerx += self.move_x
             self.rect.centery += self.move_y
             self.stop_movement()
             self.animation_state = "idle"
             self.teleporting = False
+            self._animating = False
+
+    def attack_enemy(self, left=None):
+
+        if left is not None:
+            self._face_left = left
+
+        self._animating = True
+        self.attacking = True
+        self._frame = 0
+
+    def animate_attack(self):
+        if self._frame < (len(self.attack_images) - 1) * self._animation_speed:
+            self.animate(self.attack_images)
+        else:
+            self.animation_state = "idle"
+            self.attacking = False
 
     def update(self):
         if self.animation_state == "idle":
@@ -165,16 +194,19 @@ class MageChar(CombatCharSprite):
 
         if self.move_x != 0 or self.move_y != 0:
             self.teleporting = True
+            self._animating = True
 
             if self.move_x < 0:
-                self.face_left = True
+                self._face_left = True
             elif self.move_x > 0:
-                self.face_left = False
+                self._face_left = False
 
-        if not self.teleporting:
-            self.animate(images)
-        else:
+        if self.teleporting:
             self.animate_teleport()
+        elif self.attacking:
+            self.animate_attack()
+        else:
+            self.animate(images)
 
 
 class KnightChar(CombatCharSprite):
@@ -187,6 +219,7 @@ class KnightChar(CombatCharSprite):
         self.idle_images = []
         self.walk_images = []
         self.death_images = []
+        self.attacking = False
 
         self.load_assets()
         self.image = self.idle_images[0]
@@ -195,7 +228,7 @@ class KnightChar(CombatCharSprite):
         self.animation_state = "idle"
 
         if enemy:
-            self.face_left = True
+            self._face_left = True
 
         # default values that will need to be formulated with map tile data depending on tile location
         self.rect.center = (90, 90)
@@ -231,15 +264,37 @@ class KnightChar(CombatCharSprite):
 
     def animate(self, images):
 
-        if self.frame > (len(images) - 1) * self.animation_speed:  # num of animations in idle
-            self.frame = 0  # reset to first frame
+        if self._frame > (len(images) - 1) * self._animation_speed:  # num of animations in idle
+            self._frame = 0  # reset to first frame
         else:
-            self.frame += 1
+            self._frame += 1
 
-        if not self.face_left:
-            self.image = pygame.transform.flip(images[self.frame // self.animation_speed], True, False)
+        if not self._face_left:
+            self.image = pygame.transform.flip(images[self._frame // self._animation_speed], True, False)
         else:
-            self.image = images[self.frame // self.animation_speed]
+            self.image = images[self._frame // self._animation_speed]
+
+    def attack_enemy(self, left=None):
+
+        if left is not None:
+            self._face_left = left
+
+        self.attacking = True
+        self._animating = True
+        # move rect to fix image shift in attack mode
+        self.rect.centerx -= 5
+        self.rect.centery -= 10
+        self._frame = 0
+
+    def animate_attack(self):
+        if self._frame < (len(self.attack_images) - 1) * self._animation_speed:
+            self.animate(self.attack_images)
+        else:
+            self.animation_state = "idle"
+            self.rect.centerx += 5
+            self.rect.centery += 10
+            self.attacking = False
+            self._animating = False
 
     # animates sprite while moving, returns to idle animation when complete
     def move_sprite(self):
@@ -248,9 +303,11 @@ class KnightChar(CombatCharSprite):
             self.animation_state = "walk"
         else:
             self.animation_state = "idle"
+            if not self.attacking:
+                self._animating = False
 
         if self.move_x > 0:
-            self.face_left = False
+            self._face_left = False
             if self.move_x < 2:
                 self.rect += self.move_x
                 self.move_x = 2
@@ -258,7 +315,7 @@ class KnightChar(CombatCharSprite):
                 self.rect.x += 2
                 self.move_x -= 2
         elif self.move_x < 0:
-            self.face_left = True
+            self._face_left = True
             if self.move_x > -2:
                 self.rect += self.move_x
                 self.move_x = 0
@@ -296,4 +353,7 @@ class KnightChar(CombatCharSprite):
 
         self.move_sprite()
 
-        self.animate(images)
+        if self.attacking:
+            self.animate_attack()
+        else:
+            self.animate(images)

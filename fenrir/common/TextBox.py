@@ -55,7 +55,7 @@ class TextBox:
         # Draw question inside text box
         self.draw_dialogue(question, size, x, y)
 
-        # Draw the available options in the screen
+        # Draw the available options in the screen for the player to choose
         x = x + 35
         y = y + 30
         line_height = 0

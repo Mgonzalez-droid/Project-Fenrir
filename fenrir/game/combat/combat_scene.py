@@ -186,31 +186,52 @@ class CombatScene(Scene):
 
         # this logic should be handled in the tile map data but there is bugs with indexs
         # and return wrong results for adjacent tiles
+        # Note: this should be fixed already!
 
         return ["[w] Up --- [s] Down --- [a] Left --- [d] Right", "[b] Cancel"]
 
     def process_player_move(self):
         self.player_moving = True
 
+        x, y = self.curr_player.get_tile_loc()
+        # Up, Down, Left, Right     :     Indices for Bools
+        available_moves = [True, True, True, True]
+        if x == 0 or self._map.tilemap[x - 1][y].is_blocking or self._map.tilemap[x - 1][y].is_wall \
+                or self._map.tilemap[x - 1][y].is_occupied:
+            available_moves[2] = False
+        if y == 0 or self._map.tilemap[x][y - 1].is_blocking or self._map.tilemap[x][y - 1].is_wall \
+                or self._map.tilemap[x][y - 1].is_occupied:
+            available_moves[0] = False
+        if x == len(self._map.tilemap - 1) or self._map.tilemap[x + 1][y].is_blocking \
+                or self._map.tilemap[x + 1][y].is_wall or self._map.tilemap[x + 1][y].is_occupied:
+            available_moves[3] = False
+        if y == len(self._map.tilemap[x] - 1) or self._map.tilemap[x][y + 1].is_blocking \
+                or self._map.tilemap[x + 1][y].is_wall or self._map.tilemap[x + 1][y].is_occupied:
+            available_moves[1] = False
+
         if self.key_dict['BACK']:
             self.player_moving = False
             self.clear_prompt()
         elif self.key_dict['UP']:
-            self.curr_player.move(0, -60)
-            self.movement_info = "UP"
-            self.move_complete = True
+            if available_moves[0]:
+                self.curr_player.move(0, -60)
+                self.movement_info = "UP"
+                self.move_complete = True
         elif self.key_dict['DOWN']:
-            self.curr_player.move(0, 60)
-            self.movement_info = "DOWN"
-            self.move_complete = True
+            if available_moves[1]:
+                self.curr_player.move(0, 60)
+                self.movement_info = "DOWN"
+                self.move_complete = True
         elif self.key_dict['LEFT']:
-            self.curr_player.move(-60, 0)
-            self.movement_info = "LEFT"
-            self.move_complete = True
+            if available_moves[2]:
+                self.curr_player.move(-60, 0)
+                self.movement_info = "LEFT"
+                self.move_complete = True
         elif self.key_dict['RIGHT']:
-            self.curr_player.move(60, 0)
-            self.movement_info = "RIGHT"
-            self.move_complete = True
+            if available_moves[3]:
+                self.curr_player.move(60, 0)
+                self.movement_info = "RIGHT"
+                self.move_complete = True
 
         if self.move_complete:
             self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved {self.movement_info}!"])
@@ -220,25 +241,41 @@ class CombatScene(Scene):
     def process_player_attack(self):
         self.player_attacking = True
 
+        x, y = self.curr_player.get_tile_loc()
+        # Up, Down, Left, Right     :     Indices for Bools
+        available_attacks = [True, True, True, True]
+        if x == 0 or self._map.tilemap[x - 1][y].is_wall:
+            available_attacks[2] = False
+        if y == 0 or self._map.tilemap[x][y - 1].is_wall:
+            available_attacks[0] = False
+        if x == len(self._map.tilemap - 1) or self._map.tilemap[x + 1][y].is_wall:
+            available_attacks[3] = False
+        if y == len(self._map.tilemap[x] - 1) or self._map.tilemap[x + 1][y].is_wall:
+            available_attacks[1] = False
+
         if self.key_dict['BACK']:
             self.player_attacking = False
             self.attack_complete = True
         elif self.key_dict['UP']:
-            self.curr_player.attack_enemy()
-            self.attack_info = "UP"
-            self.attack_complete = True
+            if available_attacks[0]:
+                self.curr_player.attack_enemy()
+                self.attack_info = "UP"
+                self.attack_complete = True
         elif self.key_dict['DOWN']:
-            self.curr_player.attack_enemy()
-            self.attack_info = "DOWN"
-            self.attack_complete = True
+            if available_attacks[1]:
+                self.curr_player.attack_enemy()
+                self.attack_info = "DOWN"
+                self.attack_complete = True
         elif self.key_dict['LEFT']:
-            self.curr_player.attack_enemy(True)
-            self.attack_info = "LEFT"
-            self.attack_complete = True
+            if available_attacks[2]:
+                self.curr_player.attack_enemy(True)
+                self.attack_info = "LEFT"
+                self.attack_complete = True
         elif self.key_dict['RIGHT']:
-            self.curr_player.attack_enemy(False)
-            self.attack_info = "RIGHT"
-            self.attack_complete = True
+            if available_attacks[3]:
+                self.curr_player.attack_enemy(False)
+                self.attack_info = "RIGHT"
+                self.attack_complete = True
 
         if self.attack_complete:
             self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You attacked {self.attack_info}!"])

@@ -7,7 +7,6 @@ import os
 import pygame
 from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
-from fenrir.common.music import Music
 import fenrir.game.overworld.overworld_scene as overscene
 from fenrir.game.combat.combat_chars import MageChar, KnightChar
 import fenrir.game.combat.combat_map_data as md
@@ -30,9 +29,6 @@ class CombatScene(Scene):
         self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(map_name + ".png")))
         self._participants = []
         self._player_list = pygame.sprite.Group()
-
-        # Play Music
-        Music.play_song("The Arrival (BATTLE II)")
 
         # Player char
         self._participants.append(KnightChar(0, 5, False))

@@ -1,13 +1,29 @@
-# Project-Fenrir
-Group project for CIS4930
-
-### Contributors:
-	- Victor Sotomayor Monroy
+# Project Fenrir by Team Freyja
+	- CIS4930 Summer 2021
+	
+	Contributors
+	- Victor A. Sotomayor
+	- Bryan Kristofferson
 	- Michel Gonzalez
 	- Barry Congressi
-	- Bryan Kristofferson
-	- Roberto Rafael Edde Verde
+	- Roberto Edde Verde
 	
+### The Game
+	Project Fenrir is a traditional JRPG with combat mechanics akin to those of Fire Emblem
+	and Final Fantasy Tactics. In the overworld, the player will explore areas to progress
+	through the game, find objects and characters to interact with and initiate combat.
+	Meanwhile, the combat will be composed of the player's party against an enemy party
+	using a chess-like grid to move their units and try to defeat all enemy units on the
+	grid. The game uses 2D sprites and animations to display the characters, environment,
+	and information to the player.
+	
+### How to run:
+	Run the following commands:
+		python3 setup.py install
+		play_fenrir
+		
+### GitHub Repository:
+Github - [Link to Repository](https://github.com/Mgonzalez-droid/Project-Fenrir)
 	
 ### Issue Tracking:
 

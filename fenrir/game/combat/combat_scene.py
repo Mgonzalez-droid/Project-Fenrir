@@ -119,7 +119,7 @@ class CombatScene(Scene):
 
         if self.show_text_box:
             tb = TextBox(self.screen)
-            tb.load_textbox()
+            tb.load_textbox(300, 370, 600, 100)
             tb.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
 
     def update(self):

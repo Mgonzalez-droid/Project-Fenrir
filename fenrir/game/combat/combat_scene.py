@@ -202,10 +202,10 @@ class CombatScene(Scene):
         if y == 0 or self._map.tilemap[x][y - 1].is_blocking or self._map.tilemap[x][y - 1].is_wall \
                 or self._map.tilemap[x][y - 1].is_occupied:
             available_moves[0] = False
-        if x == len(self._map.tilemap - 1) or self._map.tilemap[x + 1][y].is_blocking \
+        if x == len(self._map.tilemap) - 1 or self._map.tilemap[x + 1][y].is_blocking \
                 or self._map.tilemap[x + 1][y].is_wall or self._map.tilemap[x + 1][y].is_occupied:
             available_moves[3] = False
-        if y == len(self._map.tilemap[x] - 1) or self._map.tilemap[x][y + 1].is_blocking \
+        if y == len(self._map.tilemap[x]) - 1 or self._map.tilemap[x][y + 1].is_blocking \
                 or self._map.tilemap[x + 1][y].is_wall or self._map.tilemap[x + 1][y].is_occupied:
             available_moves[1] = False
 
@@ -248,9 +248,9 @@ class CombatScene(Scene):
             available_attacks[2] = False
         if y == 0 or self._map.tilemap[x][y - 1].is_wall:
             available_attacks[0] = False
-        if x == len(self._map.tilemap - 1) or self._map.tilemap[x + 1][y].is_wall:
+        if x == len(self._map.tilemap) - 1 or self._map.tilemap[x + 1][y].is_wall:
             available_attacks[3] = False
-        if y == len(self._map.tilemap[x] - 1) or self._map.tilemap[x + 1][y].is_wall:
+        if y == len(self._map.tilemap[x]) - 1 or self._map.tilemap[x + 1][y].is_wall:
             available_attacks[1] = False
 
         if self.key_dict['BACK']:

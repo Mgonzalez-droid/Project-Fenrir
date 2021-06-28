@@ -8,6 +8,7 @@ import fenrir.game.combat.combat_scene as combscene
 from fenrir.common.scene import Scene
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.common.TextBox import TextBox
+from fenrir.common.music import Music
 from fenrir.game.overworld.overworld_npc import overworld_npc as character
 from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
 from fenrir.game.overworld.overworld_boundaries import Boundaries
@@ -32,9 +33,8 @@ class OverworldScene(Scene):
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
-        # pygame.mixer.init()
-        # pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
-        # pygame.mixer.music.play()
+        # Play background music
+        Music.play_song("Windless Slopes")
 
         self.npc = character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"))
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)
@@ -81,6 +81,7 @@ class OverworldScene(Scene):
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
             if event.key == pygame.K_ESCAPE and not self.show_controls and not self.show_textbox:
+                Music.stop_song()
                 self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))
             if event.key == pygame.K_q:  # Press q to open/close controls menu
                 if self.show_controls:
@@ -106,6 +107,7 @@ class OverworldScene(Scene):
 
             # Select options from the text box
             if event.key == pygame.K_1 and self.show_textbox:
+                Music.stop_song()
                 self.update_game_state()
                 self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state, "combat_001"))
             if event.key == pygame.K_2 and self.show_textbox:

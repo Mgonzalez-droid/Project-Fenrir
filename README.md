@@ -18,9 +18,11 @@
 	and information to the player.
 	
 ### How to run:
-	Run the following commands:
-		python3 setup.py install
-		play_fenrir
+	
+Run the following commands on your machine or in a virtual environment using python3:
+
+	python3 setup.py install -user
+	python3 fenrir
 		
 ### GitHub Repository:
 Github - [Link to Repository](https://github.com/Mgonzalez-droid/Project-Fenrir)

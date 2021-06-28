@@ -179,35 +179,46 @@ class CombatScene(Scene):
         self.move_complete = False
         self.attack_info = ""
         self.movement_info = ""
-        self.get_prompt_directions()
 
-    def get_prompt_directions(self):
-        x, y = self.curr_player.get_tile_loc()
+    def get_prompt_directions(self, directions):
+        result_list = []
 
-        # this logic should be handled in the tile map data but there is bugs with indexs
-        # and return wrong results for adjacent tiles
-        # Note: this should be fixed already!
+        if directions[0]:
+            result_list.append("[w] Up")
 
-        return ["[w] Up --- [s] Down --- [a] Left --- [d] Right", "[b] Cancel"]
+        if directions[1]:
+            result_list.append("[s] Down")
+
+        if directions[2]:
+            result_list.append("[a] Left")
+
+        if directions[3]:
+            result_list.append("[d] Right")
+
+        return " --- ".join(result_list)
 
     def process_player_move(self):
         self.player_moving = True
 
         x, y = self.curr_player.get_tile_loc()
+
         # Up, Down, Left, Right     :     Indices for Bools
         available_moves = [True, True, True, True]
-        if x == 0 or self._map.tilemap[x - 1][y].is_blocking or self._map.tilemap[x - 1][y].is_wall \
-                or self._map.tilemap[x - 1][y].is_occupied:
+        if x == 0 or self._map.tilemap[y][x - 1].is_blocking or self._map.tilemap[y][x - 1].is_wall \
+                or self._map.tilemap[y][x - 1].is_occupied:
             available_moves[2] = False
-        if y == 0 or self._map.tilemap[x][y - 1].is_blocking or self._map.tilemap[x][y - 1].is_wall \
-                or self._map.tilemap[x][y - 1].is_occupied:
+        if y == 0 or self._map.tilemap[y - 1][x].is_blocking or self._map.tilemap[y - 1][x].is_wall \
+                or self._map.tilemap[y - 1][x].is_occupied:
             available_moves[0] = False
-        if x == len(self._map.tilemap - 1) or self._map.tilemap[x + 1][y].is_blocking \
-                or self._map.tilemap[x + 1][y].is_wall or self._map.tilemap[x + 1][y].is_occupied:
+        if x == len(self._map.tilemap) - 1 or self._map.tilemap[y][x + 1].is_blocking \
+                or self._map.tilemap[y][x + 1].is_wall or self._map.tilemap[y][x + 1].is_occupied:
             available_moves[3] = False
-        if y == len(self._map.tilemap[x] - 1) or self._map.tilemap[x][y + 1].is_blocking \
-                or self._map.tilemap[x + 1][y].is_wall or self._map.tilemap[x + 1][y].is_occupied:
+        if y == len(self._map.tilemap[y]) - 1 or self._map.tilemap[y + 1][x].is_blocking \
+                or self._map.tilemap[y + 1][x].is_wall or self._map.tilemap[y + 1][x].is_occupied:
             available_moves[1] = False
+
+        self.show_prompt("Which direction do you want to move?",
+                         [self.get_prompt_directions(available_moves), "[b] Cancel"])
 
         if self.key_dict['BACK']:
             self.player_moving = False
@@ -215,21 +226,29 @@ class CombatScene(Scene):
         elif self.key_dict['UP']:
             if available_moves[0]:
                 self.curr_player.move(0, -60)
+                self._map.tilemap[y][x].unoccupy()
+                self._map.tilemap[y-1][x].occupy(self.curr_player.get_id)
                 self.movement_info = "UP"
                 self.move_complete = True
         elif self.key_dict['DOWN']:
             if available_moves[1]:
                 self.curr_player.move(0, 60)
+                self._map.tilemap[y][x].unoccupy()
+                self._map.tilemap[y + 1][x].occupy(self.curr_player.get_id)
                 self.movement_info = "DOWN"
                 self.move_complete = True
         elif self.key_dict['LEFT']:
             if available_moves[2]:
                 self.curr_player.move(-60, 0)
+                self._map.tilemap[y][x].unoccupy()
+                self._map.tilemap[y][x-1].occupy(self.curr_player.get_id)
                 self.movement_info = "LEFT"
                 self.move_complete = True
         elif self.key_dict['RIGHT']:
             if available_moves[3]:
                 self.curr_player.move(60, 0)
+                self._map.tilemap[y][x].unoccupy()
+                self._map.tilemap[y][x+1].occupy(self.curr_player.get_id)
                 self.movement_info = "RIGHT"
                 self.move_complete = True
 
@@ -244,14 +263,17 @@ class CombatScene(Scene):
         x, y = self.curr_player.get_tile_loc()
         # Up, Down, Left, Right     :     Indices for Bools
         available_attacks = [True, True, True, True]
-        if x == 0 or self._map.tilemap[x - 1][y].is_wall:
+        if x == 0 or self._map.tilemap[y][x - 1].is_wall:
             available_attacks[2] = False
-        if y == 0 or self._map.tilemap[x][y - 1].is_wall:
+        if y == 0 or self._map.tilemap[y - 1][x].is_wall:
             available_attacks[0] = False
-        if x == len(self._map.tilemap - 1) or self._map.tilemap[x + 1][y].is_wall:
+        if x == len(self._map.tilemap) - 1 or self._map.tilemap[y][x + 1].is_wall:
             available_attacks[3] = False
-        if y == len(self._map.tilemap[x] - 1) or self._map.tilemap[x + 1][y].is_wall:
+        if y == len(self._map.tilemap[y]) - 1 or self._map.tilemap[y + 1][x].is_wall:
             available_attacks[1] = False
+
+        self.show_prompt("Which direction do you want to Attack?",
+                         [self.get_prompt_directions(available_attacks), "[b] Cancel"])
 
         if self.key_dict['BACK']:
             self.player_attacking = False
@@ -402,10 +424,8 @@ class CombatScene(Scene):
                         self.clear_prompt()
                         self.reset_keys()
                 elif self.player_attacking:
-                    self.show_prompt("Which direction do you want to attack?", self.get_prompt_directions())
                     self.process_player_attack()
                 elif self.player_moving:
-                    self.show_prompt("Which direction do you want to move?", self.get_prompt_directions())
                     self.process_player_move()
 
         self.reset_keys()

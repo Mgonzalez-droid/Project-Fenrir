@@ -17,14 +17,14 @@ class CombatInitiativeSystem:
         self._ordered_initiative_list = sorted(list(participants), key=lambda p: p.speed, reverse=True)
         self._current_position = 0
 
-    def get_current_participant(self):
+    def get_current_player(self):
         """Gets the character that is up for turn in combat
 
         :returns: CombatCharacterData object
         """
         return self._ordered_initiative_list[self._current_position]
 
-    def get_next_participant(self):
+    def get_next_player_up(self):
         """Gets the character that is up next after the current turn is complete
 
             :returns: CombatCharacterData object

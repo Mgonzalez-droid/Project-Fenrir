@@ -5,7 +5,7 @@ import pygame
 from fenrir.common.wsl import *
 from fenrir.common.config import *
 from fenrir.game.menu.menu_scene import MainMenuScene
-
+from fenrir.common.global_game_state import GameState
 
 def run():
     # this is required to set display for xserver and wsl
@@ -19,7 +19,7 @@ def run():
 
     pygame.display.set_caption(GAME_TITLE)
 
-    current_scene = MainMenuScene(screen)
+    current_scene = MainMenuScene(screen, GameState())
 
     # main loop
     while current_scene is not None:

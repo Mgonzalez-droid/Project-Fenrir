@@ -201,6 +201,7 @@ class CombatScene(Scene):
         self.player_moving = True
 
         x, y = self.curr_player.get_tile_loc()
+
         # Up, Down, Left, Right     :     Indices for Bools
         available_moves = [True, True, True, True]
         if x == 0 or self._map.tilemap[y][x - 1].is_blocking or self._map.tilemap[y][x - 1].is_wall \
@@ -216,7 +217,8 @@ class CombatScene(Scene):
                 or self._map.tilemap[y + 1][x].is_wall or self._map.tilemap[y + 1][x].is_occupied:
             available_moves[1] = False
 
-        self.show_prompt("Which direction do you want to move?", [self.get_prompt_directions(available_moves), "[b] Cancel"])
+        self.show_prompt("Which direction do you want to move?",
+                         [self.get_prompt_directions(available_moves), "[b] Cancel"])
 
         if self.key_dict['BACK']:
             self.player_moving = False
@@ -224,21 +226,29 @@ class CombatScene(Scene):
         elif self.key_dict['UP']:
             if available_moves[0]:
                 self.curr_player.move(0, -60)
+                self._map.tilemap[y][x].unoccupy()
+                self._map.tilemap[y-1][x].occupy(self.curr_player.get_id)
                 self.movement_info = "UP"
                 self.move_complete = True
         elif self.key_dict['DOWN']:
             if available_moves[1]:
                 self.curr_player.move(0, 60)
+                self._map.tilemap[y][x].unoccupy()
+                self._map.tilemap[y + 1][x].occupy(self.curr_player.get_id)
                 self.movement_info = "DOWN"
                 self.move_complete = True
         elif self.key_dict['LEFT']:
             if available_moves[2]:
                 self.curr_player.move(-60, 0)
+                self._map.tilemap[y][x].unoccupy()
+                self._map.tilemap[y][x-1].occupy(self.curr_player.get_id)
                 self.movement_info = "LEFT"
                 self.move_complete = True
         elif self.key_dict['RIGHT']:
             if available_moves[3]:
                 self.curr_player.move(60, 0)
+                self._map.tilemap[y][x].unoccupy()
+                self._map.tilemap[y][x+1].occupy(self.curr_player.get_id)
                 self.movement_info = "RIGHT"
                 self.move_complete = True
 
@@ -262,7 +272,8 @@ class CombatScene(Scene):
         if y == len(self._map.tilemap[y]) - 1 or self._map.tilemap[y + 1][x].is_wall:
             available_attacks[1] = False
 
-        self.show_prompt("Which direction do you want to attack?", self.get_prompt_directions(available_attacks))
+        self.show_prompt("Which direction do you want to Attack?",
+                         [self.get_prompt_directions(available_attacks), "[b] Cancel"])
 
         if self.key_dict['BACK']:
             self.player_attacking = False

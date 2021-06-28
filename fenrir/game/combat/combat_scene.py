@@ -179,16 +179,23 @@ class CombatScene(Scene):
         self.move_complete = False
         self.attack_info = ""
         self.movement_info = ""
-        self.get_prompt_directions()
 
-    def get_prompt_directions(self):
-        x, y = self.curr_player.get_tile_loc()
+    def get_prompt_directions(self, directions):
+        result_list = []
 
-        # this logic should be handled in the tile map data but there is bugs with indexs
-        # and return wrong results for adjacent tiles
-        # Note: this should be fixed already!
+        if directions[0]:
+            result_list.append("[w] Up")
 
-        return ["[w] Up --- [s] Down --- [a] Left --- [d] Right", "[b] Cancel"]
+        if directions[1]:
+            result_list.append("[s] Down")
+
+        if directions[2]:
+            result_list.append("[a] Left")
+
+        if directions[3]:
+            result_list.append("[d] Right")
+
+        return " --- ".join(result_list)
 
     def process_player_move(self):
         self.player_moving = True
@@ -208,6 +215,8 @@ class CombatScene(Scene):
         if y == len(self._map.tilemap[x]) - 1 or self._map.tilemap[x][y + 1].is_blocking \
                 or self._map.tilemap[x + 1][y].is_wall or self._map.tilemap[x + 1][y].is_occupied:
             available_moves[1] = False
+
+        self.show_prompt("Which direction do you want to move?", [self.get_prompt_directions(available_moves), "[b] Cancel"])
 
         if self.key_dict['BACK']:
             self.player_moving = False
@@ -252,6 +261,8 @@ class CombatScene(Scene):
             available_attacks[3] = False
         if y == len(self._map.tilemap[x]) - 1 or self._map.tilemap[x + 1][y].is_wall:
             available_attacks[1] = False
+
+        self.show_prompt("Which direction do you want to attack?", self.get_prompt_directions(available_attacks))
 
         if self.key_dict['BACK']:
             self.player_attacking = False
@@ -402,10 +413,8 @@ class CombatScene(Scene):
                         self.clear_prompt()
                         self.reset_keys()
                 elif self.player_attacking:
-                    self.show_prompt("Which direction do you want to attack?", self.get_prompt_directions())
                     self.process_player_attack()
                 elif self.player_moving:
-                    self.show_prompt("Which direction do you want to move?", self.get_prompt_directions())
                     self.process_player_move()
 
         self.reset_keys()

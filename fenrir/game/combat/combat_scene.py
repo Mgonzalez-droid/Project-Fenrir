@@ -85,7 +85,7 @@ class CombatScene(Scene):
         """Example event handling. Will return to main menu if you press q
         """
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_q:
+            if event.key == pygame.K_ESCAPE:
                 # currently the q button will quit and return to main menu
                 # TODO make a dialogue with text box (Are you sure? Yes/No) ...
                 self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))

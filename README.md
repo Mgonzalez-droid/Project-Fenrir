@@ -19,9 +19,9 @@
 	
 ### How to run:
 	
-Run the following commands on your machine or in a virtual environment using python3:
+Run the following commands on your machine or in a virtual environment using python3 from the root of the project directory named Project-Fenrir:
 
-	python3 setup.py install -user
+	python3 setup.py install --user
 	python3 fenrir
 		
 ### GitHub Repository:

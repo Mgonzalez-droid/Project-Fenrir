@@ -367,12 +367,16 @@ class CombatScene(Scene):
                         self.ai_thinking = True
                         self.game_over = True
                     elif target_to_attack is None:
+                        self._map.tilemap[(self.curr_player.ypos - 30) / 60][(self.curr_player.xpos - 30) / 60].unoccupy()
                         self.curr_player.move_to(ai_new_x, ai_new_y)
+                        self._map.tilemap[(ai_new_y - 30) / 60][(ai_new_x - 30) / 60].occupy()
                         self.enemy_moved = True
                         self.ai_completed_decision = True
                     else:
                         if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
+                            self._map.tilemap[(self.curr_player.ypos - 30) / 60][(self.curr_player.xpos - 30) / 60].unoccupy()
                             self.curr_player.move_to(ai_new_x, ai_new_y)
+                            self._map.tilemap[(ai_new_y - 30) / 60][(ai_new_x - 30) / 60].occupy()
                             self.ai_completed_decision = True
                         for character in self._participants:
                             if character.get_id() == target_to_attack:

@@ -11,23 +11,26 @@ class TextBox:
 
         # Default TextBox values
         self.text_box = " "
-        self.text_box_x_scale = 600
-        self.text_box_y_scale = 100
 
     # Load and scale Text box for dialogue
-    def load_textbox(self):
+    def load_textbox(self, x_pos, y_pos, x_scale, y_scale):
         # Load text box png
         self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "UI/generic-rpg-ui-text-box.png"))
 
         # Default Text box position on window
-        text_box_x_pos = 300 - self.text_box.get_width()
-        text_box_y_pos = self.text_box.get_height() + 370
+        if x_pos > self.text_box.get_width() and y_pos > self.text_box.get_height():
+            textbox_x_pos = x_pos - self.text_box.get_width()
+            textbox_y_pos = self.text_box.get_height() + y_pos
+        else:
+            textbox_x_pos = x_pos
+            textbox_y_pos = y_pos
 
         # Scale image to a proper size
-        text_box = pygame.transform.scale(self.text_box, (self.text_box_x_scale, self.text_box_y_scale))
+        if x_scale > 0 and y_scale > 0:
+            self.text_box = pygame.transform.scale(self.text_box, (x_scale, y_scale))
 
         # Display on window
-        self.screen.blit(text_box, (text_box_x_pos, text_box_y_pos))
+        self.screen.blit(self.text_box, (textbox_x_pos, textbox_y_pos))
 
     # Draw text
     def draw_dialogue(self, text, size, x, y):
@@ -46,6 +49,7 @@ class TextBox:
             # Next line of text will be below the line before it
             line_height = line_height - 16
 
+    # Draws a questions and several choices for the player to pick
     def draw_options(self, question, options, size, x, y):
 
         # Draw question inside text box
@@ -56,7 +60,10 @@ class TextBox:
         y = y + 30
         line_height = 0
         for option in options:
-
             self.draw_dialogue(option, size, x, y - line_height)
             line_height = line_height - 25
 
+    # Draws the current level of the player
+    def draw_level(self, text, level, size, x, y):
+
+        self.draw_dialogue(text + " " + str(level), size, x, y)

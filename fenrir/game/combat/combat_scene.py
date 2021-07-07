@@ -429,3 +429,20 @@ class CombatScene(Scene):
                     self.process_player_move()
 
         self.reset_keys()
+
+    def select_tile(self):
+        # Checks where the mouse is on screen and returns x, y of a tile when called
+        # Should only be called on left click when player move or player attack
+        mouse_pos = pygame.mouse.get_pos()
+        x_pos = 0
+        y_pos = 0
+        if not mouse_pos[0] % 60 == 0:
+            x_pos = int(mouse_pos[0]) - (int(mouse_pos[0]) % 60)
+        else:
+            x_pos = int(mouse_pos[0])
+        if not mouse_pos[1] % 60 == 0:
+            y_pos = int(mouse_pos[1]) - (int(mouse_pos[1] % 60))
+        else:
+            y_pos = int(mouse_pos[1])
+        coordinates = (x_pos, y_pos)
+        return coordinates

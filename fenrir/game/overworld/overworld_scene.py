@@ -22,11 +22,9 @@ class OverworldScene(Scene):
         original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
         self.background = pygame.transform.scale(original_background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
-        # self.level_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "level_HUD.png"))
         self.textbox = TextBox(self.screen)
 
         self.level = self.game_state.player_level
-        # self.level = pygame.image.load(os.path.join(PATH_TO_RESOURCES, f"level_{str(level)}.png"))
         self.hero = character_animated(self.game_state.game_state_location_x, self.game_state.game_state_location_y,
                                        os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"))
 

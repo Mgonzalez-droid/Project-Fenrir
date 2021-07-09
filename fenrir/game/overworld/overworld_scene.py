@@ -13,6 +13,7 @@ from fenrir.game.overworld.overworld_npc import overworld_npc as character
 from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
 from fenrir.game.overworld.overworld_boundaries import Boundaries
 from fenrir.game.overworld.overworld_collisions import Collision
+from fenrir.data.save_game_to_db import save_game
 
 
 class OverworldScene(Scene):
@@ -82,6 +83,11 @@ class OverworldScene(Scene):
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
             if event.key == pygame.K_ESCAPE and not self.show_controls and not self.show_textbox:
                 Music.stop_song()
+
+                # saves game progress to database
+                self.update_game_state()
+                save_game(self.game_state)
+
                 self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))
             if event.key == pygame.K_q:  # Press q to open/close controls menu
                 if self.show_controls:
@@ -142,7 +148,6 @@ class OverworldScene(Scene):
 
         # Draw Text box
         if self.show_textbox:
-
             # load_textbox(x, y, x_scale, y_scale)
             self.textbox.load_textbox(300, 370, 600, 100)
 

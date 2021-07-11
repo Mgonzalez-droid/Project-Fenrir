@@ -117,16 +117,41 @@ class LoadGameScene(MenuScene):
         self._menu_title = "Saved Games"
         self._saved_games = sorted(load_game_save_titles(), key=lambda x: x[2], reverse=True)
         self._menu_items = []
+        self._curr_page_num = 1
+        self._pages = int(len(self._saved_games) / 4 if len(self._saved_games) % 4 == 0
+                          else len(self._saved_games) // 4 + 1)
+        self._prev_page = False
+        self._next_page = False
         self.populate_menu_items()
 
     def populate_menu_items(self):
+
         if self._saved_games:
             self.starting_height = DisplaySettings.CENTER_HEIGHT.value - 100
-            for save in self._saved_games:
+
+            if self._curr_page_num == self._pages:
+                if len(self._saved_games) % 4 == 0:
+                    stopIndex = 4
+                else:
+                    stopIndex = len(self._saved_games) % 4
+            else:
+                stopIndex = 4
+
+            for i in range(1, stopIndex + 1):
+                save = self._saved_games[i * self._curr_page_num - 1]
                 self._menu_items.append("Player Name: " + save[1] + "    Last Saved: " + save[2])
         else:
             self.starting_height = DisplaySettings.SCREEN_RESOLUTION.value[1] - 50
-        self._menu_items.append("Back")
+
+        if self._curr_page_num > 1:
+            self._menu_items.append("Prev Page")
+            self._prev_page = True
+
+        if self._curr_page_num < self._pages:
+            self._menu_items.append("Next Page")
+            self._next_page = True
+
+        self._menu_items.append("Main Menu")
 
     def update(self):
         pass
@@ -138,22 +163,61 @@ class LoadGameScene(MenuScene):
         self.draw_cursor()
 
     def select_menu_item(self, index):
-        if not self._saved_games:
+
+        if index == len(self._menu_items) - 1:
             self.switch_to_scene(MainMenuScene(self.screen, self.game_state))
-        else:
-            if index == len(self._saved_games):
-                self.switch_to_scene(MainMenuScene(self.screen, self.game_state))
+        elif index == len(self._menu_items) - 2:
+            if self._next_page:
+                self.show_next_page()
+            elif self._prev_page:
+                self.show_prev_page()
             else:
-                load_id = self._saved_games[index][0]
-                self.game_state = load_game_save_by_id(load_id)
+                gameIndex = 4 * (self._curr_page_num - 1) + index
+                self.game_state = load_game_save_by_id(self._saved_games[gameIndex][0])
                 self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
+        elif index == len(self._menu_items) - 3 and self._next_page:
+            if self._prev_page:
+                self.show_prev_page()
+            else:
+                gameIndex = 4 * (self._curr_page_num - 1) + index
+                self.game_state = load_game_save_by_id(self._saved_games[gameIndex][0])
+                self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
+        else:
+            gameIndex = 4 * (self._curr_page_num - 1) + index
+            self.game_state = load_game_save_by_id(self._saved_games[gameIndex][0])
+            self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
 
     def display_menu_items(self, start_height):
         i = 0
         for item in self._menu_items:
-            self.draw_text_to_screen(item, 35, DisplaySettings.CENTER_WIDTH.value,
-                                     start_height + (i * self.menu_item_spacer), i)
+            self.draw_text_to_screen(item, 32, DisplaySettings.CENTER_WIDTH.value,
+                                     start_height + (i * 40), i)
             i += 1
+
+        if self._pages:
+            self.draw_text_to_screen(f"Page {self._curr_page_num} / {self._pages}", 30, DisplaySettings.CENTER_WIDTH.value,
+                                     DisplaySettings.SCREEN_RESOLUTION.value[1] - 40)
+        else:
+            self.draw_text_to_screen("No saved games yet!", 40, DisplaySettings.CENTER_WIDTH.value,
+                                     DisplaySettings.CENTER_HEIGHT.value)
+
+    def show_prev_page(self):
+        self.cursor_pos = 0
+        self._curr_page_num -= 1
+        self.menu_item_rects = []
+        self._menu_items = []
+        self._next_page = False
+        self._prev_page = False
+        self.populate_menu_items()
+
+    def show_next_page(self):
+        self.cursor_pos = 0
+        self._curr_page_num += 1
+        self.menu_item_rects = []
+        self._menu_items = []
+        self._next_page = False
+        self._prev_page = False
+        self.populate_menu_items()
 
 
 ##########################################################
@@ -164,8 +228,9 @@ class CreditsScene(MenuScene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
         self._menu_title = "Credits"
-        self._credit_names = ["Barry Congressi", "Bryan Kristofferson", "Michel Gonzalez",
-                              "Roberto Rafael Edde Verde", "Victor Sotomayor"]
+        self._credit_names = ["Victor Sotomayor - Team Lead, Combat Team", "Barry Congressi - Combat Team",
+                              "Bryan Kristofferson - Combat Team", "Michel Gonzalez - Overworld Team",
+                              "Roberto Rafael Edde Verde - Overworld Team"]
         self._menu_items = ["Main Menu"]
         self._menu_start_height = DisplaySettings.SCREEN_RESOLUTION.value[1] - 100  # bottom of screen
 
@@ -177,7 +242,7 @@ class CreditsScene(MenuScene):
         self.draw_cursor()
 
     def draw_names(self):
-        starting_height = self.starting_height - self.menu_item_spacer
+        starting_height = self.starting_height - 40
 
         i = 0
         for name in self._credit_names:
@@ -207,6 +272,7 @@ class NewGameScene(MenuScene):
         self._input_text = ""
         self._input_rect = pygame.Rect(0, 0, 400, 40)
         self._input_curs_rect = pygame.Rect(0, 0, 10, 30)
+        self.game_state = GameState()
 
     def render(self):
         self.screen.fill(Colors.BLACK.value)

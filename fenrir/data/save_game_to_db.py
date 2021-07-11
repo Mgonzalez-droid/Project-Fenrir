@@ -6,8 +6,6 @@ def save_game(state_obj):
     conn = db.connect_to_db()
     curs = conn.cursor()
 
-    print(state_obj.game_state_location_y)
-
     date = datetime.now()
     formatted_date = date.strftime("%b %d, %Y %I:%M %p")
 

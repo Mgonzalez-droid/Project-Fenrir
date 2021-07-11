@@ -25,6 +25,7 @@ class OverworldScene(Scene):
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
         # self.level_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "level_HUD.png"))
         self.textbox = TextBox(self.screen)
+        self._quit_screen = False
 
         self.level = self.game_state.player_level
         # self.level = pygame.image.load(os.path.join(PATH_TO_RESOURCES, f"level_{str(level)}.png"))
@@ -56,7 +57,7 @@ class OverworldScene(Scene):
 
         # Player check player movement for up (w), down (s), left (a), right (d)
         keys = pygame.key.get_pressed()
-        if not self.show_controls and not self.show_textbox:
+        if not self.show_controls and not self.show_textbox and not self._quit_screen:
             if keys[pygame.K_w]:
                 self.hero.y = boundaries.collision_up()  # Check if player hits top of window
                 self.hero.adjust_movement()
@@ -82,13 +83,8 @@ class OverworldScene(Scene):
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
             if event.key == pygame.K_ESCAPE and not self.show_controls and not self.show_textbox:
-                Music.stop_song()
+                self._quit_screen = True
 
-                # saves game progress to database
-                self.update_game_state()
-                save_game(self.game_state)
-
-                self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))
             if event.key == pygame.K_q:  # Press q to open/close controls menu
                 if self.show_controls:
                     original_background = pygame.image.load(
@@ -97,6 +93,8 @@ class OverworldScene(Scene):
                     self.show_controls = False
                     self.show_characters = True
                     self.show_hud = True
+                elif self._quit_screen:
+                    self.quit_game(False)
                 elif not self.show_controls and not self.show_textbox:
                     self.background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Simple_Control_menu.png"))
                     self.show_controls = True
@@ -118,6 +116,12 @@ class OverworldScene(Scene):
                 self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state, "combat_001"))
             if event.key == pygame.K_2 and self.show_textbox:
                 self.show_textbox = False
+
+            if self._quit_screen:
+                if event.key == pygame.K_b:
+                    self._quit_screen = False
+                if event.key == pygame.K_s:
+                    self.quit_game(True)
 
     def render(self):
 
@@ -146,6 +150,13 @@ class OverworldScene(Scene):
         if self.show_interaction and not self.show_controls:
             self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
 
+        if self._quit_screen:
+            self.textbox.load_textbox(400, 150, 400, 150)
+            options = ["[S]    Save and Quit", "[Q]    Quit", "[B]    Cancel"]
+            size = 24
+            x, y = 320, 200
+            self.textbox.draw_options("Are you sure you want to quit?", options, size, x, y)
+
         # Draw Text box
         if self.show_textbox:
             # load_textbox(x, y, x_scale, y_scale)
@@ -173,3 +184,13 @@ class OverworldScene(Scene):
     def update_game_state(self):
         self.game_state.game_state_location_x = self.hero.x
         self.game_state.game_state_location_y = self.hero.y
+
+    def quit_game(self, saving):
+        # saves game progress to database and stops music
+
+        if saving:
+            self.update_game_state()
+            save_game(self.game_state)
+
+        Music.stop_song()
+        self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))

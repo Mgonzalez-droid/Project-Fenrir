@@ -111,6 +111,11 @@ class CombatScene(Scene):
                 self.key_dict['4'] = True
             elif event.key == pygame.K_5:
                 self.key_dict['5'] = True
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                self.key_dict['L_CLICK'] = True
+            elif event.button == 3:
+                self.key_dict['R_CLICK'] = True
 
     def render(self):
         self.screen.fill(Colors.WHITE.value)
@@ -198,6 +203,7 @@ class CombatScene(Scene):
         return " --- ".join(result_list)
 
     def process_player_move(self):
+        # See bottom for list of updates needed for tile selection
         self.player_moving = True
 
         x, y = self.curr_player.get_tile_loc()
@@ -219,6 +225,7 @@ class CombatScene(Scene):
 
         self.show_prompt("Which direction do you want to move?",
                          [self.get_prompt_directions(available_moves), "[b] Cancel"])
+        movable_tiles = self.find_tiles_in_range(self.curr_player, self.curr_player.move_range, self._map, "movement")
 
         if self.key_dict['BACK']:
             self.player_moving = False
@@ -251,6 +258,20 @@ class CombatScene(Scene):
                 self._map.tilemap[y][x+1].occupy(self.curr_player.get_id)
                 self.movement_info = "RIGHT"
                 self.move_complete = True
+        elif self.key_dict['L_CLICK']:
+            # Need to have unit object
+            # selectable_tiles needs to be created upon a player selecting they want to move and cleared after
+            end_tile = self.select_tile()
+            selectable = False
+            for tile in movable_tiles:
+                check_tile = str(end_tile[0] * 60) + str(end_tile[1] * 60)
+                if tile.id == check_tile:
+                    selectable = True
+            if selectable:
+                # Testing to make sure it works
+                print("Tile is selectable!\nX: " + str(end_tile[0] * 60) + "\nY: " + str(end_tile[1] * 60))
+            else:
+                print("Tile is not selectable!")
 
         if self.move_complete:
             self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved {self.movement_info}!"])
@@ -434,15 +455,30 @@ class CombatScene(Scene):
         # Checks where the mouse is on screen and returns x, y of a tile when called
         # Should only be called on left click when player move or player attack
         mouse_pos = pygame.mouse.get_pos()
-        x_pos = 0
-        y_pos = 0
-        if not mouse_pos[0] % 60 == 0:
-            x_pos = int(mouse_pos[0]) - (int(mouse_pos[0]) % 60)
+        x_pos = int(mouse_pos[0] / 60)
+        y_pos = int(mouse_pos[1] / 60)
+        return (x_pos, y_pos)
+
+    # NOTE: selectable_tiles should be an EMPTY list (either movable or attackable tiles)
+    # If they aren't empty they SHOULD BE CLEARED before using them as a param for this function
+    # Tilemap has to be accessed as tilemap[y][x], it HAS to be backwards
+    def find_tiles_in_range(self, curr_unit, input_range, combat_map, select_type, selectable_tiles=[]):
+        range_counter = input_range
+        if range_counter > 0:
+            for tile in combat_map.tilemap[int((curr_unit.ypos - 30) / 60)][int((curr_unit.xpos - 30) / 60)].adjacencies:
+                _unique = True
+                for tile_c in selectable_tiles:
+                    if tile_c.id == tile.id:
+                        _unique = False
+                if _unique:
+                    if select_type == "movement":
+                        if not tile.is_blocking or not tile.is_wall:
+                            selectable_tiles.append(tile)
+                    elif select_type == "attack":
+                        if not tile.is_wall:
+                            selectable_tiles.append(tile)
+            range_counter -= 1
+            selectable_tiles = self.find_tiles_in_range(range_counter, combat_map, select_type, selectable_tiles)
+            return selectable_tiles
         else:
-            x_pos = int(mouse_pos[0])
-        if not mouse_pos[1] % 60 == 0:
-            y_pos = int(mouse_pos[1]) - (int(mouse_pos[1] % 60))
-        else:
-            y_pos = int(mouse_pos[1])
-        coordinates = (x_pos, y_pos)
-        return coordinates
+            return selectable_tiles

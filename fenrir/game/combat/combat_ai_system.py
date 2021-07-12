@@ -88,15 +88,13 @@ class CombatAISystem:
         # make list to search and list already searched
         openList = []
         closedList = []
-        for node in self._nodeTree:
-            node.clear_data()
 
         # find the first node and add it to the list to search. Set node's value to hold the distance to target
         for node in self._nodeTree:
+            node.clear_data()
             if node.get_xPos() == self._myX and node.get_yPos() == self._myY:
                 openList.append(node)
                 node.set_totalDistance(self._targetDistance)
-                break
 
         # as long as there are nodes to search keep looping
 

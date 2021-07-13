@@ -97,29 +97,6 @@ class CombatAINodeTree:
                 if counter == 4:
                     break
 
-        # # set all the neighbors for each node
-        # for node in self.AINodeTree:
-        #     if (node.get_yPos() - 1) >= 0 and self.is_tile_accessible(node.get_xPos(), node.get_yPos() - 1):
-        #         for otherNode in self.AINodeTree:
-        #             if otherNode.get_xPos() == node.get_xPos() and otherNode.get_yPos() == (node.get_yPos() - 1):
-        #                 node.set_neighbor(otherNode)
-        #                 break
-        #     if (node.get_xPos() + 1) < widthInTiles and self.is_tile_accessible(node.get_xPos() + 1, node.get_yPos()):
-        #         for otherNode in self.AINodeTree:
-        #             if otherNode.get_xPos() == (node.get_xPos() + 1) and otherNode.get_yPos() == node.get_yPos():
-        #                 node.set_neighbor(otherNode)
-        #                 break
-        #     if (node.get_yPos() + 1) < heightInTiles and FAKE_FUNCTION_IS_TILE_ACCESSABLE():
-        #         for otherNode in self.AINodeTree:
-        #             if otherNode.get_xPos() == node.get_xPos() and otherNode.get_yPos() == (node.get_yPos() + 1):
-        #                 node.set_neighbor(otherNode)
-        #                 break
-        #     if (node.get_xPos() - 1) >= 0 and FAKE_FUNCTION_IS_TILE_ACCESSABLE():
-        #         for otherNode in self.AINodeTree:
-        #             if otherNode.get_xPos() == (node.get_xPos() - 1) and otherNode.get_yPos() == node.get_yPos():
-        #                 node.set_neighbor(otherNode)
-        #                 break
-
     def is_tile_accessible(self, x, y):
         if not self._copyOfMapData.tilemap[y][x].is_blocking and not self._copyOfMapData.tilemap[y][x].is_wall:
             return True
@@ -127,7 +104,3 @@ class CombatAINodeTree:
 
     def get_ai_node_tree(self):
         return self.AINodeTree
-
-    # def clear_ai_node_tree_data(self):
-    #     for node in self.AINodeTree:
-    #         node.clear_data()

@@ -150,7 +150,7 @@ class CombatAISystem:
                     if openNeighbor.get_xPos() == neighbor.get_xPos() and openNeighbor.get_yPos() == neighbor.get_yPos():
                         inOpenList = True
                         if openNeighbor.get_totalDistance() > totalDist:
-                            neighbor.set_distanceFromStart(currentTile.get_pastValue() + 1)
+                            neighbor.set_distanceFromStart(currentTile.get_distanceFromStart() + 1)
                             neighbor.set_totalDistance(totalDist)
                             neighbor.set_parent(currentTile)
                         else:

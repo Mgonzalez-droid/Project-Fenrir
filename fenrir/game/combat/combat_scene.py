@@ -7,12 +7,13 @@ import os
 import pygame
 from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
-from fenrir.common.music import Music
 import fenrir.game.overworld.overworld_scene as overscene
 from fenrir.game.combat.combat_chars import MageChar, KnightChar
 import fenrir.game.combat.combat_map_data as md
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
+from fenrir.game.combat.combat_grid_system import CombatGridSystem
+from fenrir.game.combat.combat_move_list import combat_move_list
 
 # Todo import ai node tree and instantiate it
 from fenrir.game.combat.combat_ai_system import CombatAISystem
@@ -30,10 +31,13 @@ class CombatScene(Scene):
         self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(map_name + ".png")))
         self._participants = []
         self._player_list = pygame.sprite.Group()
+        self._combat_grid_system = CombatGridSystem(9, 16, self.screen)
+
         self._textbox = TextBox(self.screen)
 
         # Play Music
         Music.play_song("The Arrival (BATTLE II)")
+
 
         # Player char
         self._participants.append(KnightChar(0, 1, False))
@@ -53,6 +57,7 @@ class CombatScene(Scene):
         # key binding values
         self.key_dict = {'UP': False, 'DOWN': False, 'LEFT': False, 'RIGHT': False, 'SELECT': False, 'BACK': False,
                          '1': False, '2': False, '3': False, '4': False, '5': False}
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         # spawn players to the map
         self.spawn_participants()
@@ -124,10 +129,18 @@ class CombatScene(Scene):
             elif event.key == pygame.K_5:
                 self.key_dict['5'] = True
 
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+
     def render(self):
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self._background, (0, 0))
+        self._combat_grid_system.draw_grid(self.mouse_x, self.mouse_y)
         self._player_list.draw(self.screen)
+        self._combat_grid_system.clear_highlights()
+        if self.show_text_box:
+            tb = TextBox(self.screen)
+            tb.load_textbox(300, 370, 600, 100)
+            tb.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
 
         if self.show_text_box and not self._quit_screen:
             self._textbox.load_textbox(300, 370, 600, 100)
@@ -235,6 +248,18 @@ class CombatScene(Scene):
                 or self._map.tilemap[y + 1][x].is_wall or self._map.tilemap[y + 1][x].is_occupied:
             available_moves[1] = False
 
+        #########################################################################
+        # Temporary highlighting function will change with available moves list #
+        #########################################################################
+        temp_tiles = [(y-1, x), (y+1, x), (y, x-1), (y, x + 1)]
+        highlight_tiles = []
+        for i in range(0, 4):
+            if available_moves[i]:
+                highlight_tiles.append(temp_tiles[i])
+
+        self._combat_grid_system.highlight_tiles(highlight_tiles, Colors.BLUE.value)
+        #############################################################################
+
         self.show_prompt("Which direction do you want to move?",
                          [self.get_prompt_directions(available_moves), "[b] Cancel"])
 
@@ -272,6 +297,8 @@ class CombatScene(Scene):
 
         if self.move_complete:
             self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved {self.movement_info}!"])
+            # need to clear highlights after move complete
+            self._combat_grid_system.clear_highlights()
             if not self.curr_player.is_animating():
                 self.next_move()
 
@@ -289,6 +316,18 @@ class CombatScene(Scene):
             available_attacks[3] = False
         if y == len(self._map.tilemap[y]) - 1 or self._map.tilemap[y + 1][x].is_wall:
             available_attacks[1] = False
+
+        #########################################################################
+        # Temporary highlighting function will change with available moves list #
+        #########################################################################
+        temp_tiles = [(y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)]
+        highlight_tiles = []
+        for i in range(0, 4):
+            if available_attacks[i]:
+                highlight_tiles.append(temp_tiles[i])
+
+        self._combat_grid_system.highlight_tiles(highlight_tiles, Colors.BLUE.value)
+        #############################################################################
 
         self.show_prompt("Which direction do you want to Attack?",
                          [self.get_prompt_directions(available_attacks), "[b] Cancel"])
@@ -319,6 +358,8 @@ class CombatScene(Scene):
 
         if self.attack_complete:
             self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You attacked {self.attack_info}!"])
+            # need to clear highlights after move complete
+            self._combat_grid_system.clear_highlights()
             if not self.curr_player.is_animating():
                 self.next_move()
 
@@ -370,33 +411,54 @@ class CombatScene(Scene):
                 self.turn_counter += 1
         else:
             if self.curr_player.get_is_enemy():
-
                 if not self.ai_thinking:
                     self.show_prompt("Sensei's Turn", ["Sensei is deciding..."])
                     self.ai_thinking = True
                     self.ai_completed_decision = False
+
                     #####################
                     # AI Turn  - Start  #
                     #####################
+
                     # Determines target, builds path to target
                     ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
                     ai_new_x, ai_new_y, target_to_attack = ai_brain.decide_ai_action()
+
+                    # if there is no movement and no target then game is over
                     if ai_new_x is None and ai_new_y is None and target_to_attack is None:
                         self.ai_thinking = True
                         self.game_over = True
-                    elif target_to_attack is None:
-                        self.curr_player.move_to(ai_new_x, ai_new_y)
-                        self.enemy_moved = True
-                        self.ai_completed_decision = True
-                    else:
-                        if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
+
+                    # if there is a movement that needs to be made
+                    elif self.curr_player.xpos != ai_new_x or self.curr_player.ypos != ai_new_y:
+                        # if this is a mage they teleport
+                        if self.curr_player.get_type() == "mage":
                             self.curr_player.move_to(ai_new_x, ai_new_y)
-                            self.ai_completed_decision = True
+                        else:
+                            # set parameters for building the list of tiles to move through (for knight and archer)
+                            startingX = (self.curr_player.xpos - 30) / 60
+                            startingY = (self.curr_player.ypos - 30) / 60
+                            endingX = (ai_new_x - 30) / 60
+                            endingY = (ai_new_y - 30) / 60
+                            moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
+                            # move animation loop
+                            # TODO add a wait function so the animation can complete
+                            while len(moveList) > 0:
+                                self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30, (moveList[-1].get_yPos() * 60) + 30)
+                                moveList.pop()
+
+                        # update map file to unoccupy the current tile and occupy the new tile
+                        self._map.tilemap[(self.curr_player.ypos - 30) // 60][(self.curr_player.xpos - 30) // 60].unoccupy()
+                        self._map.tilemap[(ai_new_y - 30) // 60][(ai_new_x - 30) // 60].occupy(self.curr_player.get_id())
+                        self.enemy_moved = True
+
+                    # if there is a target to attack this turn
+                    if target_to_attack is not None:
                         for character in self._participants:
                             if character.get_id() == target_to_attack:
                                 if self.curr_player.get_type() == 'mage':
                                     character.take_damage(self.curr_player.magic_attack, 'magic')
-                                    self.enemy_attacked = True
+                                    self.enemy_attacked = True,
                                     self.curr_player.attack_enemy()
                                     self.ai_completed_decision = True
                                 else:
@@ -405,6 +467,9 @@ class CombatScene(Scene):
                                     self.enemy_attack_after_move = True
                                     self.ai_completed_decision = True
                                 break
+                    else:
+                        self.ai_completed_decision = True
+
                     #####################
                     # AI Turn  - Finish #
                     #####################

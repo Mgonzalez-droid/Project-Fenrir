@@ -8,6 +8,7 @@ from fenrir.common.global_game_state import GameState
 from fenrir.data.db_connection import initialize_db
 
 
+
 def run():
 
     # this will initialize the database if not done
@@ -42,4 +43,3 @@ def run():
 
         pygame.display.flip()
         clock.tick(DisplaySettings.FPS.value)
-

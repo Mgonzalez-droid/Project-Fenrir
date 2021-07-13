@@ -47,7 +47,7 @@ class CombatScene(Scene):
 
         # key binding values
         self.key_dict = {'UP': False, 'DOWN': False, 'LEFT': False, 'RIGHT': False, 'SELECT': False, 'BACK': False,
-                         '1': False, '2': False, '3': False, '4': False, '5': False}
+                         '1': False, '2': False, '3': False, '4': False, '5': False, 'L_CLICK': False}
 
         # spawn players to the map
         self.spawn_participants()
@@ -114,8 +114,6 @@ class CombatScene(Scene):
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 self.key_dict['L_CLICK'] = True
-            elif event.button == 3:
-                self.key_dict['R_CLICK'] = True
 
     def render(self):
         self.screen.fill(Colors.WHITE.value)
@@ -478,7 +476,7 @@ class CombatScene(Scene):
                         if not tile.is_wall:
                             selectable_tiles.append(tile)
             range_counter -= 1
-            selectable_tiles = self.find_tiles_in_range(range_counter, combat_map, select_type, selectable_tiles)
+            selectable_tiles = self.find_tiles_in_range(curr_unit, range_counter, combat_map, select_type, selectable_tiles)
             return selectable_tiles
         else:
             return selectable_tiles

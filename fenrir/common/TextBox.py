@@ -1,7 +1,6 @@
 import pygame
 import os
 from fenrir.common.config import *
-from fenrir.common.wsl import *
 
 
 class TextBox:

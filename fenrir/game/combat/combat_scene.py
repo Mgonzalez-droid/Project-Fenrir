@@ -12,6 +12,7 @@ from fenrir.game.combat.combat_chars import MageChar, KnightChar
 import fenrir.game.combat.combat_map_data as md
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
+from fenrir.game.combat.combat_move_list import combat_move_list
 
 # Todo import ai node tree and instantiate it
 from fenrir.game.combat.combat_ai_system import CombatAISystem
@@ -352,32 +353,49 @@ class CombatScene(Scene):
                 self.turn_counter += 1
         else:
             if self.curr_player.get_is_enemy():
-
                 if not self.ai_thinking:
                     self.show_prompt("Sensei's Turn", ["Sensei is deciding..."])
                     self.ai_thinking = True
                     self.ai_completed_decision = False
+
                     #####################
                     # AI Turn  - Start  #
                     #####################
+
                     # Determines target, builds path to target
                     ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
                     ai_new_x, ai_new_y, target_to_attack = ai_brain.decide_ai_action()
+
+                    # if there is no movement and no target then game is over
                     if ai_new_x is None and ai_new_y is None and target_to_attack is None:
                         self.ai_thinking = True
                         self.game_over = True
-                    elif target_to_attack is None:
+
+                    # if there is a movement that needs to be made
+                    elif self.curr_player.xpos != ai_new_x or self.curr_player.ypos != ai_new_y:
+                        # if this is a mage they teleport
+                        if self.curr_player.get_type() == "mage":
+                            self.curr_player.move_to(ai_new_x, ai_new_y)
+                        else:
+                            # set parameters for building the list of tiles to move through (for knight and archer)
+                            startingX = (self.curr_player.xpos - 30) / 60
+                            startingY = (self.curr_player.ypos - 30) / 60
+                            endingX = (ai_new_x - 30) / 60
+                            endingY = (ai_new_y - 30) / 60
+                            moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
+                            # move animation loop
+                            # TODO add a wait function so the animation can complete
+                            while len(moveList) > 0:
+                                self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30, (moveList[-1].get_yPos() * 60) + 30)
+                                moveList.pop()
+
+                        # update map file to unoccupy the current tile and occupy the new tile
                         self._map.tilemap[(self.curr_player.ypos - 30) / 60][(self.curr_player.xpos - 30) / 60].unoccupy()
-                        self.curr_player.move_to(ai_new_x, ai_new_y)
                         self._map.tilemap[(ai_new_y - 30) / 60][(ai_new_x - 30) / 60].occupy()
                         self.enemy_moved = True
-                        self.ai_completed_decision = True
-                    else:
-                        if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
-                            self._map.tilemap[(self.curr_player.ypos - 30) / 60][(self.curr_player.xpos - 30) / 60].unoccupy()
-                            self.curr_player.move_to(ai_new_x, ai_new_y)
-                            self._map.tilemap[(ai_new_y - 30) / 60][(ai_new_x - 30) / 60].occupy()
-                            self.ai_completed_decision = True
+
+                    # if there is a target to attack this turn
+                    if target_to_attack is not None:
                         for character in self._participants:
                             if character.get_id() == target_to_attack:
                                 if self.curr_player.get_type() == 'mage':
@@ -391,6 +409,9 @@ class CombatScene(Scene):
                                     self.enemy_attack_after_move = True
                                     self.ai_completed_decision = True
                                 break
+                    else:
+                        self.ai_completed_decision = True
+
                     #####################
                     # AI Turn  - Finish #
                     #####################

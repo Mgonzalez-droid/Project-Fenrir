@@ -168,13 +168,13 @@ class CombatScene(Scene):
             if player.get_is_enemy():
                 for tile in self._map.enemyspawn:
                     if not tile.is_occupied:
-                        player.rect.center = (tile.x_coord + 30, tile.y_coord + 30)
+                        player.set_player_loc(tile.x_coord + 30, tile.y_coord + 30)
                         tile.occupy(player.get_id())
                         break
             else:
                 for tile in self._map.playerspawn:
                     if not tile.is_occupied:
-                        player.rect.center = (tile.x_coord + 30, tile.y_coord + 30)
+                        player.set_player_loc(tile.x_coord + 30, tile.y_coord + 30)
                         tile.occupy(player.get_id())
                         break
 
@@ -433,7 +433,9 @@ class CombatScene(Scene):
                     elif self.curr_player.xpos != ai_new_x or self.curr_player.ypos != ai_new_y:
                         # if this is a mage they teleport
                         if self.curr_player.get_type() == "mage":
+                            print(ai_new_y, ai_new_x)
                             self.curr_player.move_to(ai_new_x, ai_new_y)
+
                         else:
                             # set parameters for building the list of tiles to move through (for knight and archer)
                             startingX = (self.curr_player.xpos - 30) / 60

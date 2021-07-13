@@ -7,6 +7,7 @@ from fenrir.common.config import *
 from fenrir.game.menu.menu_scene import MainMenuScene
 from fenrir.common.global_game_state import GameState
 
+
 def run():
     # this is required to set display for xserver and wsl
     set_display_to_host()
@@ -40,4 +41,3 @@ def run():
 
         pygame.display.flip()
         clock.tick(DisplaySettings.FPS.value)
-

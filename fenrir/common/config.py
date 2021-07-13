@@ -32,5 +32,9 @@ class Colors(Enum):
     ALPHA = (0, 255, 0)
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
+    GREEN = (0, 128, 0)
+    BLUE = (0, 0, 255)
+    RED = (255, 0, 0)
+    GRID_GRAY = (88, 88, 88)
 
     # add colors here with RGB values the list will lengthen as we go

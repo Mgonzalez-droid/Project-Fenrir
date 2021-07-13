@@ -8,6 +8,7 @@ import pygame
 from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
 import fenrir.game.overworld.overworld_scene as overscene
+from fenrir.common.music import Music
 from fenrir.game.combat.combat_chars import MageChar, KnightChar
 import fenrir.game.combat.combat_map_data as md
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
@@ -37,7 +38,6 @@ class CombatScene(Scene):
 
         # Play Music
         Music.play_song("The Arrival (BATTLE II)")
-
 
         # Player char
         self._participants.append(KnightChar(0, 1, False))

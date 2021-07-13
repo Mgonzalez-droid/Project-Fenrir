@@ -8,6 +8,7 @@ import fenrir.game.combat.combat_scene as combscene
 from fenrir.common.scene import Scene
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.common.TextBox import TextBox
+from fenrir.common.music import Music
 from fenrir.game.overworld.overworld_npc import overworld_npc as character
 from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
 from fenrir.game.overworld.overworld_boundaries import Boundaries
@@ -22,21 +23,19 @@ class OverworldScene(Scene):
         original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
         self.background = pygame.transform.scale(original_background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
-        # self.level_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "level_HUD.png"))
         self.textbox = TextBox(self.screen)
         self._quit_screen = False
 
         self.level = self.game_state.player_level
-        # self.level = pygame.image.load(os.path.join(PATH_TO_RESOURCES, f"level_{str(level)}.png"))
         self.hero = character_animated(self.game_state.game_state_location_x, self.game_state.game_state_location_y,
                                        os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"))
 
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
-        # pygame.mixer.init()
-        # pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
-        # pygame.mixer.music.play()
+        pygame.mixer.init()
+        pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
+        pygame.mixer.music.play()
 
         self.npc = character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"))
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)

@@ -8,6 +8,7 @@ GAME_TITLE = "Project Fenrir"
 
 PATH_TO_RESOURCES = os.path.join("fenrir", "resources")
 
+
 # screen resolution for game to be displayed, set in app.py
 class DisplaySettings(Enum):
     """Returns common colors defined with RGB values. This will allow a central location to
@@ -32,5 +33,9 @@ class Colors(Enum):
     ALPHA = (0, 255, 0)
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
+    GREEN = (0, 128, 0)
+    BLUE = (0, 0, 255)
+    RED = (255, 0, 0)
+    GRID_GRAY = (88, 88, 88)
 
     # add colors here with RGB values the list will lengthen as we go

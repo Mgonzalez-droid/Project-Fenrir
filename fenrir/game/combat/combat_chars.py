@@ -81,9 +81,12 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
 
     # return x,y tile location for combat map
     def get_tile_loc(self):
-        x = int((self.xpos - 30) / 60)
-        y = int((self.ypos - 30) / 60)
+        x = int((self.xpos - 30) // 60)
+        y = int((self.ypos - 30) // 60)
         return x, y
+
+    def set_player_loc(self, x, y):
+        raise NotImplementedError
 
 
 class MageChar(CombatCharSprite):
@@ -110,6 +113,15 @@ class MageChar(CombatCharSprite):
 
         # default values that will need to be formulated with map tile data depending on tile location
         self.rect.center = (90, 90)
+
+    def move_to(self, x_target, y_target):
+        delta_x = x_target - self.rect.centerx
+        delta_y = y_target - self.rect.centery - 35
+        self.move(delta_x, delta_y)
+
+    def set_player_loc(self, x, y):
+        self.rect.centerx = x
+        self.rect.centery = y - 35
 
     def load_assets(self):
         # load idle images
@@ -358,3 +370,7 @@ class KnightChar(CombatCharSprite):
             self.animate_attack()
         else:
             self.animate(images)
+
+    def set_player_loc(self, x, y):
+        self.rect.centerx = x
+        self.rect.centery = y

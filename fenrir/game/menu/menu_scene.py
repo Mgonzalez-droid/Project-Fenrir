@@ -1,9 +1,8 @@
 import pygame
 from fenrir.common.scene import Scene
 import fenrir.game.overworld.overworld_scene as overscene
+import fenrir.game.combat.combat_scene as combscene
 from fenrir.common.config import *
-from fenrir.data.load_game_from_db import *
-import time
 
 
 ##########################################################
@@ -84,7 +83,7 @@ class MainMenuScene(MenuScene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
         self._menu_title = "Project Fenrir"
-        self._menu_items = ["New Game", "Load Game", "Credits", "Exit"]
+        self._menu_items = ["New Game", "Credits", "Exit"]
         self._highlighted_items = [False for item in self._menu_items]
 
     def update(self):
@@ -100,10 +99,8 @@ class MainMenuScene(MenuScene):
         if index == 0:
             self.switch_to_scene(NewGameScene(self.screen, self.game_state))
         elif index == 1:
-            self.switch_to_scene(LoadGameScene(self.screen, self.game_state))
-        elif index == 2:
             self.switch_to_scene(CreditsScene(self.screen, self.game_state))
-        elif index == 3:
+        elif index == 2:
             self.terminate()
 
 
@@ -115,42 +112,16 @@ class LoadGameScene(MenuScene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
         self._menu_title = "Saved Games"
-        self._saved_games = sorted(load_game_save_titles(), key=lambda x: x[2], reverse=True)
+        self._saved_games = []
         self._menu_items = []
-        self._curr_page_num = 1
-        self._pages = int(len(self._saved_games) / 4 if len(self._saved_games) % 4 == 0
-                          else len(self._saved_games) // 4 + 1)
-        self._prev_page = False
-        self._next_page = False
         self.populate_menu_items()
 
     def populate_menu_items(self):
-
         if self._saved_games:
-            self.starting_height = DisplaySettings.CENTER_HEIGHT.value - 100
-
-            if self._curr_page_num == self._pages:
-                if len(self._saved_games) % 4 == 0:
-                    stopIndex = 4
-                else:
-                    stopIndex = len(self._saved_games) % 4
-            else:
-                stopIndex = 4
-
-            for i in range(1, stopIndex + 1):
-                save = self._saved_games[i * self._curr_page_num - 1]
-                self._menu_items.append("Player Name: " + save[1] + "    Last Saved: " + save[2])
+            for save in self._saved_games:
+                self._menu_items.append(save.title)
         else:
             self.starting_height = DisplaySettings.SCREEN_RESOLUTION.value[1] - 50
-
-        if self._curr_page_num > 1:
-            self._menu_items.append("Prev Page")
-            self._prev_page = True
-
-        if self._curr_page_num < self._pages:
-            self._menu_items.append("Next Page")
-            self._next_page = True
-
         self._menu_items.append("Main Menu")
 
     def update(self):
@@ -163,61 +134,14 @@ class LoadGameScene(MenuScene):
         self.draw_cursor()
 
     def select_menu_item(self, index):
-
-        if index == len(self._menu_items) - 1:
+        if not self._saved_games:
             self.switch_to_scene(MainMenuScene(self.screen, self.game_state))
-        elif index == len(self._menu_items) - 2:
-            if self._next_page:
-                self.show_next_page()
-            elif self._prev_page:
-                self.show_prev_page()
-            else:
-                gameIndex = 4 * (self._curr_page_num - 1) + index
-                self.game_state = load_game_save_by_id(self._saved_games[gameIndex][0])
-                self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
-        elif index == len(self._menu_items) - 3 and self._next_page:
-            if self._prev_page:
-                self.show_prev_page()
-            else:
-                gameIndex = 4 * (self._curr_page_num - 1) + index
-                self.game_state = load_game_save_by_id(self._saved_games[gameIndex][0])
-                self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
         else:
-            gameIndex = 4 * (self._curr_page_num - 1) + index
-            self.game_state = load_game_save_by_id(self._saved_games[gameIndex][0])
-            self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
-
-    def display_menu_items(self, start_height):
-        i = 0
-        for item in self._menu_items:
-            self.draw_text_to_screen(item, 32, DisplaySettings.CENTER_WIDTH.value,
-                                     start_height + (i * 40), i)
-            i += 1
-
-        if self._pages:
-            self.draw_text_to_screen(f"Page {self._curr_page_num} / {self._pages}", 30, DisplaySettings.CENTER_WIDTH.value,
-                                     DisplaySettings.SCREEN_RESOLUTION.value[1] - 40)
-        else:
-            self.draw_text_to_screen("No saved games yet!", 40, DisplaySettings.CENTER_WIDTH.value,
-                                     DisplaySettings.CENTER_HEIGHT.value)
-
-    def show_prev_page(self):
-        self.cursor_pos = 0
-        self._curr_page_num -= 1
-        self.menu_item_rects = []
-        self._menu_items = []
-        self._next_page = False
-        self._prev_page = False
-        self.populate_menu_items()
-
-    def show_next_page(self):
-        self.cursor_pos = 0
-        self._curr_page_num += 1
-        self.menu_item_rects = []
-        self._menu_items = []
-        self._next_page = False
-        self._prev_page = False
-        self.populate_menu_items()
+            if index == len(self._saved_games):
+                self.switch_to_scene(MainMenuScene(self.screen, self.game_state))
+            else:
+                # this is where game will be loaded
+                pass
 
 
 ##########################################################
@@ -228,9 +152,8 @@ class CreditsScene(MenuScene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
         self._menu_title = "Credits"
-        self._credit_names = ["Victor Sotomayor - Team Lead, Combat Team", "Barry Congressi - Combat Team",
-                              "Bryan Kristofferson - Combat Team", "Michel Gonzalez - Overworld Team",
-                              "Roberto Rafael Edde Verde - Overworld Team"]
+        self._credit_names = ["Barry Congressi", "Bryan Kristofferson", "Michel Gonzalez",
+                              "Roberto Rafael Edde Verde", "Victor Sotomayor"]
         self._menu_items = ["Main Menu"]
         self._menu_start_height = DisplaySettings.SCREEN_RESOLUTION.value[1] - 100  # bottom of screen
 
@@ -242,7 +165,7 @@ class CreditsScene(MenuScene):
         self.draw_cursor()
 
     def draw_names(self):
-        starting_height = self.starting_height - 40
+        starting_height = self.starting_height - self.menu_item_spacer
 
         i = 0
         for name in self._credit_names:
@@ -266,13 +189,8 @@ class NewGameScene(MenuScene):
 
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
-        self._menu_title = "New Game"
-        self._menu_items = ["Start New Game", "Back"]
-        self._inputting_name = False
-        self._input_text = ""
-        self._input_rect = pygame.Rect(0, 0, 400, 40)
-        self._input_curs_rect = pygame.Rect(0, 0, 10, 30)
-        self.game_state = GameState()
+        self._menu_title = " Choose Game Mode"
+        self._menu_items = ["Start New Game", "Main Menu"]
 
     def render(self):
         self.screen.fill(Colors.BLACK.value)
@@ -280,56 +198,13 @@ class NewGameScene(MenuScene):
         self.display_menu_items(self.starting_height)
         self.draw_cursor()
 
-        if self._inputting_name:
-            self.draw_input_box()
-
     def update(self):
         pass
 
     def select_menu_item(self, index):
-        if self._inputting_name:
-            if index == 0:
-                self.game_state.player_name = self._input_text
-                self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
-            elif index == 1:
-                self.switch_to_scene(NewGameScene(self.screen, self.game_state))
-        else:
-            if index == 0:
-                self._inputting_name = True
-                self._menu_items = ["Start Game", "Cancel"]
-                self.starting_height += 120
-                self.menu_item_rects = []
-            elif index == 1:
-                self.switch_to_scene(MainMenuScene(self.screen, self.game_state))
 
-    def draw_input_box(self):
-        self._input_rect.center = (DisplaySettings.CENTER_WIDTH.value, DisplaySettings.CENTER_HEIGHT.value)
-        self.draw_text_to_screen("Enter Player Name", 50, DisplaySettings.CENTER_WIDTH.value,
-                                 DisplaySettings.CENTER_HEIGHT.value - self.menu_item_spacer)
-        font = pygame.font.SysFont(None, 40)
-        txt_img = font.render(self._input_text, True, Colors.WHITE.value)
-        rect = txt_img.get_rect()
-        rect.size = txt_img.get_size()
-        rect.center = self._input_rect.center
-        self._input_curs_rect.midleft = rect.midright
-        self.screen.blit(txt_img, rect)
-
-        pygame.draw.rect(self.screen, Colors.WHITE.value, self._input_rect, 1)
-
-        if time.time() % 1 > 0.5:
-            pygame.draw.rect(self.screen, Colors.WHITE.value, self._input_curs_rect)
-
-    def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_DOWN:
-                self.move_cursor("DOWN")
-            elif event.key == pygame.K_UP:
-                self.move_cursor("UP")
-            elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
-                self.select_menu_item(self.cursor_pos)
-            elif self._inputting_name:
-                if event.key == pygame.K_BACKSPACE:
-                    if len(self._input_text) > 0:
-                        self._input_text = self._input_text[:-1]
-                else:
-                    self._input_text += event.unicode
+        if index == 0:
+            self.game_state.reset_game_state()
+            self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
+        elif index == 1:
+            self.switch_to_scene(MainMenuScene(self.screen, self.game_state))

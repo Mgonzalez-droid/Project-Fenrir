@@ -69,8 +69,3 @@ class Scene:
     @property
     def game_state(self):
         return self._game_state
-
-    @game_state.setter
-    def game_state(self, game_state):
-        self._game_state = game_state
-

@@ -8,6 +8,7 @@ GAME_TITLE = "Project Fenrir"
 
 PATH_TO_RESOURCES = os.path.join("fenrir", "resources")
 
+
 # screen resolution for game to be displayed, set in app.py
 class DisplaySettings(Enum):
     """Returns common colors defined with RGB values. This will allow a central location to

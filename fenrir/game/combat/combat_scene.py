@@ -33,11 +33,17 @@ class CombatScene(Scene):
         self._player_list = pygame.sprite.Group()
         self._combat_grid_system = CombatGridSystem(9, 16, self.screen)
 
+        self._textbox = TextBox(self.screen)
+
+        # Play Music
+        Music.play_song("The Arrival (BATTLE II)")
+
+
         # Player char
-        self._participants.append(KnightChar(0, 5, False))
+        self._participants.append(KnightChar(0, 1, False))
 
         # Enemy char
-        self._participants.append(MageChar(1, 10, True))
+        self._participants.append(MageChar(1, 1, True))
 
         # used for displaying on screen surface
         for player in self._participants:
@@ -85,14 +91,21 @@ class CombatScene(Scene):
         self.game_over = False
         self.player_won = False
 
+        # quitting combat screen
+        self._quit_screen = False
+
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you press q
         """
+
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                # currently the q button will quit and return to main menu
-                # TODO make a dialogue with text box (Are you sure? Yes/No) ...
-                self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
+            if self._quit_screen:
+                if event.key == pygame.K_y:
+                    self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
+                elif event.key == pygame.K_n:
+                    self._quit_screen = False
+            elif event.key == pygame.K_ESCAPE:
+                self._quit_screen = True
             elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                 self.key_dict['DOWN'] = True
             elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
@@ -128,6 +141,17 @@ class CombatScene(Scene):
             tb = TextBox(self.screen)
             tb.load_textbox(300, 370, 600, 100)
             tb.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
+
+        if self.show_text_box and not self._quit_screen:
+            self._textbox.load_textbox(300, 370, 600, 100)
+            self._textbox.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
+
+        if self._quit_screen:
+            self._textbox.load_textbox(400, 150, 400, 150)
+            options = ["[Y]    YES", "[N]    NO"]
+            size = 24
+            x, y = 320, 200
+            self._textbox.draw_options("Are you sure you want to quit?", options, size, x, y)
 
     def update(self):
         self.play_game()

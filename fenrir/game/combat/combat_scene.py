@@ -56,7 +56,7 @@ class CombatScene(Scene):
 
         # key binding values
         self.key_dict = {'UP': False, 'DOWN': False, 'LEFT': False, 'RIGHT': False, 'SELECT': False, 'BACK': False,
-                         '1': False, '2': False, '3': False, '4': False, '5': False}
+                         '1': False, '2': False, '3': False, '4': False, '5': False, 'L_CLICK': False}
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         # spawn players to the map
@@ -128,6 +128,9 @@ class CombatScene(Scene):
                 self.key_dict['4'] = True
             elif event.key == pygame.K_5:
                 self.key_dict['5'] = True
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                self.key_dict['L_CLICK'] = True
 
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
@@ -251,14 +254,17 @@ class CombatScene(Scene):
         #########################################################################
         # Temporary highlighting function will change with available moves list #
         #########################################################################
-        temp_tiles = [(y-1, x), (y+1, x), (y, x-1), (y, x + 1)]
+        movable_tiles = self.find_tiles_in_range(int(self.curr_player.xpos / 60), int(self.curr_player.ypos / 60),
+                                                 self.curr_player.move_range, self._map.tilemap, "movement")
         highlight_tiles = []
-        for i in range(0, 4):
-            if available_moves[i]:
-                highlight_tiles.append(temp_tiles[i])
+        for tile in movable_tiles:
+            x = int(tile.id[0] / 60)
+            y = int(tile.id[1] / 60)
+            highlight_tiles.append((y, x))
 
         self._combat_grid_system.highlight_tiles(highlight_tiles, Colors.BLUE.value)
         #############################################################################
+
 
         self.show_prompt("Which direction do you want to move?",
                          [self.get_prompt_directions(available_moves), "[b] Cancel"])
@@ -270,7 +276,7 @@ class CombatScene(Scene):
             if available_moves[0]:
                 self.curr_player.move(0, -60)
                 self._map.tilemap[y][x].unoccupy()
-                self._map.tilemap[y-1][x].occupy(self.curr_player.get_id)
+                self._map.tilemap[y - 1][x].occupy(self.curr_player.get_id)
                 self.movement_info = "UP"
                 self.move_complete = True
         elif self.key_dict['DOWN']:
@@ -284,16 +290,31 @@ class CombatScene(Scene):
             if available_moves[2]:
                 self.curr_player.move(-60, 0)
                 self._map.tilemap[y][x].unoccupy()
-                self._map.tilemap[y][x-1].occupy(self.curr_player.get_id)
+                self._map.tilemap[y][x - 1].occupy(self.curr_player.get_id)
                 self.movement_info = "LEFT"
                 self.move_complete = True
         elif self.key_dict['RIGHT']:
             if available_moves[3]:
                 self.curr_player.move(60, 0)
                 self._map.tilemap[y][x].unoccupy()
-                self._map.tilemap[y][x+1].occupy(self.curr_player.get_id)
+                self._map.tilemap[y][x + 1].occupy(self.curr_player.get_id)
                 self.movement_info = "RIGHT"
                 self.move_complete = True
+        elif self.key_dict['L_CLICK']:
+            # Need to have unit object
+            # selectable_tiles needs to be created upon a player selecting they want to move and cleared after
+            end_tile = self.select_tile()
+            selectable = False
+            for tile in movable_tiles:
+                print(tile.id)
+                if tile.id == end_tile:
+                    selectable = True
+            if selectable:
+                # Testing to make sure it works
+                print("Tile is selectable!\nX: " + str(end_tile[0]) + "\nY: " + str(end_tile[1]))
+            else:
+                print("Tile is not selectable!\nX: " + str(end_tile[0]) + "\nY: " + str(end_tile[1]))
+
 
         if self.move_complete:
             self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved {self.movement_info}!"])
@@ -442,16 +463,20 @@ class CombatScene(Scene):
                             startingY = (self.curr_player.ypos - 30) / 60
                             endingX = (ai_new_x - 30) / 60
                             endingY = (ai_new_y - 30) / 60
-                            moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
+                            moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree,
+                                                        self._map)
                             # move animation loop
                             # TODO add a wait function so the animation can complete
                             while len(moveList) > 0:
-                                self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30, (moveList[-1].get_yPos() * 60) + 30)
+                                self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30,
+                                                         (moveList[-1].get_yPos() * 60) + 30)
                                 moveList.pop()
 
                         # update map file to unoccupy the current tile and occupy the new tile
-                        self._map.tilemap[(self.curr_player.ypos - 30) // 60][(self.curr_player.xpos - 30) // 60].unoccupy()
-                        self._map.tilemap[(ai_new_y - 30) // 60][(ai_new_x - 30) // 60].occupy(self.curr_player.get_id())
+                        self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                            (self.curr_player.xpos - 30) // 60].unoccupy()
+                        self._map.tilemap[(ai_new_y - 30) // 60][(ai_new_x - 30) // 60].occupy(
+                            self.curr_player.get_id())
                         self.enemy_moved = True
 
                     # if there is a target to attack this turn
@@ -514,3 +539,47 @@ class CombatScene(Scene):
                     self.process_player_move()
 
         self.reset_keys()
+
+    def select_tile(self):
+        # Checks where the mouse is on screen and returns x, y of a tile when called
+        # Should only be called on left click when player move or player attack
+        mouse_pos = pygame.mouse.get_pos()
+        x_pos = int(mouse_pos[0] / 60) * 60
+        y_pos = int(mouse_pos[1] / 60) * 60
+        return x_pos, y_pos
+
+    def find_tiles_in_range(self, x_pos, y_pos, input_range, combat_map, select_type):
+        selectable_tiles = []
+        for tile in combat_map[y_pos][x_pos].adjacencies:
+            if select_type == "movement":
+                if not tile.is_occupied and not tile.is_wall and not tile.is_blocking:
+                    selectable_tiles.append(tile)
+            elif select_type == "attack":
+                if not tile.is_wall:
+                    selectable_tiles.append(tile)
+        input_range -= 1
+        while input_range > 0:
+            new_tiles = []
+            for i in range(len(selectable_tiles)):
+                for tile in selectable_tiles[i].adjacencies:
+                    _unique = True
+                    for s_tile in selectable_tiles:
+                        if tile.id == s_tile.id:
+                            _unique = False
+                    if _unique:
+                        if select_type == "movement":
+                            if not tile.is_occupied and not tile.is_wall and not tile.is_blocking:
+                                new_tiles.append(tile)
+                        elif select_type == "attack":
+                            if not tile.is_wall:
+                                new_tiles.append(tile)
+            selectable_tiles.extend(new_tiles)
+            input_range -= 1
+        s_tile_ids = []
+        final_selectable_tiles = []
+        for tile in selectable_tiles:
+            if tile.id not in s_tile_ids:
+                s_tile_ids.append(tile.id)
+        for tile_id in s_tile_ids:
+            final_selectable_tiles.append(combat_map[int(tile_id[1] / 60)][int(tile_id[0] / 60)])
+        return final_selectable_tiles

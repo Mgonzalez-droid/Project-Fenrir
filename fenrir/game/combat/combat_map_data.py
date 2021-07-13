@@ -32,7 +32,7 @@ class MapTile:
         # Coordinates are in increments of 60, top left corner of each tile
         self._x_coord = x_coord
         self._y_coord = y_coord
-        self._id = str(x_coord) + str(y_coord)
+        self._id = (x_coord, y_coord)
         self._occupied = False
         self._unit = ""
         self._adjacent = []

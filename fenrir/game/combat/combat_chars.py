@@ -114,6 +114,11 @@ class MageChar(CombatCharSprite):
         # default values that will need to be formulated with map tile data depending on tile location
         self.rect.center = (90, 90)
 
+    # this method needs to override the method in the combat char data because images havet to be shifted 35 pixels down
+    @property
+    def ypos(self):
+        return self.rect.centery + 35
+
     def move_to(self, x_target, y_target):
         delta_x = x_target - self.rect.centerx
         delta_y = y_target - self.rect.centery - 35

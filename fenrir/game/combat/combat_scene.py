@@ -55,8 +55,7 @@ class CombatScene(Scene):
         self.next_player = self.initiative_system.get_next_player_up()  # next player in the queue
 
         # key binding values
-        self.key_dict = {'UP': False, 'DOWN': False, 'LEFT': False, 'RIGHT': False, 'SELECT': False, 'BACK': False,
-                         '1': False, '2': False, '3': False, '4': False, '5': False, 'L_CLICK': False}
+        self.key_dict = {'SELECT': False, 'BACK': False,'1': False, '2': False, '3': False, 'L_CLICK': False}
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         # spawn players to the map
@@ -106,14 +105,6 @@ class CombatScene(Scene):
                     self._quit_screen = False
             elif event.key == pygame.K_ESCAPE:
                 self._quit_screen = True
-            elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                self.key_dict['DOWN'] = True
-            elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                self.key_dict['LEFT'] = True
-            elif event.key == pygame.K_w or event.key == pygame.K_UP:
-                self.key_dict['UP'] = True
-            elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                self.key_dict['RIGHT'] = True
             elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                 self.key_dict['SELECT'] = True
             elif event.key == pygame.K_b:
@@ -124,10 +115,6 @@ class CombatScene(Scene):
                 self.key_dict['2'] = True
             elif event.key == pygame.K_3:
                 self.key_dict['3'] = True
-            elif event.key == pygame.K_4:
-                self.key_dict['4'] = True
-            elif event.key == pygame.K_5:
-                self.key_dict['5'] = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 self.key_dict['L_CLICK'] = True
@@ -202,7 +189,6 @@ class CombatScene(Scene):
 
     def next_move(self):
         # this function resets all the logic needed to move to next turn
-
         self.update_initiative_system()
         self.clear_prompt()
         self.reset_keys()
@@ -213,23 +199,6 @@ class CombatScene(Scene):
         self.move_complete = False
         self.attack_info = ""
         self.movement_info = ""
-
-    def get_prompt_directions(self, directions):
-        result_list = []
-
-        if directions[0]:
-            result_list.append("[w] Up")
-
-        if directions[1]:
-            result_list.append("[s] Down")
-
-        if directions[2]:
-            result_list.append("[a] Left")
-
-        if directions[3]:
-            result_list.append("[d] Right")
-
-        return " --- ".join(result_list)
 
     def process_player_move(self):
         self.player_moving = True
@@ -259,9 +228,20 @@ class CombatScene(Scene):
                 if tile.id == end_tile:
                     selectable = True
             if selectable:
-                x = int(end_tile[0] // 60) * 60 + 30
-                y = int(end_tile[1] // 60) * 60 + 30
+                print("pixel", end_tile[0], end_tile[1])
+                print("index", int((end_tile[0]) // 60), int((end_tile[1]) // 60))
+                startingX = int((self.curr_player.xpos - 30) // 60)
+                startingY = int((self.curr_player.ypos - 30) // 60)
+                endingX = int((end_tile[0] - 30) // 60)
+                endingY = int((end_tile[1] - 30) // 60)
                 self.curr_player.move_to(x, y)
+                moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
+                # move animation loop
+                while len(moveList) > 0:
+                    print("moving to:", (moveList[-1].get_xPos() * 60) + 30, (moveList[-1].get_yPos() * 60) + 30)
+                    self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30,
+                                             (moveList[-1].get_yPos() * 60) + 30)
+                    moveList.pop()
                 self.move_complete = True
 
         if self.move_complete:
@@ -380,16 +360,16 @@ class CombatScene(Scene):
 
                     # if there is a movement that needs to be made
                     elif self.curr_player.xpos != ai_new_x or self.curr_player.ypos != ai_new_y:
+                        self._map.tilemap[(self.curr_player.ypos - 30) // 60][(self.curr_player.xpos - 30) // 60].unoccupy()
                         # if this is a mage they teleport
                         if self.curr_player.get_type() == "mage":
                             self.curr_player.move_to(ai_new_x, ai_new_y)
-
                         else:
                             # set parameters for building the list of tiles to move through (for knight and archer)
-                            startingX = (self.curr_player.xpos - 30) / 60
-                            startingY = (self.curr_player.ypos - 30) / 60
-                            endingX = (ai_new_x - 30) / 60
-                            endingY = (ai_new_y - 30) / 60
+                            startingX = int((self.curr_player.xpos - 30) / 60)
+                            startingY = int((self.curr_player.ypos - 30) / 60)
+                            endingX = int((ai_new_x - 30) / 60)
+                            endingY = int((ai_new_y - 30) / 60)
                             moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree,
                                                         self._map)
                             # move animation loop
@@ -400,10 +380,7 @@ class CombatScene(Scene):
                                 moveList.pop()
 
                         # update map file to unoccupy the current tile and occupy the new tile
-                        self._map.tilemap[(self.curr_player.ypos - 30) // 60][
-                            (self.curr_player.xpos - 30) // 60].unoccupy()
-                        self._map.tilemap[(ai_new_y - 30) // 60][(ai_new_x - 30) // 60].occupy(
-                            self.curr_player.get_id())
+                        self._map.tilemap[(ai_new_y - 30) // 60][(ai_new_x - 30) // 60].occupy(self.curr_player.get_id())
                         self.enemy_moved = True
 
                     # if there is a target to attack this turn

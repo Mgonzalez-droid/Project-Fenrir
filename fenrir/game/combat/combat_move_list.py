@@ -32,7 +32,7 @@ def combat_move_list(startingX, startingY, endingX, endingY, nodeTree, mapData):
         closedList.append(currentTile)
 
         # if currentTile coords match ending coords, then you are finished
-        if currentTile.get_xPos() == endingX and currentTile.get_YPos() == endingY:
+        if currentTile.get_xPos() == endingX and currentTile.get_yPos() == endingY:
             break
 
         # loop and add all of the current node's neighbors to the list to search if not occupied

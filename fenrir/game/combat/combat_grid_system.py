@@ -6,7 +6,6 @@
 
 import pygame
 from fenrir.common.config import Colors
-import time
 
 
 class CombatGridSystem:

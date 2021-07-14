@@ -54,7 +54,7 @@ class CombatScene(Scene):
         self.next_player = self.initiative_system.get_next_player_up()  # next player in the queue
 
         # key binding values
-        self.key_dict = {'SELECT': False, 'BACK': False,'1': False, '2': False, '3': False, 'L_CLICK': False}
+        self.key_dict = {'SELECT': False, 'BACK': False, '1': False, '2': False, '3': False, 'L_CLICK': False}
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         # spawn players to the map
@@ -94,6 +94,8 @@ class CombatScene(Scene):
 
         # used for highlighting current player
         self._highlight_curr_player = False
+        self._move_list = []
+        self._move_selected = False
 
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you press q
@@ -126,7 +128,6 @@ class CombatScene(Scene):
     def render(self):
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self._background, (0, 0))
-
         self._combat_grid_system.draw_grid(self.mouse_x, self.mouse_y, self.curr_player.xpos, self.curr_player.ypos,
                                            self._highlight_curr_player)
         self._player_list.draw(self.screen)
@@ -201,6 +202,7 @@ class CombatScene(Scene):
         self.attack_complete = False
         self.player_moving = False
         self.move_complete = False
+        self._move_selected = False
         self.attack_info = ""
         self.movement_info = ""
 
@@ -215,7 +217,8 @@ class CombatScene(Scene):
             y = int(tile.id[1] / 60)
             highlight_tiles.append((y, x))
 
-        self._combat_grid_system.highlight_tiles(highlight_tiles, Colors.BLUE.value)
+        if not self._move_selected:
+            self._combat_grid_system.highlight_tiles(highlight_tiles, Colors.BLUE.value)
 
         self.show_prompt("Click tile to move to!", ["[b] Cancel"])
 
@@ -226,35 +229,39 @@ class CombatScene(Scene):
             # Need to have unit object
             # selectable_tiles needs to be created upon a player selecting they want to move and cleared after
             end_tile = self.select_tile()
-            print("end", end_tile)
             selectable = False
             for tile in movable_tiles:
                 if tile.id == end_tile:
                     selectable = True
             if selectable:
-                print("pixel", end_tile[0], end_tile[1])
-                print("index", int((end_tile[0]) // 60), int((end_tile[1]) // 60))
                 startingX = int((self.curr_player.xpos - 30) // 60)
                 startingY = int((self.curr_player.ypos - 30) // 60)
                 endingX = int((end_tile[0]) // 60)
                 endingY = int((end_tile[1]) // 60)
-                self.curr_player.move_to(x, y)
-                moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
-                # move animation loop
-                while len(moveList) > 0:
-                    self._highlight_curr_player = False
-                    print("moving to:", (moveList[-1].get_xPos() * 60) + 30, (moveList[-1].get_yPos() * 60) + 30)
-                    self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30,
-                                             (moveList[-1].get_yPos() * 60) + 30)
-                    moveList.pop()
-                self.move_complete = True
+                self._move_list = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
+                # initial move starts here
+                self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                    (self.curr_player.xpos - 30) // 60].unoccupy()
+                self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                         (self._move_list[-1].get_yPos() * 60) + 30)
+                self._move_list.pop()
+                self._highlight_curr_player = False
+                self._move_selected = True
+                self._combat_grid_system.clear_highlights()
 
         if self.move_complete:
-            self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved {self.movement_info}!"])
+            self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved!"])
             # need to clear highlights after move complete
-            self._combat_grid_system.clear_highlights()
             if not self.curr_player.is_animating():
                 self.next_move()
+        elif self._move_list:
+            if not self.curr_player.is_animating():
+                self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                         (self._move_list[-1].get_yPos() * 60) + 30)
+                self._move_list.pop()
+
+            if not self._move_list:
+                self.move_complete = True
 
     def process_player_attack(self):
         self.player_attacking = True
@@ -366,7 +373,8 @@ class CombatScene(Scene):
 
                     # if there is a movement that needs to be made
                     elif self.curr_player.xpos != ai_new_x or self.curr_player.ypos != ai_new_y:
-                        self._map.tilemap[(self.curr_player.ypos - 30) // 60][(self.curr_player.xpos - 30) // 60].unoccupy()
+                        self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                            (self.curr_player.xpos - 30) // 60].unoccupy()
                         # if this is a mage they teleport
                         if self.curr_player.get_type() == "mage":
                             self.curr_player.move_to(ai_new_x, ai_new_y)
@@ -386,7 +394,8 @@ class CombatScene(Scene):
                                 moveList.pop()
 
                         # update map file to unoccupy the current tile and occupy the new tile
-                        self._map.tilemap[(ai_new_y - 30) // 60][(ai_new_x - 30) // 60].occupy(self.curr_player.get_id())
+                        self._map.tilemap[(ai_new_y - 30) // 60][(ai_new_x - 30) // 60].occupy(
+                            self.curr_player.get_id())
                         self.enemy_moved = True
 
                     # if there is a target to attack this turn

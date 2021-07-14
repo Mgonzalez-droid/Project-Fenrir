@@ -13,9 +13,9 @@ class TextBox:
         self.text_box = " "
 
     # Load and scale Text box for dialogue
-    def load_textbox(self, x_pos, y_pos, x_scale, y_scale):
+    def load_image(self, x_pos, y_pos, x_scale, y_scale, image):
         # Load text box png
-        self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "UI/generic-rpg-ui-text-box.png"))
+        self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, image))
 
         # Default Text box position on window
         if x_pos > self.text_box.get_width() and y_pos > self.text_box.get_height():

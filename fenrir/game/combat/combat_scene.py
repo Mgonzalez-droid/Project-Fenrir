@@ -1,6 +1,5 @@
 """ .. module:: scene
     :synopsis: Module will load combat mode into game
-
 """
 
 import os
@@ -93,6 +92,9 @@ class CombatScene(Scene):
         # quitting combat screen
         self._quit_screen = False
 
+        # used for highlighting current player
+        self._highlight_curr_player = False
+
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you press q
         """
@@ -124,7 +126,9 @@ class CombatScene(Scene):
     def render(self):
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self._background, (0, 0))
-        self._combat_grid_system.draw_grid(self.mouse_x, self.mouse_y)
+
+        self._combat_grid_system.draw_grid(self.mouse_x, self.mouse_y, self.curr_player.xpos, self.curr_player.ypos,
+                                           self._highlight_curr_player)
         self._player_list.draw(self.screen)
         self._combat_grid_system.clear_highlights()
         if self.show_text_box:
@@ -213,8 +217,7 @@ class CombatScene(Scene):
 
         self._combat_grid_system.highlight_tiles(highlight_tiles, Colors.BLUE.value)
 
-        self.show_prompt("Click tile to move to!",
-                         ["[b] Cancel"])
+        self.show_prompt("Click tile to move to!", ["[b] Cancel"])
 
         if self.key_dict['BACK']:
             self.player_moving = False
@@ -223,6 +226,7 @@ class CombatScene(Scene):
             # Need to have unit object
             # selectable_tiles needs to be created upon a player selecting they want to move and cleared after
             end_tile = self.select_tile()
+            print("end", end_tile)
             selectable = False
             for tile in movable_tiles:
                 if tile.id == end_tile:
@@ -232,12 +236,13 @@ class CombatScene(Scene):
                 print("index", int((end_tile[0]) // 60), int((end_tile[1]) // 60))
                 startingX = int((self.curr_player.xpos - 30) // 60)
                 startingY = int((self.curr_player.ypos - 30) // 60)
-                endingX = int((end_tile[0] - 30) // 60)
-                endingY = int((end_tile[1] - 30) // 60)
+                endingX = int((end_tile[0]) // 60)
+                endingY = int((end_tile[1]) // 60)
                 self.curr_player.move_to(x, y)
                 moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
                 # move animation loop
                 while len(moveList) > 0:
+                    self._highlight_curr_player = False
                     print("moving to:", (moveList[-1].get_xPos() * 60) + 30, (moveList[-1].get_yPos() * 60) + 30)
                     self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30,
                                              (moveList[-1].get_yPos() * 60) + 30)
@@ -286,6 +291,7 @@ class CombatScene(Scene):
                 self.attack_complete = True
 
         if self.attack_complete:
+            self._highlight_curr_player = False
             self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You attacked {self.attack_info}!"])
             # need to clear highlights after move complete
             self._combat_grid_system.clear_highlights()
@@ -428,6 +434,7 @@ class CombatScene(Scene):
                         self.next_move()
             else:
                 if not self.player_attacking and not self.player_moving:
+                    self._highlight_curr_player = True
                     self.show_prompt("Your turn!", ["[1] Attack", "[2] Move"])
                     if self.key_dict['1']:
                         self.player_attacking = True

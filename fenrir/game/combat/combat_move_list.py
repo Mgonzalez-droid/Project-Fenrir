@@ -75,4 +75,5 @@ def combat_move_list(startingX, startingY, endingX, endingY, nodeTree, mapData):
         moveList.append(currentTile)
         currentTile = currentTile.get_parent()
 
+    print(moveList)
     return moveList

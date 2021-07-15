@@ -40,11 +40,12 @@ class CombatScene(Scene):
 
         # Player char
         self._participants.append(KnightChar(0, 1, False))
-        #self._participants.append(ArcherChar(1, 2, False))
-        #self._participants.append(MageChar(2, 1, False))
+        self._participants.append(ArcherChar(1, 2, False))
+        self._participants.append(MageChar(2, 1, False))
 
         # Enemy char
         self._participants.append(KnightChar(3, 1, True))
+        self._participants.append(MageChar(4, 1, True))
 
         # used for displaying on screen surface
         for player in self._participants:

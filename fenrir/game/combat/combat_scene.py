@@ -143,11 +143,11 @@ class CombatScene(Scene):
             tb.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
 
         if self.show_text_box and not self._quit_screen:
-            self._textbox.load_textbox(300, 370, 600, 100)
+            self._textbox.load_image(300, 370, 600, 100, "UI/generic-rpg-ui-text-box.png")
             self._textbox.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
 
         if self._quit_screen:
-            self._textbox.load_textbox(400, 150, 400, 150)
+            self._textbox.load_image(400, 150, 400, 150, "UI/generic-rpg-ui-text-box.png")
             options = ["[Y]    YES", "[N]    NO"]
             size = 24
             x, y = 320, 200

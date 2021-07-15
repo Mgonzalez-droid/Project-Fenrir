@@ -44,7 +44,7 @@ class CombatScene(Scene):
         self._participants.append(MageChar(2, 1, False))
 
         # Enemy char
-        self._participants.append(MageChar(3, 1, True))
+        self._participants.append(KnightChar(3, 1, True))
 
         # used for displaying on screen surface
         for player in self._participants:
@@ -391,10 +391,18 @@ class CombatScene(Scene):
                             endingY = int((ai_new_y - 30) / 60)
                             moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree,
                                                         self._map)
+                            self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30,
+                                                     (moveList[-1].get_yPos() * 60) + 30)
+                            move_called = True
+                            moveList.pop()
                             # move animation loop
                             while len(moveList) > 0:
-                                if not self.curr_player.is_animating():
+                                if move_called:
+                                    if not self.curr_player.is_animating():
+                                        move_called = False
+                                else:
                                     self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30, (moveList[-1].get_yPos() * 60) + 30)
+                                    move_called = True
                                     moveList.pop()
 
                             while self.curr_player.is_animating():

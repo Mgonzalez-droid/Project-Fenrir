@@ -10,7 +10,7 @@ import fenrir.game.overworld.overworld_scene as overscene
 from fenrir.common.music import Music
 from fenrir.game.combat.combat_chars import ArcherChar, KnightChar, MageChar
 import fenrir.game.combat.combat_map_data as md
-from fenrir.common.config import Colors, PATH_TO_RESOURCES
+from fenrir.common.config import Colors, DisplaySettings, PATH_TO_RESOURCES
 from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
 from fenrir.game.combat.combat_grid_system import CombatGridSystem
 from fenrir.game.combat.combat_move_list import combat_move_list
@@ -34,6 +34,8 @@ class CombatScene(Scene):
         self._combat_grid_system = CombatGridSystem(9, 16, self.screen)
 
         self._textbox = TextBox(self.screen)
+        # used to hide large prompt in middle of screen
+        self._hide_prompt = False
 
         # Play Music
         Music.play_song("The Arrival (BATTLE II)")
@@ -57,7 +59,8 @@ class CombatScene(Scene):
         self.next_player = self.initiative_system.get_next_player_up()  # next player in the queue
 
         # key binding values
-        self.key_dict = {'SELECT': False, 'BACK': False, '1': False, '2': False, '3': False, 'L_CLICK': False}
+        self.key_dict = {'SELECT': False, 'BACK': False, '1': False, '2': False,
+                         '3': False, 'L_CLICK': False, 'SPACE': False}
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         # spawn players to the map
@@ -83,7 +86,6 @@ class CombatScene(Scene):
         self.ai_thinking = False
         self.ai_completed_decision = True  # this flag will be set when AI is thinking and True when not thinking
         self.enemy_attack_after_move = False
-        self.attack_info = ""
 
         # used for enemy choices
         self.enemy_attacked = False
@@ -110,6 +112,7 @@ class CombatScene(Scene):
         self._highlight_curr_player = False
         self._move_list = []
         self._move_selected = False
+        self._attack_selected = False
 
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you press q
@@ -133,6 +136,8 @@ class CombatScene(Scene):
                 self.key_dict['2'] = True
             elif event.key == pygame.K_3:
                 self.key_dict['3'] = True
+            elif event.key == pygame.K_SPACE:
+                self._hide_prompt = not self._hide_prompt
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 self.key_dict['L_CLICK'] = True
@@ -147,11 +152,23 @@ class CombatScene(Scene):
         self._player_list.draw(self.screen)
         self._combat_grid_system.clear_highlights()
 
-        if self.show_text_box and not self._quit_screen:
-            self._textbox.load_textbox(300, 370, 600, 140)
-            self._textbox.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
-
-        if self._quit_screen:
+        if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected):
+            self._textbox.load_textbox(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40)
+            option = "Attack" if self.player_attacking else "Move"
+            self._textbox.draw_dialogue(f"Click tile to {option} or press [b] to cancel", 18, 20,
+                                        DisplaySettings.SCREEN_RESOLUTION.value[1] - 42)
+        elif self.show_text_box and not self._quit_screen:
+            if not self._hide_prompt:
+                text_box_height = 40 + 30 * len(self.prompt_options)
+                self._textbox.load_textbox(400, 370, 430, text_box_height)
+                self._textbox.draw_options(self.prompt, self.prompt_options, 24, 300, 400)
+            else:
+                self._textbox.load_textbox(DisplaySettings.SCREEN_RESOLUTION.value[0] - 200,
+                                           DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40)
+                self._textbox.draw_dialogue(f"Press [SPACE] to show prompt.", 18,
+                                            DisplaySettings.SCREEN_RESOLUTION.value[0] - 300,
+                                            DisplaySettings.SCREEN_RESOLUTION.value[1] - 40)
+        elif self._quit_screen:
             self._textbox.load_textbox(400, 150, 400, 150)
             options = ["[Y]    YES", "[N]    NO"]
             size = 24
@@ -215,12 +232,11 @@ class CombatScene(Scene):
         self._move_selected = False
         self.move_counter = 2
         self.player_used_attack = False
-
+        self._hide_prompt = False
         self.ai_first_pass = False
         self.ai_turn_finished = False
         self.ai_movement_finished = False
         self.ai_attack_finished = False
-        self.attack_info = ""
 
     def process_player_move(self):
         self.player_moving = True
@@ -235,8 +251,9 @@ class CombatScene(Scene):
 
         if not self._move_selected:
             self._combat_grid_system.highlight_tiles(highlight_tiles, Colors.BLUE.value)
-
-        self.show_prompt("Click tile to move to!", ["[b] Cancel"])
+        else:
+            self.show_prompt(f"{self.game_state.player_name}'s choice",
+                             [f"{self.curr_player.get_type().capitalize()} Moved!"])
 
         if self.key_dict['BACK']:
             self.player_moving = False
@@ -264,10 +281,10 @@ class CombatScene(Scene):
                 self._move_list.pop()
                 self._highlight_curr_player = False
                 self._move_selected = True
+
                 self._combat_grid_system.clear_highlights()
 
         if self.move_complete:
-            self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved!"])
             # need to clear highlights after move complete
             if not self.curr_player.is_animating():
                 self.player_moving = False
@@ -321,7 +338,8 @@ class CombatScene(Scene):
 
         if self.attack_complete:
             self._highlight_curr_player = False
-            self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You attacked {self.attack_info}!"])
+            self.show_prompt(f"{self.game_state.player_name}'s Turn",
+                             [f"{self.curr_player.get_type().capitalize()} attacked!"])
             # need to clear highlights after move complete
             self._combat_grid_system.clear_highlights()
             if not self.curr_player.is_animating():
@@ -416,31 +434,38 @@ class CombatScene(Scene):
                     if not self.ai_movement_finished:
                         # if this is a mage they teleport
                         if self.curr_player.get_type() == "mage":
-                            self._map.tilemap[(self.curr_player.ypos - 30) // 60][(self.curr_player.xpos - 30) // 60].unoccupy()
-                            self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(self.curr_player.get_id())
+                            self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                                (self.curr_player.xpos - 30) // 60].unoccupy()
+                            self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
+                                self.curr_player.get_id())
                             self.curr_player.move_to(self.ai_new_x, self.ai_new_y)
                             self.ai_first_pass = True
                             self.ai_movement_finished = True
                         elif self.curr_player.get_type() != "mage":
                             if not self.ai_first_pass:
                                 # set parameters for building the list of tiles to move through (for knight and archer)
-                                self._map.tilemap[(self.curr_player.ypos - 30) // 60][(self.curr_player.xpos - 30) // 60].unoccupy()
+                                self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                                    (self.curr_player.xpos - 30) // 60].unoccupy()
                                 startingX = int((self.curr_player.xpos - 30) / 60)
                                 startingY = int((self.curr_player.ypos - 30) / 60)
                                 endingX = int((self.ai_new_x - 30) / 60)
                                 endingY = int((self.ai_new_y - 30) / 60)
-                                self._move_list = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
-                                self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30, (self._move_list[-1].get_yPos() * 60) + 30)
+                                self._move_list = combat_move_list(startingX, startingY, endingX, endingY,
+                                                                   self._ai_Tree, self._map)
+                                self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                                         (self._move_list[-1].get_yPos() * 60) + 30)
                                 self.ai_first_pass = True
                                 self._move_list.pop()
 
                             if self._move_list:
                                 if not self.curr_player.is_animating():
-                                    self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30, (self._move_list[-1].get_yPos() * 60) + 30)
+                                    self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                                             (self._move_list[-1].get_yPos() * 60) + 30)
                                     self._move_list.pop()
                             else:
                                 if not self.curr_player.is_animating():
-                                    self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(self.curr_player.get_id())
+                                    self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
+                                        self.curr_player.get_id())
                                     self.ai_movement_finished = True
 
                     if self.ai_movement_finished and not self.ai_attack_finished:
@@ -494,9 +519,11 @@ class CombatScene(Scene):
                                                                                                  "[3] Skip Turn"]
                         prompt_text = f"You have {self.move_counter}"
                         if self.move_counter == 2:
-                            prompt_text += " choices left!"
+                            prompt_text += " choices left"
                         else:
-                            prompt_text += " choice left!"
+                            prompt_text += " choice left"
+
+                        prompt_text += f" for {self.curr_player.get_type().capitalize()}!"
                         self.show_prompt(prompt_text, choices)
 
                         # keys depending on choices available

@@ -44,7 +44,8 @@ class CombatScene(Scene):
         self._participants.append(MageChar(2, 1, False))
 
         # Enemy char
-        self._participants.append(MageChar(3, 1, True))
+        self._participants.append(KnightChar(3, 1, True))
+        self._participants.append(MageChar(4, 1, True))
 
         # used for displaying on screen surface
         for player in self._participants:
@@ -87,6 +88,16 @@ class CombatScene(Scene):
         # used for enemy choices
         self.enemy_attacked = False
         self.enemy_moved = False
+
+        # ai values
+        self.ai_new_x = None
+        self.ai_new_y = None
+        self.target_to_attack = None
+        self.ai_brain = None
+        self.ai_first_pass = False
+        self.ai_turn_finished = False
+        self.ai_movement_finished = False
+        self.ai_attack_finished = False
 
         # game won info
         self.game_over = False
@@ -204,6 +215,11 @@ class CombatScene(Scene):
         self._move_selected = False
         self.move_counter = 2
         self.player_used_attack = False
+
+        self.ai_first_pass = False
+        self.ai_turn_finished = False
+        self.ai_movement_finished = False
+        self.ai_attack_finished = False
         self.attack_info = ""
 
     def process_player_move(self):
@@ -361,9 +377,8 @@ class CombatScene(Scene):
                 self.turn_counter += 1
         else:
             if self.curr_player.get_is_enemy():
-                if not self.ai_thinking:
-                    self.show_prompt("Sensei's Turn", ["Sensei is deciding..."])
-                    self.ai_thinking = True
+                # if the ai not done with the turn enter
+                if not self.ai_turn_finished:
                     self.ai_completed_decision = False
 
                     #####################
@@ -371,68 +386,87 @@ class CombatScene(Scene):
                     #####################
 
                     # Determines target, builds path to target
-                    ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
-                    ai_new_x, ai_new_y, target_to_attack = ai_brain.decide_ai_action()
+                    # Sets up all the flags for the ai turn
+                    # Occurs on the first entry into the ai for the turn
+                    if not self.ai_first_pass:
+                        self.show_prompt("Sensei's Turn", ["Sensei is deciding..."])
+                        self.ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
+                        self.ai_new_x, self.ai_new_y, self.target_to_attack = self.ai_brain.decide_ai_action()
+
+                        if self.ai_new_x is not None and self.ai_new_y is not None:
+                            self.ai_movement_finished = False
+                            self.enemy_moved = True
+                        else:
+                            self.ai_movement_finished = True
+                            self.enemy_moved = False
+
+                        if self.target_to_attack is not None:
+                            self.ai_attack_finished = False
+                            self.enemy_attacked = True
+                        else:
+                            self.ai_attack_finished = True
+                            self.enemy_attacked = False
 
                     # if there is no movement and no target then game is over
-                    if ai_new_x is None and ai_new_y is None and target_to_attack is None:
-                        self.ai_thinking = True
+                    if self.ai_new_x is None and self.ai_new_y is None and self.target_to_attack is None:
+                        self.ai_turn_finished = True
                         self.game_over = True
 
                     # if there is a movement that needs to be made
-                    elif self.curr_player.xpos != ai_new_x or self.curr_player.ypos != ai_new_y:
-                        self._map.tilemap[(self.curr_player.ypos - 30) // 60][
-                            (self.curr_player.xpos - 30) // 60].unoccupy()
+                    if not self.ai_movement_finished:
                         # if this is a mage they teleport
                         if self.curr_player.get_type() == "mage":
-                            self.curr_player.move_to(ai_new_x, ai_new_y)
-                        else:
-                            # set parameters for building the list of tiles to move through (for knight and archer)
-                            startingX = int((self.curr_player.xpos - 30) / 60)
-                            startingY = int((self.curr_player.ypos - 30) / 60)
-                            endingX = int((ai_new_x - 30) / 60)
-                            endingY = int((ai_new_y - 30) / 60)
-                            moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree,
-                                                        self._map)
-                            # move animation loop
-                            # TODO add a wait function so the animation can complete
-                            while len(moveList) > 0:
-                                self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30,
-                                                         (moveList[-1].get_yPos() * 60) + 30)
-                                moveList.pop()
+                            self._map.tilemap[(self.curr_player.ypos - 30) // 60][(self.curr_player.xpos - 30) // 60].unoccupy()
+                            self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(self.curr_player.get_id())
+                            self.curr_player.move_to(self.ai_new_x, self.ai_new_y)
+                            self.ai_first_pass = True
+                            self.ai_movement_finished = True
+                        elif self.curr_player.get_type() != "mage":
+                            if not self.ai_first_pass:
+                                # set parameters for building the list of tiles to move through (for knight and archer)
+                                self._map.tilemap[(self.curr_player.ypos - 30) // 60][(self.curr_player.xpos - 30) // 60].unoccupy()
+                                startingX = int((self.curr_player.xpos - 30) / 60)
+                                startingY = int((self.curr_player.ypos - 30) / 60)
+                                endingX = int((self.ai_new_x - 30) / 60)
+                                endingY = int((self.ai_new_y - 30) / 60)
+                                self._move_list = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
+                                self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30, (self._move_list[-1].get_yPos() * 60) + 30)
+                                self.ai_first_pass = True
+                                self._move_list.pop()
 
-                        # update map file to unoccupy the current tile and occupy the new tile
-                        self._map.tilemap[(ai_new_y - 30) // 60][(ai_new_x - 30) // 60].occupy(
-                            self.curr_player.get_id())
-                        self.enemy_moved = True
+                            if self._move_list:
+                                if not self.curr_player.is_animating():
+                                    self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30, (self._move_list[-1].get_yPos() * 60) + 30)
+                                    self._move_list.pop()
+                            else:
+                                if not self.curr_player.is_animating():
+                                    self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(self.curr_player.get_id())
+                                    self.ai_movement_finished = True
 
-                    # if there is a target to attack this turn
-                    if target_to_attack is not None:
+                    if self.ai_movement_finished and not self.ai_attack_finished:
                         for character in self._participants:
-                            if character.get_id() == target_to_attack:
+                            if character.get_id() == self.target_to_attack:
                                 if self.curr_player.get_type() == 'mage':
                                     character.take_damage(self.curr_player.magic_attack, 'magic')
-                                    self.enemy_attacked = True,
-                                    self.curr_player.attack_enemy()
-                                    self.ai_completed_decision = True
                                 else:
                                     character.take_damage(self.curr_player.attack, 'physical')
-                                    self.enemy_attacked = True
-                                    self.enemy_attack_after_move = True
-                                    self.ai_completed_decision = True
+
+                                self.curr_player.attack_enemy()
+                                self.ai_attack_finished = True
                                 break
-                    else:
+
+                    if self.ai_attack_finished and self.ai_movement_finished:
+                        self.ai_turn_finished = True
                         self.ai_completed_decision = True
+                        if self.enemy_moved and self.enemy_attacked:
+                            self.enemy_attack_after_move = True
 
                     #####################
                     # AI Turn  - Finish #
                     #####################
 
                 elif self.enemy_attack_after_move and not self.curr_player.is_animating():
-
-                    self.curr_player.attack_enemy()
                     self.enemy_attack_after_move = False
-                    self.ai_thinking = False
 
                 elif not self.curr_player.is_animating() and self.ai_completed_decision:
                     self.clear_prompt()
@@ -445,7 +479,6 @@ class CombatScene(Scene):
 
                     self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "Press [Enter] to continue..."])
                     if self.key_dict['SELECT']:
-                        self.ai_thinking = False
                         self.enemy_moved = False
                         self.enemy_attacked = False
                         self.next_move()

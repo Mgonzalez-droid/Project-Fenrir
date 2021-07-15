@@ -190,7 +190,7 @@ class CombatAISystem:
         if self._targetNextToMe or self._targetDistance <= self._me.attack_range:
             if self._me.get_type() == 'mage':
                 self._me.mana -= (self._me.mana * .05)
-            return self._me.xpos, self._me.ypos, self._target.get_id()
+            return None, None, self._target.get_id()
         elif self._targetDistance > (self._me.move_range + self._me.attack_range):
             self.build_path_to_target()
             self.set_ai_goal_position(self._me.move_range + math.floor(self._me.move_range * .5))

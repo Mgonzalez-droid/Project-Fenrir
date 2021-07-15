@@ -16,6 +16,7 @@ from fenrir.game.overworld.overworld_collisions import Collision
 from fenrir.data.save_game_to_db import save_game
 from fenrir.game.overworld.inventory import Inventory
 
+
 class OverworldScene(Scene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
@@ -92,7 +93,8 @@ class OverworldScene(Scene):
 
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
-            if event.key == pygame.K_ESCAPE and not self.show_controls and not self.show_textbox:
+            if event.key == pygame.K_ESCAPE and not self.show_controls and not self.show_textbox \
+                    and not self.show_inventory:
                 self._quit_screen = True
 
             if event.key == pygame.K_q:  # Press q to open/close controls menu
@@ -113,7 +115,8 @@ class OverworldScene(Scene):
                     self.show_interaction = False
                     self.show_hud = False
 
-            if event.key == pygame.K_i and not self.show_controls:  # Press i to open/close inventory system
+            # Press i to open/close inventory system
+            if event.key == pygame.K_i and not self.show_controls and not self.show_textbox and not self._quit_screen:
                 self.show_inventory = not self.show_inventory
 
             if self.show_inventory:  # If the inventory is being displayed on screen
@@ -159,7 +162,8 @@ class OverworldScene(Scene):
                 self.party_section = True
 
             # Checks if the space bar is pressed
-            if event.key == pygame.K_SPACE and not self.show_controls and not self.show_inventory:
+            if event.key == pygame.K_SPACE and not self.show_controls and not self.show_inventory \
+                    and not self._quit_screen:
                 # Check for collision
                 if collision.check_collisions(self.hero, self.npc):
                     # if text box is displayed, stop characters movements
@@ -201,7 +205,7 @@ class OverworldScene(Scene):
             self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
 
         if self._quit_screen:
-            self.textbox.load_textbox(400, 150, 400, 150)
+            self.textbox.load_image(400, 150, 400, 150, "UI/generic-rpg-ui-text-box.png")
             options = ["[S]    Save and Quit", "[Q]    Quit", "[B]    Cancel"]
             size = 24
             x, y = 320, 200

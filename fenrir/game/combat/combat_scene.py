@@ -78,10 +78,11 @@ class CombatScene(Scene):
         self.attack_complete = False
         self.player_moving = False
         self.move_complete = False
+        self.move_counter = 2
+        self.player_used_attack = False
         self.ai_thinking = False
         self.ai_completed_decision = True  # this flag will be set when AI is thinking and True when not thinking
         self.enemy_attack_after_move = False
-        self.movement_info = ""
         self.attack_info = ""
 
         # used for enemy choices
@@ -145,13 +146,9 @@ class CombatScene(Scene):
                                            self._highlight_curr_player)
         self._player_list.draw(self.screen)
         self._combat_grid_system.clear_highlights()
-        if self.show_text_box:
-            tb = TextBox(self.screen)
-            tb.load_textbox(300, 370, 600, 100)
-            tb.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
 
         if self.show_text_box and not self._quit_screen:
-            self._textbox.load_textbox(300, 370, 600, 100)
+            self._textbox.load_textbox(300, 370, 600, 140)
             self._textbox.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
 
         if self._quit_screen:
@@ -216,12 +213,14 @@ class CombatScene(Scene):
         self.player_moving = False
         self.move_complete = False
         self._move_selected = False
+        self.move_counter = 2
+        self.player_used_attack = False
+
         self.ai_first_pass = False
         self.ai_turn_finished = False
         self.ai_movement_finished = False
         self.ai_attack_finished = False
         self.attack_info = ""
-        self.movement_info = ""
 
     def process_player_move(self):
         self.player_moving = True
@@ -271,7 +270,10 @@ class CombatScene(Scene):
             self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved!"])
             # need to clear highlights after move complete
             if not self.curr_player.is_animating():
-                self.next_move()
+                self.player_moving = False
+                self._move_selected = False
+                self.move_complete = False
+                self.move_counter -= 1
         elif self._move_list:
             if not self.curr_player.is_animating():
                 self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
@@ -323,7 +325,9 @@ class CombatScene(Scene):
             # need to clear highlights after move complete
             self._combat_grid_system.clear_highlights()
             if not self.curr_player.is_animating():
-                self.next_move()
+                self.player_attacking = False
+                self.player_used_attack = True
+                self.move_counter -= 1
 
     def check_for_winner(self):
         player = False
@@ -480,16 +484,38 @@ class CombatScene(Scene):
                         self.next_move()
             else:
                 if not self.player_attacking and not self.player_moving:
-                    self._highlight_curr_player = True
-                    self.show_prompt("Your turn!", ["[1] Attack", "[2] Move"])
-                    if self.key_dict['1']:
-                        self.player_attacking = True
-                        self.clear_prompt()
-                        self.reset_keys()
-                    elif self.key_dict['2']:
-                        self.player_moving = True
-                        self.clear_prompt()
-                        self.reset_keys()
+                    if self.move_counter:
+                        # highlights current player on board
+                        self._highlight_curr_player = True
+
+                        # options depending on possible moves left
+                        choices = ["[1] Move", "[2] Skip Turn"] if self.player_used_attack else ["[1] Move",
+                                                                                                 "[2] Attack",
+                                                                                                 "[3] Skip Turn"]
+                        prompt_text = f"You have {self.move_counter}"
+                        if self.move_counter == 2:
+                            prompt_text += " choices left!"
+                        else:
+                            prompt_text += " choice left!"
+                        self.show_prompt(prompt_text, choices)
+
+                        # keys depending on choices available
+                        if self.key_dict['1']:
+                            self.player_moving = True
+                            self.clear_prompt()
+                            self.reset_keys()
+                        elif self.key_dict['2']:
+                            if len(choices) == 2:
+                                self.next_move()
+                            else:
+                                self.player_attacking = True
+                                self.clear_prompt()
+                                self.reset_keys()
+                        elif self.key_dict['3']:
+                            if len(choices) == 3:
+                                self.next_move()
+                    else:
+                        self.next_move()
                 elif self.player_attacking:
                     self.process_player_attack()
                 elif self.player_moving:

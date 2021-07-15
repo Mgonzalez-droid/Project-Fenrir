@@ -392,13 +392,15 @@ class CombatScene(Scene):
                             moveList = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree,
                                                         self._map)
                             # move animation loop
-                            # TODO add a wait function so the animation can complete
                             while len(moveList) > 0:
-                                self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30,
-                                                         (moveList[-1].get_yPos() * 60) + 30)
-                                moveList.pop()
+                                if not self.curr_player.is_animating():
+                                    self.curr_player.move_to((moveList[-1].get_xPos() * 60) + 30, (moveList[-1].get_yPos() * 60) + 30)
+                                    moveList.pop()
 
-                        # update map file to unoccupy the current tile and occupy the new tile
+                            while self.curr_player.is_animating():
+                                self.enemy_moved = False
+
+                        # update map file to occupy the new tile
                         self._map.tilemap[(ai_new_y - 30) // 60][(ai_new_x - 30) // 60].occupy(
                             self.curr_player.get_id())
                         self.enemy_moved = True

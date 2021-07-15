@@ -48,9 +48,9 @@ class OverworldScene(Scene):
         self.show_inventory = False
 
         # Inventory system
-        self.current_party = [[self.hero, "chars/gabe/Gabe.png"],
-                              [self.npc, "chars/sensei/Sensei_menu.png"]]
-        self.all_heroes = [[self.hero, "UI/Girl.png"], [self.hero, "UI/Girl.png"]]
+        self.current_party = [[self.hero, "chars/gabe/Gabe.png"]]
+        self.all_heroes = [[self.hero, "chars/gabe/Gabe.png"], [self.npc, "chars/sensei/Sensei_menu.png"],
+                           [self.hero, "UI/Girl.png"]]
 
         self.inventory = Inventory(self.textbox, self.current_party, self.all_heroes)
         self.party_section = True
@@ -113,7 +113,7 @@ class OverworldScene(Scene):
 
             if self.show_inventory:  # If the inventory is being displayed on screen
 
-                # Check in which section is the user at the moment
+                # Check in which section the user is at the moment
                 if self.party_section:
                     self.inventory.character_selection(0, 3)  # Movement boundaries for tile in current party section
                 else:
@@ -132,7 +132,6 @@ class OverworldScene(Scene):
                     elif not self.inventory.party_displayed[self.inventory.tile_pos[0]]:
                         self.inventory.swapping = False
                         self.party_section = False
-                        self.inventory.adding = True
 
                 # Select hero to swap/add/remove from heroes section
                 elif event.key == pygame.K_SPACE and not self.party_section:
@@ -141,11 +140,10 @@ class OverworldScene(Scene):
                         self.party_section = True
 
                         if self.inventory.swapping:  # Swap hero between the 2 sections
-                            temp_party, temp_heroes = self.inventory.swap_characters(self.party_index, self.hero_index)
+                            temp_party = self.inventory.swap_characters(self.party_index, self.hero_index)
                             self.inventory.party[self.inventory.tile_pos[0]] = temp_party
-                            self.inventory.heroes[self.inventory.tile_pos[1]] = temp_heroes
 
-                        else:  # Add hero to current party and remove from heroes section
+                        else:  # Add hero to current party from heroes section
                             self.inventory.party, self.inventory.heroes = self.inventory.add_to_party(
                                 self.inventory.heroes[self.hero_index])
 
@@ -213,7 +211,7 @@ class OverworldScene(Scene):
             else:
                 self.inventory.display_selection(1)
 
-            # self.inventory.display_heroes(self.current_party, self.all_heroes)
+            # Display character sprites in the inventory menu
             self.inventory.display_heroes(self.inventory.party, self.inventory.heroes)
 
     def update(self):

@@ -139,7 +139,7 @@ class CombatScene(Scene):
         self._combat_grid_system.clear_highlights()
         if self.show_text_box:
             tb = TextBox(self.screen)
-            tb.load_textbox(300, 370, 600, 100)
+            tb.load_image(300, 370, 600, 100, "UI/generic-rpg-ui-text-box.png")
             tb.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
 
         if self.show_text_box and not self._quit_screen:

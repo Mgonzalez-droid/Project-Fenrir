@@ -8,7 +8,7 @@ from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
 import fenrir.game.overworld.overworld_scene as overscene
 from fenrir.common.music import Music
-from fenrir.game.combat.combat_chars import MageChar, KnightChar
+from fenrir.game.combat.combat_chars import ArcherChar, KnightChar, MageChar
 import fenrir.game.combat.combat_map_data as md
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
@@ -40,9 +40,11 @@ class CombatScene(Scene):
 
         # Player char
         self._participants.append(KnightChar(0, 1, False))
+        self._participants.append(ArcherChar(1, 2, False))
+        self._participants.append(MageChar(2, 1, False))
 
         # Enemy char
-        self._participants.append(MageChar(1, 1, True))
+        self._participants.append(MageChar(3, 1, True))
 
         # used for displaying on screen surface
         for player in self._participants:
@@ -242,6 +244,7 @@ class CombatScene(Scene):
                 # initial move starts here
                 self._map.tilemap[(self.curr_player.ypos - 30) // 60][
                     (self.curr_player.xpos - 30) // 60].unoccupy()
+                self._map.tilemap[endingY][endingX].occupy(self.curr_player.get_id)
                 self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
                                          (self._move_list[-1].get_yPos() * 60) + 30)
                 self._move_list.pop()
@@ -262,6 +265,8 @@ class CombatScene(Scene):
 
             if not self._move_list:
                 self.move_complete = True
+        elif self._move_selected:
+            self.move_complete = True
 
     def process_player_attack(self):
         self.player_attacking = True

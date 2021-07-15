@@ -1,5 +1,6 @@
 import os
 import pygame
+import time
 from fenrir.common.config import PATH_TO_RESOURCES, Colors
 from fenrir.game.combat.combat_character_data import CombatCharacterData
 
@@ -20,6 +21,8 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         self._animation_speed = 3  # number of frames to show image
         self._face_left = False
         self._animating = False
+        self._took_damage = True
+        self.image = None
 
     @property
     def animation_state(self):
@@ -88,6 +91,12 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
     def set_player_loc(self, x, y):
         raise NotImplementedError
 
+    def create_damage_image(self):
+        colorImage = pygame.Surface(self.image.get_size()).convert_alpha()
+        colorImage.set_alpha(0)
+        colorImage.fill(Colors.RED.value)
+        return colorImage
+
 
 class MageChar(CombatCharSprite):
 
@@ -99,20 +108,17 @@ class MageChar(CombatCharSprite):
         self.idle_images = []
         self.run_images = []
         self.death_images = []
-        self.damage_images = []
 
         self.load_assets()
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
+        self._damage_image = self.create_damage_image()
 
         self.teleporting = False
         self.attacking = False
 
         if enemy:
             self._face_left = True
-
-        # default values that will need to be formulated with map tile data depending on tile location
-        self.rect.center = (90, 90)
 
     # this method needs to override the method in the combat char data because images havet to be shifted 35 pixels down
     @property
@@ -150,13 +156,6 @@ class MageChar(CombatCharSprite):
             img.set_colorkey(Colors.ALPHA.value)
             self.death_images.append(img)
 
-        # load damage images
-        for i in range(1, 6):
-            img = pygame.image.load(
-                os.path.join(PATH_TO_RESOURCES, 'chars', 'mage', 'damage (' + str(i) + ').png')).convert_alpha()
-            img.set_colorkey(Colors.ALPHA.value)
-            self.damage_images.append(img)
-
     def animate(self, images):
 
         if self._frame > (len(images) - 1) * self._animation_speed:  # num of animations in idle
@@ -168,6 +167,9 @@ class MageChar(CombatCharSprite):
             self.image = pygame.transform.flip(images[self._frame // self._animation_speed], True, False)
         else:
             self.image = images[self._frame // self._animation_speed]
+
+        # if self._took_damage and time.time() % 1 > 0.8:
+        #     self.image.blit(self._damage_image, (0, 0), special_flags=pygame.BLEND_RGB_MIN)
 
     def animate_teleport(self):
         if self._frame < len(self.death_images):
@@ -237,19 +239,22 @@ class KnightChar(CombatCharSprite):
         self.idle_images = []
         self.walk_images = []
         self.death_images = []
+
         self.attacking = False
 
         self.load_assets()
         self.image = self.idle_images[0]
-
         self.rect = self.image.get_rect()
+        self._damage_image = self.create_damage_image()
+
         self.animation_state = "idle"
 
         if enemy:
             self._face_left = True
 
-        # default values that will need to be formulated with map tile data depending on tile location
-        self.rect.center = (90, 90)
+    @property
+    def ypos(self):
+        return self.rect.centery + 5
 
     def load_assets(self):
         # load idle images
@@ -378,4 +383,171 @@ class KnightChar(CombatCharSprite):
 
     def set_player_loc(self, x, y):
         self.rect.centerx = x
-        self.rect.centery = y
+        self.rect.centery = y - 5
+
+    def move_to(self, x_target, y_target):
+        delta_x = x_target - self.rect.centerx
+        delta_y = y_target - self.rect.centery - 5
+        self.move(delta_x, delta_y)
+
+
+class ArcherChar(CombatCharSprite):
+
+    def __init__(self, char_id, level, enemy):
+        super().__init__(char_id, "archer", level, 50, 5, 50, enemy)
+
+        # animation images
+        self.attack_images = []
+        self.idle_images = []
+        self.walk_images = []
+        self.death_images = []
+
+        self.attacking = False
+
+        self.load_assets()
+        self.image = self.idle_images[0]
+        self.rect = self.image.get_rect()
+        self._damage_image = self.create_damage_image()
+
+        self.animation_state = "idle"
+
+        if enemy:
+            self._face_left = True
+
+    @property
+    def ypos(self):
+        return self.rect.centery + 10
+
+    def load_assets(self):
+        # load idle images
+        for i in range(1, 11):
+            img = pygame.image.load(
+                os.path.join(PATH_TO_RESOURCES, 'chars', 'archer', "idle (" + str(i) + ").png")).convert_alpha()
+            img.set_colorkey(Colors.ALPHA.value)
+            self.idle_images.append(img)
+
+        # load run images
+        for i in range(1, 11):
+            img = pygame.image.load(
+                os.path.join(PATH_TO_RESOURCES, 'chars', 'archer', "walk (" + str(i) + ").png")).convert_alpha()
+            img.set_colorkey(Colors.ALPHA.value)
+            self.walk_images.append(img)
+
+        # load attack images
+        for i in range(1, 11):
+            img = pygame.image.load(
+                os.path.join(PATH_TO_RESOURCES, 'chars', 'archer', 'attack (' + str(i) + ').png')).convert_alpha()
+            img.set_colorkey(Colors.ALPHA.value)
+            self.attack_images.append(img)
+
+        # load death images
+        for i in range(1, 11):
+            img = pygame.image.load(
+                os.path.join(PATH_TO_RESOURCES, 'chars', 'archer', 'death (' + str(i) + ').png')).convert_alpha()
+            img.set_colorkey(Colors.ALPHA.value)
+            self.death_images.append(img)
+
+    def animate(self, images):
+
+        if self._frame > (len(images) - 1) * self._animation_speed:  # num of animations in idle
+            self._frame = 0  # reset to first frame
+        else:
+            self._frame += 1
+
+        if self._face_left:
+            self.image = pygame.transform.flip(images[self._frame // self._animation_speed], True, False)
+        else:
+            self.image = images[self._frame // self._animation_speed]
+
+    def attack_enemy(self, left=None):
+
+        if left is not None:
+            self._face_left = left
+
+        self.attacking = True
+        self._animating = True
+        # move rect to fix image shift in attack mode
+        self.rect.centerx -= 5
+        self.rect.centery -= 10
+        self._frame = 0
+
+    def animate_attack(self):
+        if self._frame < (len(self.attack_images) - 1) * self._animation_speed:
+            self.animate(self.attack_images)
+        else:
+            self.animation_state = "idle"
+            self.rect.centerx += 5
+            self.rect.centery += 10
+            self.attacking = False
+            self._animating = False
+
+    # animates sprite while moving, returns to idle animation when complete
+    def move_sprite(self):
+
+        if self.move_x != 0 or self.move_y != 0:
+            self.animation_state = "walk"
+        else:
+            self.animation_state = "idle"
+            if not self.attacking:
+                self._animating = False
+
+        if self.move_x > 0:
+            self._face_left = False
+            if self.move_x < 2:
+                self.rect += self.move_x
+                self.move_x = 2
+            else:
+                self.rect.x += 2
+                self.move_x -= 2
+        elif self.move_x < 0:
+            self._face_left = True
+            if self.move_x > -2:
+                self.rect += self.move_x
+                self.move_x = 0
+            else:
+                self.rect.x += -2
+                self.move_x -= -2
+
+        # y axis movements will only start when x-movements are done
+        if self.move_y > 0 and self.move_x == 0:
+            if self.move_y < 2:
+                self.rect += self.move_x
+                self.move_y = 0
+            else:
+                self.rect.y += 2
+                self.move_y -= 2
+        elif self.move_y < 0 and self.move_x == 0:
+            if self.move_y > -2:
+                self.rect += self.move_y
+                self.move_y = 0
+            else:
+                self.rect.y += -2
+                self.move_y -= -2
+
+    def update(self):
+        if self.animation_state == "idle":
+            images = self.idle_images
+        elif self.animation_state == "walk":
+            images = self.walk_images
+        elif self.animation_state == "attack":
+            images = self.attack_images
+        elif self.animation_state == "death":
+            images = self.death_images
+        else:
+            images = self.idle_images  # idle images as default
+
+        self.move_sprite()
+
+        if self.attacking:
+            self.animate_attack()
+        else:
+            self.animate(images)
+
+    def set_player_loc(self, x, y):
+        self.rect.centerx = x
+        self.rect.centery = y - 10
+
+    def move_to(self, x_target, y_target):
+        delta_x = x_target - self.rect.centerx
+        delta_y = y_target - self.rect.centery - 10
+        self.move(delta_x, delta_y)

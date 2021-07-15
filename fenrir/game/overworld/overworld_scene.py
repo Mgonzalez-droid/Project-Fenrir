@@ -13,8 +13,8 @@ from fenrir.game.overworld.overworld_npc import overworld_npc as character
 from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
 from fenrir.game.overworld.overworld_boundaries import Boundaries
 from fenrir.game.overworld.overworld_collisions import Collision
+from fenrir.data.save_game_to_db import save_game
 from fenrir.game.overworld.inventory import Inventory
-
 
 class OverworldScene(Scene):
     def __init__(self, screen, game_state):
@@ -24,6 +24,7 @@ class OverworldScene(Scene):
         self.background = pygame.transform.scale(original_background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
         self.textbox = TextBox(self.screen)
+        self._quit_screen = False
 
         self.level = self.game_state.player_level
         self.hero = character_animated(self.game_state.game_state_location_x, self.game_state.game_state_location_y,
@@ -32,9 +33,10 @@ class OverworldScene(Scene):
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
-        # Play background music
-        # Music.play_song("Windless Slopes")
-
+        pygame.mixer.init()
+        pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
+        pygame.mixer.music.play()
+        
         self.npc = character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"))
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)
         self.npc.sprite = pygame.transform.scale(self.npc.sprite, (75, 75))
@@ -65,7 +67,8 @@ class OverworldScene(Scene):
 
         # Player check player movement for up (w), down (s), left (a), right (d)
         keys = pygame.key.get_pressed()
-        if not self.show_controls and not self.show_textbox and not self.show_inventory:
+
+        if not self.show_controls and not self.show_textbox and not self.show_inventory and not self._quit_screen:
             if keys[pygame.K_w]:
                 self.hero.y = boundaries.collision_up()  # Check if player hits top of window
                 self.hero.adjust_movement()
@@ -90,8 +93,7 @@ class OverworldScene(Scene):
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
             if event.key == pygame.K_ESCAPE and not self.show_controls and not self.show_textbox:
-                Music.stop_song()
-                self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))
+                self._quit_screen = True
 
             if event.key == pygame.K_q:  # Press q to open/close controls menu
                 if self.show_controls:
@@ -101,6 +103,9 @@ class OverworldScene(Scene):
                     self.show_controls = False
                     self.show_characters = True
                     self.show_hud = True
+
+                elif self._quit_screen:
+                    self.quit_game(False)
                 elif not self.show_controls and not self.show_textbox and not self.show_inventory:
                     self.background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Simple_Control_menu.png"))
                     self.show_controls = True
@@ -162,11 +167,16 @@ class OverworldScene(Scene):
 
             # Select options from the text box
             if event.key == pygame.K_1 and self.show_textbox:
-                Music.stop_song()
                 self.update_game_state()
                 self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state, "combat_001"))
             if event.key == pygame.K_2 and self.show_textbox:
                 self.show_textbox = False
+
+            if self._quit_screen:
+                if event.key == pygame.K_b:
+                    self._quit_screen = False
+                if event.key == pygame.K_s:
+                    self.quit_game(True)
 
     def render(self):
 
@@ -189,6 +199,13 @@ class OverworldScene(Scene):
         # Show if player can interact with npc displaying an exclamation mark
         if self.show_interaction and not self.show_controls:
             self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
+
+        if self._quit_screen:
+            self.textbox.load_textbox(400, 150, 400, 150)
+            options = ["[S]    Save and Quit", "[Q]    Quit", "[B]    Cancel"]
+            size = 24
+            x, y = 320, 200
+            self.textbox.draw_options("Are you sure you want to quit?", options, size, x, y)
 
         # Draw Text box
         if self.show_textbox:
@@ -226,3 +243,13 @@ class OverworldScene(Scene):
     def update_game_state(self):
         self.game_state.game_state_location_x = self.hero.x
         self.game_state.game_state_location_y = self.hero.y
+
+    def quit_game(self, saving):
+        # saves game progress to database and stops music
+
+        if saving:
+            self.update_game_state()
+            save_game(self.game_state)
+
+        Music.stop_song()
+        self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))

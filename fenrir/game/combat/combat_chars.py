@@ -108,7 +108,7 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
 class MageChar(CombatCharSprite):
 
     def __init__(self, char_id, level, enemy):
-        super().__init__(char_id, "mage", level, 1, 10, 40, enemy)
+        super().__init__(char_id, "mage", level, 50, 10, 40, enemy)
 
         # animation images
         self.attack_images = []

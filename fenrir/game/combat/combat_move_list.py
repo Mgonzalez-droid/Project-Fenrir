@@ -71,7 +71,7 @@ def combat_move_list(startingX, startingY, endingX, endingY, nodeTree, mapData):
                 openList.append(neighbor)
 
     # build the list of tiles to traverse in reverse order
-    for _ in range(0, abs(startingX - endingX) + abs(startingY - endingY)):
+    for _ in range(0, currentTile.get_totalDistance()):
         moveList.append(currentTile)
         currentTile = currentTile.get_parent()
 

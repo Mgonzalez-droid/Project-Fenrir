@@ -83,6 +83,10 @@ class MapTile:
         self._unit = ""
 
     @property
+    def unit(self):
+        return self._unit
+
+    @property
     def x_coord(self):
         return self._x_coord
 

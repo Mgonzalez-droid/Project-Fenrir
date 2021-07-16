@@ -177,9 +177,7 @@ class CombatScene(Scene):
 
     def update(self):
         self.play_game()
-
-        for player in self._player_list:
-            player.update()
+        self._player_list.update()
 
     #########################################
     # Helper functions for combat game play #
@@ -215,13 +213,18 @@ class CombatScene(Scene):
         self.prompt_options = ""
 
     def update_initiative_system(self):
-        self.initiative_system.update_system()
+        if self.remove_dead_players():
+            player_list = self._participants
+        else:
+            player_list = None
+
+        # will update initiative system with new list if player was removed
+        self.initiative_system.update_system(player_list)
         self.curr_player = self.initiative_system.get_current_player()
         self.next_player = self.initiative_system.get_next_player_up()
 
     def next_move(self):
         # this function resets all the logic needed to move to next turn
-        self.update_initiative_system()
         self.clear_prompt()
         self.reset_keys()
         self.turn_counter += 1
@@ -237,6 +240,19 @@ class CombatScene(Scene):
         self.ai_turn_finished = False
         self.ai_movement_finished = False
         self.ai_attack_finished = False
+        self.update_initiative_system()
+
+    def remove_dead_players(self):
+        index = 0
+        for player in self._participants:
+            if player.hp <= 0:
+                player.kill()
+                self._participants.pop(index)
+                return True
+            else:
+                index += 1
+
+        return False
 
     def process_player_move(self):
         self.player_moving = True
@@ -272,6 +288,7 @@ class CombatScene(Scene):
                 endingX = int((end_tile[0]) // 60)
                 endingY = int((end_tile[1]) // 60)
                 self._move_list = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
+
                 # initial move starts here
                 self._map.tilemap[(self.curr_player.ypos - 30) // 60][
                     (self.curr_player.xpos - 30) // 60].unoccupy()
@@ -331,9 +348,27 @@ class CombatScene(Scene):
                     selectable = True
             if selectable:
                 # will be used to get player on tile to attack
-                x = int(end_tile[0] // 60) * 60 + 30
-                y = int(end_tile[1] // 60) * 60 + 30
-                self.curr_player.attack_enemy()
+                x = int(end_tile[0] / 60)
+                y = int(end_tile[1] / 60)
+                enemy_id = self._map.tilemap[y][x].unit
+                for character in self._participants:
+                    if character.get_id() == enemy_id:
+                        if self.curr_player.get_type() == 'mage':
+                            character.take_damage(self.curr_player.magic_attack, 'magic')
+                            character.animate_damage()
+                        else:
+                            character.take_damage(self.curr_player.attack, 'physical')
+                            character.animate_damage()
+                        break
+                if self.curr_player.xpos == end_tile[0] + 30:
+                    left = None
+                else:
+                    if self.curr_player.xpos < end_tile[0]:
+                        left = False
+                    else:
+                        left = True
+
+                self.curr_player.attack_enemy(left)
                 self.attack_complete = True
 
         if self.attack_complete:
@@ -381,7 +416,7 @@ class CombatScene(Scene):
                 winner = "Sensei"
 
             self.show_prompt("Battle Complete",
-                             [f"{winner} won the battle!", "Press [enter] to return to overworld"])
+                             [f"{winner} won the battle!", "Press [enter] to exit."])
 
             if self.key_dict['SELECT']:
                 # Todo this will increase player level now regardless of victory or not. Need to update this later
@@ -454,6 +489,7 @@ class CombatScene(Scene):
                                                                    self._ai_Tree, self._map)
                                 self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
                                                          (self._move_list[-1].get_yPos() * 60) + 30)
+
                                 self.ai_first_pass = True
                                 self._move_list.pop()
 
@@ -473,9 +509,10 @@ class CombatScene(Scene):
                             if character.get_id() == self.target_to_attack:
                                 if self.curr_player.get_type() == 'mage':
                                     character.take_damage(self.curr_player.magic_attack, 'magic')
+                                    character.animate_damage()
                                 else:
                                     character.take_damage(self.curr_player.attack, 'physical')
-
+                                    character.animate_damage()
                                 self.curr_player.attack_enemy()
                                 self.ai_attack_finished = True
                                 break

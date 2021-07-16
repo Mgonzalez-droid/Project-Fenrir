@@ -21,7 +21,8 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         self._animation_speed = 3  # number of frames to show image
         self._face_left = False
         self._animating = False
-        self._took_damage = True
+        self._took_damage = False
+        self._damage_animation_counter = 0
         self.image = None
 
     @property
@@ -91,11 +92,17 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
     def set_player_loc(self, x, y):
         raise NotImplementedError
 
-    def create_damage_image(self):
+    def get_damage_image(self):
         colorImage = pygame.Surface(self.image.get_size()).convert_alpha()
         colorImage.set_alpha(0)
         colorImage.fill(Colors.RED.value)
-        return colorImage
+        redImage = self.image.copy()
+        redImage.blit(colorImage, (0, 0), special_flags=pygame.BLEND_RGB_MIN)
+        return redImage
+
+    def animate_damage(self):
+        self._took_damage = True
+        self._damage_animation_counter = 0
 
 
 class MageChar(CombatCharSprite):
@@ -112,7 +119,6 @@ class MageChar(CombatCharSprite):
         self.load_assets()
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
-        self._damage_image = self.create_damage_image()
 
         self.teleporting = False
         self.attacking = False
@@ -168,8 +174,12 @@ class MageChar(CombatCharSprite):
         else:
             self.image = images[self._frame // self._animation_speed]
 
-        # if self._took_damage and time.time() % 1 > 0.8:
-        #     self.image.blit(self._damage_image, (0, 0), special_flags=pygame.BLEND_RGB_MIN)
+        if self._took_damage:
+            if self._damage_animation_counter < 50:
+                self.image = self.get_damage_image()
+                self._damage_animation_counter += 1
+            else:
+                self._took_damage = False
 
     def animate_teleport(self):
         if self._frame < len(self.death_images):
@@ -192,7 +202,10 @@ class MageChar(CombatCharSprite):
         self.attacking = True
         self._frame = 0
 
-    def animate_attack(self):
+    def animate_attack(self, left=None):
+        if left is not None:
+            self._face_left = left
+
         if self._frame < (len(self.attack_images) - 1) * self._animation_speed:
             self.animate(self.attack_images)
         else:
@@ -201,6 +214,7 @@ class MageChar(CombatCharSprite):
             self._animating = False
 
     def update(self):
+
         if self.animation_state == "idle":
             images = self.idle_images
         elif self.animation_state == "attack":
@@ -245,7 +259,6 @@ class KnightChar(CombatCharSprite):
         self.load_assets()
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
-        self._damage_image = self.create_damage_image()
 
         self.animation_state = "idle"
 
@@ -297,6 +310,13 @@ class KnightChar(CombatCharSprite):
         else:
             self.image = images[self._frame // self._animation_speed]
 
+        if self._took_damage:
+            if self._damage_animation_counter < 50:
+                self.image = self.get_damage_image()
+                self._damage_animation_counter += 1
+            else:
+                self._took_damage = False
+
     def attack_enemy(self, left=None):
 
         if left is not None:
@@ -309,7 +329,10 @@ class KnightChar(CombatCharSprite):
         self.rect.centery -= 10
         self._frame = 0
 
-    def animate_attack(self):
+    def animate_attack(self, left=None):
+        if left is not None:
+            self._face_left = left
+
         if self._frame < (len(self.attack_images) - 1) * self._animation_speed:
             self.animate(self.attack_images)
         else:
@@ -363,6 +386,7 @@ class KnightChar(CombatCharSprite):
                 self.move_y -= -2
 
     def update(self):
+
         if self.animation_state == "idle":
             images = self.idle_images
         elif self.animation_state == "walk":
@@ -407,7 +431,6 @@ class ArcherChar(CombatCharSprite):
         self.load_assets()
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
-        self._damage_image = self.create_damage_image()
 
         self.animation_state = "idle"
 
@@ -459,6 +482,13 @@ class ArcherChar(CombatCharSprite):
         else:
             self.image = images[self._frame // self._animation_speed]
 
+        if self._took_damage:
+            if self._damage_animation_counter < 50:
+                self.image = self.get_damage_image()
+                self._damage_animation_counter += 1
+            else:
+                self._took_damage = False
+
     def attack_enemy(self, left=None):
 
         if left is not None:
@@ -471,7 +501,10 @@ class ArcherChar(CombatCharSprite):
         self.rect.centery -= 10
         self._frame = 0
 
-    def animate_attack(self):
+    def animate_attack(self, left=None):
+        if left is not None:
+            self._face_left = left
+
         if self._frame < (len(self.attack_images) - 1) * self._animation_speed:
             self.animate(self.attack_images)
         else:
@@ -525,6 +558,7 @@ class ArcherChar(CombatCharSprite):
                 self.move_y -= -2
 
     def update(self):
+
         if self.animation_state == "idle":
             images = self.idle_images
         elif self.animation_state == "walk":

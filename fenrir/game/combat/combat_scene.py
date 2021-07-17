@@ -213,6 +213,12 @@ class CombatScene(Scene):
         self.prompt_options = ""
 
     def update_initiative_system(self):
+        # for character in self._participants:
+        #     if character.get_is_enemy():
+        #         print("For the enemy " + character.get_type() + " HP is: " + str(character.hp))
+        #     else:
+        #         print("For the hero " + character.get_type() + " HP is: " + str(character.hp))
+        # print("")
         if self.remove_dead_players():
             player_list = self._participants
         else:

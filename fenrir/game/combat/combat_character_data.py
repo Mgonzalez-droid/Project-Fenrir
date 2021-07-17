@@ -241,9 +241,9 @@ class CombatCharacterData:
         """
         damage = 0
         if attackType == 'magic':
-            damage = incomingAttackValue - self.magic_defense
+            damage = incomingAttackValue
         elif attackType == 'physical':
-            damage = incomingAttackValue - self.defense
+            damage = incomingAttackValue
         didTheyMiss = self.check_if_incoming_attack_misses(incomingAttackValue, attackType)
         if not didTheyMiss:
             damageSuccess = 1

@@ -3,13 +3,13 @@ import pygame
 
 class Collision:
     def __init__(self):
-        #self.__tolerance = 50
+        # self.__tolerance = 50
         self.__tolerance = 35
         self.entry_index = 0
         self.repulsion = 0
 
     @staticmethod
-    def make_rect(npc):
+    def make_character_rect(npc):
         character = pygame.Rect(npc.x, npc.y, npc.sprite.get_width(), npc.sprite.get_height())
         return character
 
@@ -18,12 +18,12 @@ class Collision:
         obstacle = pygame.Rect(obstacle.x, obstacle.y, obstacle.width, obstacle.height)
         return obstacle
 
-
     def npc_collision(self, hero, npc):
-        hero_rect = self.make_rect(hero)
-        npc_rect = self.make_rect(npc)
+        hero_rect = self.make_character_rect(hero)
+        npc_rect = self.make_character_rect(npc)
 
         self.repulsion = 0
+
         if hero_rect.colliderect(npc_rect):
             if abs(npc_rect.top - hero_rect.bottom) < self.__tolerance:
                 return True
@@ -36,9 +36,8 @@ class Collision:
         else:
             return False
 
-
     def barrier_collision(self, hero, obstacles):
-        hero_rect = self.make_rect(hero)
+        hero_rect = self.make_character_rect(hero)
         obstacle_rects = list()
         if obstacles:
             for obstacle in obstacles:
@@ -61,7 +60,7 @@ class Collision:
         return False
 
     def entry_collision(self, hero, entries):
-        hero_rect = self.make_rect(hero)
+        hero_rect = self.make_character_rect(hero)
         entry_rects = list()
         if entries:
             # There are obstacles to consider
@@ -90,8 +89,8 @@ class Collision:
 
     # Deprecated code
     def check_collisions(self, hero, npc, obstacles=list()):
-        hero_rect = self.make_rect(hero)
-        npc_rect = self.make_rect(npc)
+        hero_rect = self.make_character_rect(hero)
+        npc_rect = self.make_character_rect(npc)
         obstacle_rects = list()
         if obstacles:
             # There are obstacles to consider

@@ -21,7 +21,7 @@ class OverworldScene(Scene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
 
-        original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
+        original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/Overworld_Correct_size.png"))
         self.background = pygame.transform.scale(original_background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
         self.textbox = TextBox(self.screen)

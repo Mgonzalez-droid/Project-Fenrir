@@ -23,7 +23,7 @@ class OverworldScene(Scene):
         super().__init__(screen, game_state)
 
         # Add your world background here
-        original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "aquatic-world.png"))
+        original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/aquatic-world.png"))
         self.background = pygame.transform.scale(original_background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
         self.textbox = TextBox(self.screen)

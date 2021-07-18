@@ -13,9 +13,9 @@ from fenrir.game.overworld.overworld_npc import overworld_npc as character
 from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
 from fenrir.game.overworld.overworld_boundaries import Boundaries
 from fenrir.game.overworld.overworld_collisions import Collision
+from fenrir.game.overworld.overworld_obstacle import overworld_obstacle as obstacle
 from fenrir.data.save_game_to_db import save_game
 from fenrir.game.overworld.inventory import Inventory
-
 
 class OverworldScene(Scene):
     def __init__(self, screen, game_state):
@@ -26,6 +26,27 @@ class OverworldScene(Scene):
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
         self.textbox = TextBox(self.screen)
         self._quit_screen = False
+
+        self.collision = Collision()
+
+        # Define in world barriers
+        self.obstacles = [
+            obstacle(0, 0, 324, 234),  # Flower_Patch_Barrier
+            obstacle(461, 0, 89, 260),  # Left_House_Barrier
+            obstacle(550, 0, 88, 165),  # Center_house_Barrier
+            obstacle(637, 0, 323, 246),  # House_River_Bridge_Barrier
+            obstacle(736, 367, 224, 121),  # bottom_river_Barrier
+            obstacle(604, 477, 133, 62),  # Bottom_River_Left_Barrier
+            obstacle(0, 401, 200, 139)  # Pond_Barrier
+        ]
+
+        # Define in world entries
+        self.entries = [
+            obstacle(939, 260, 21, 97),  # World_1_Entry
+            obstacle(327, 0, 116, 18),  # World_3_Entry
+        ]
+
+        # TODO: Need to add secondary list and behavior for entries...
 
         self.level = self.game_state.player_level
         self.hero = character_animated(self.game_state.game_state_location_x, self.game_state.game_state_location_y,
@@ -72,24 +93,56 @@ class OverworldScene(Scene):
         if not self.show_controls and not self.show_textbox and not self.show_inventory and not self._quit_screen:
             if keys[pygame.K_w]:
                 self.hero.y = boundaries.collision_up()  # Check if player hits top of window
+
+                if self.collision.barrier_collision(self.hero, self.obstacles):
+                    # For debugging purposes
+                    print("player hit barrier up")
+                    self.hero.y += 10
+
                 self.hero.adjust_movement()
             if keys[pygame.K_s]:
                 self.hero.y = boundaries.collision_down()  # Check if player hits bottom of window
+
+                if self.collision.barrier_collision(self.hero, self.obstacles):
+                    # For debugging purposes
+                    print("player hit barrier down")
+                    self.hero.y -= 10
+
                 self.hero.adjust_movement()
             if keys[pygame.K_a]:
                 self.hero.x = boundaries.collision_left()  # Check if player hits left of window
+                if self.collision.barrier_collision(self.hero, self.obstacles):
+                    # For debugging purposes
+                    print("player hit barrier left")
+                    self.hero.x += 10
+
                 self.hero.adjust_movement()
             if keys[pygame.K_d]:
                 self.hero.x = boundaries.collision_right()  # Check if player hits right of window
+
+                if self.collision.barrier_collision(self.hero, self.obstacles):
+                    # For debugging purposes
+                    print("player hit barrier right")
+                    self.hero.x -= 10
+
                 self.hero.adjust_movement()
 
-        # Check of collision
-        collision = Collision()
-        if collision.check_collisions(self.hero, self.npc):
+        if self.collision.npc_collision(self.hero, self.npc):
             # Show exclamation mark
             self.show_interaction = True
         else:
             self.show_interaction = False
+
+        if self.collision.entry_collision(self.hero, self.entries):
+            if self.collision.get_collided_entry() == 0:
+                # For debugging purposes
+                print("player hit entry world 1")
+            elif self.collision.get_collided_entry() == 1:
+                # For debugging purposes
+                print("player hit entry world 3")
+            else:
+                # For debugging purposes
+                print("player hit some entry")
 
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
@@ -165,7 +218,7 @@ class OverworldScene(Scene):
             if event.key == pygame.K_SPACE and not self.show_controls and not self.show_inventory \
                     and not self._quit_screen:
                 # Check for collision
-                if collision.check_collisions(self.hero, self.npc):
+                if self.collision.check_collisions(self.hero, self.npc):
                     # if text box is displayed, stop characters movements
                     self.show_textbox = True
 

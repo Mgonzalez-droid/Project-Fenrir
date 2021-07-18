@@ -65,7 +65,7 @@ class OverworldScene(Scene):
 
         # ___ Inventory system ___
         self.current_party = [[self.hero, "chars/gabe/Gabe.png"]]
-        self.all_heroes = [[self.hero, "chars/gabe/Gabe.png"], [self.npc, "chars/sensei/Sensei_menu.png"],
+        self.all_heroes = [[self.hero, "chars/gabe/Gabe.png"], [self.hero, "chars/sensei/Sensei_menu.png"],
                            [self.hero, "UI/Girl.png"]]
 
         self.inventory = Inventory(self.textbox, self.current_party, self.all_heroes)
@@ -139,7 +139,7 @@ class OverworldScene(Scene):
             if event.key == pygame.K_q:  # Press q to open/close controls menu
                 if self.show_controls:
                     original_background = pygame.image.load(
-                        os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
+                        os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark-world-demo.png"))
                     self.background = pygame.transform.scale(original_background, (960, 540))
                     self.show_controls = False
                     self.show_characters = True

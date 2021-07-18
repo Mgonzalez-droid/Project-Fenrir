@@ -17,11 +17,14 @@ from fenrir.game.overworld.overworld_obstacle import overworld_obstacle as obsta
 from fenrir.data.save_game_to_db import save_game
 from fenrir.game.overworld.inventory import Inventory
 
+
 class OverworldScene(Scene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
 
-        original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/Overworld_Correct_size.png"))
+        original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES,
+                                                             "overworld_maps/Overworld_Correct_size.png"))
+
         self.background = pygame.transform.scale(original_background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
         self.textbox = TextBox(self.screen)
@@ -29,12 +32,27 @@ class OverworldScene(Scene):
 
         self.collision = Collision()
 
+
+        '''
+        # Dark Desert 
+        # Boundaries:
+        obstacle(0, 0, 280, 170),  # Top left prompts
+        obstacle(281, 0, 180, 70),  # Top left stone wall
+        obstacle(650, 0, 250, 70),  # Top right stone wall
+        obstacle(0, 410, 75, 70),  # Bottom left prompts
+        obstacle(200, 410, 70, 1),  # Bottom left prompts (fallen tree)
+        
+        # Entry points:
+        obstacle(0, 260, 21, 60),  # World_1_Entry
+        obstacle(462, 0, 187, 20),  # Dark_Desert_Boss
+        '''
+
         # Define in world barriers
         self.obstacles = [
-            obstacle(0, 0, 324, 234),  # Flower_Patch_Barrier
-            obstacle(461, 0, 89, 260),  # Left_House_Barrier
+            obstacle(0, 0, 300, 190),  # Flower_Patch_Barrier
+            obstacle(461, 0, 80, 220),  # Left_House_Barrier
             obstacle(550, 0, 88, 165),  # Center_house_Barrier
-            obstacle(637, 0, 323, 246),  # House_River_Bridge_Barrier
+            obstacle(637, 0, 323, 220),  # House_River_Bridge_Barrier
             obstacle(736, 367, 224, 121),  # bottom_river_Barrier
             obstacle(604, 477, 133, 62),  # Bottom_River_Left_Barrier
             obstacle(0, 401, 200, 139)  # Pond_Barrier
@@ -42,7 +60,7 @@ class OverworldScene(Scene):
 
         # Define in world entries
         self.entries = [
-            obstacle(939, 260, 21, 97),  # World_1_Entry
+            obstacle(939, 260, 21, 97),  # World_1_Entry (Dark desert)
             obstacle(327, 0, 116, 18),  # World_3_Entry
         ]
 
@@ -153,7 +171,7 @@ class OverworldScene(Scene):
             if event.key == pygame.K_q:  # Press q to open/close controls menu
                 if self.show_controls:
                     original_background = pygame.image.load(
-                        os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
+                        os.path.join(PATH_TO_RESOURCES, "overworld_maps/Overworld_Correct_size.png"))
                     self.background = pygame.transform.scale(original_background, (960, 540))
                     self.show_controls = False
                     self.show_characters = True

@@ -6,7 +6,7 @@ import os
 import pygame
 from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
-import fenrir.game.overworld.overworld_scene as overscene
+import fenrir.game.overworld.overworld_scene_hub as overscene
 from fenrir.common.music import Music
 from fenrir.game.combat.combat_chars import ArcherChar, KnightChar, MageChar
 import fenrir.game.combat.combat_map_data as md
@@ -152,26 +152,26 @@ class CombatScene(Scene):
                                            self._highlight_curr_player)
         self._player_list.draw(self.screen)
         self._combat_grid_system.clear_highlights()
-
+        
         if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected) \
                 and not self._quit_screen:
-            self._textbox.load_textbox(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40)
+            self._textbox.load_image(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40, "UI/generic-rpg-ui-text-box.png")
             option = "Attack" if self.player_attacking else "Move"
             self._textbox.draw_dialogue(f"Click tile to {option} or press [b] to cancel", 18, 20,
                                         DisplaySettings.SCREEN_RESOLUTION.value[1] - 42)
         elif self.show_text_box and not self._quit_screen:
             if not self._hide_prompt:
                 text_box_height = 40 + 30 * len(self.prompt_options)
-                self._textbox.load_textbox(400, 370, 430, text_box_height)
+                self._textbox.load_image(400, 370, 430, text_box_height, "UI/generic-rpg-ui-text-box.png")
                 self._textbox.draw_options(self.prompt, self.prompt_options, 24, 300, 400)
             else:
-                self._textbox.load_textbox(DisplaySettings.SCREEN_RESOLUTION.value[0] - 200,
-                                           DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40)
+                self._textbox.load_image(DisplaySettings.SCREEN_RESOLUTION.value[0] - 200,
+                                           DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40, "UI/generic-rpg-ui-text-box.png")
                 self._textbox.draw_dialogue(f"Press [SPACE] to show prompt.", 18,
                                             DisplaySettings.SCREEN_RESOLUTION.value[0] - 300,
                                             DisplaySettings.SCREEN_RESOLUTION.value[1] - 40)
         elif self._quit_screen:
-            self._textbox.load_textbox(400, 150, 400, 150)
+            self._textbox.load_image(400, 150, 400, 150, "UI/generic-rpg-ui-text-box.png")
             options = ["[Y]    YES", "[N]    NO"]
             size = 24
             x, y = 320, 200

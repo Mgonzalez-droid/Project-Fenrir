@@ -41,7 +41,7 @@ class CombatScene(Scene):
         Music.play_song("The Arrival (BATTLE II)")
 
         # Player char
-        self._participants.append(KnightChar(0, 1, False))
+        self._participants.append(KnightChar(0, 4, False))
         self._participants.append(ArcherChar(1, 2, False))
         self._participants.append(MageChar(2, 1, False))
 
@@ -104,6 +104,7 @@ class CombatScene(Scene):
         # game won info
         self.game_over = False
         self.player_won = False
+        self.player_died = False
 
         # quitting combat screen
         self._quit_screen = False
@@ -214,8 +215,9 @@ class CombatScene(Scene):
         self.prompt_options = ""
 
     def update_initiative_system(self):
-        if self.remove_dead_players():
+        if self.player_died:
             player_list = self._participants
+            self.player_died = False
         else:
             player_list = None
 
@@ -386,21 +388,20 @@ class CombatScene(Scene):
                 self.move_counter -= 1
 
     def check_for_winner(self):
-        player = False
-        enemy = False
+        player_alive = False
+        enemy_alive = False
 
         for player in self._participants:
-            if player.alive:
-                if player.get_is_enemy():
-                    enemy = True
-                else:
-                    player = True
+            if player.get_is_enemy():
+                enemy_alive = True
+            else:
+                player_alive = True
 
-        if not player:
+        if not player_alive:
             self.player_won = False
             self.game_over = True
-        elif not enemy:
-            self.player_won = False
+        elif not enemy_alive:
+            self.player_won = True
             self.game_over = True
 
     ##########################################################################
@@ -408,10 +409,14 @@ class CombatScene(Scene):
     ##########################################################################
 
     def play_game(self):
-        self.check_for_winner()
+
+        if self.remove_dead_players():
+            self.check_for_winner()
+            if self.game_over:
+                self.next_move()
+            self.player_died = True
 
         if self.game_over:
-            self.clear_prompt()
             # Need data to show who one ect...
             if self.player_won:
                 winner = self.game_state.player_name
@@ -514,13 +519,9 @@ class CombatScene(Scene):
                                 if self.curr_player.get_type() == 'mage':
                                     character.take_damage(self.curr_player.magic_attack, 'magic')
                                     character.animate_damage()
-                                    # print("The enemy mage attacked the hero " + character.get_type() + " for " + str(
-                                    #     self.curr_player.magic_attack))
                                 else:
                                     character.take_damage(self.curr_player.attack, 'physical')
                                     character.animate_damage()
-                                    # print("The enemy knight attacked the hero " + character.get_type() + " for " + str(
-                                    #     self.curr_player.attack))
                                 self.curr_player.attack_enemy()
                                 self.ai_attack_finished = True
                                 break
@@ -547,11 +548,16 @@ class CombatScene(Scene):
                     else:
                         enemy_choice = "attacked!"
 
-                    self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "Press [Enter] to continue..."])
-                    if self.key_dict['SELECT']:
+                    if self.game_over:
                         self.enemy_moved = False
                         self.enemy_attacked = False
                         self.next_move()
+                    else:
+                        self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "Press [Enter] to continue..."])
+                        if self.key_dict['SELECT']:
+                            self.enemy_moved = False
+                            self.enemy_attacked = False
+                            self.next_move()
             else:
                 if not self.player_attacking and not self.player_moving:
                     if self.move_counter:

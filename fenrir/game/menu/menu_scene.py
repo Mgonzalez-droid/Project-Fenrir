@@ -1,6 +1,6 @@
 import pygame
 from fenrir.common.scene import Scene
-import fenrir.game.overworld.overworld_scene as overscene
+import fenrir.game.overworld.overworld_scene_hub as overscene
 from fenrir.common.config import *
 from fenrir.data.load_game_from_db import *
 import time

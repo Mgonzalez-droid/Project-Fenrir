@@ -6,7 +6,7 @@ import os
 import pygame
 from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
-import fenrir.game.overworld.overworld_scene as overscene
+import fenrir.game.overworld.overworld_scene_hub as overscene
 from fenrir.common.music import Music
 from fenrir.game.combat.combat_chars import ArcherChar, KnightChar, MageChar
 import fenrir.game.combat.combat_map_data as md
@@ -41,7 +41,7 @@ class CombatScene(Scene):
         Music.play_song("The Arrival (BATTLE II)")
 
         # Player char
-        self._participants.append(KnightChar(0, 1, False))
+        self._participants.append(KnightChar(0, 4, False))
         self._participants.append(ArcherChar(1, 2, False))
         self._participants.append(MageChar(2, 1, False))
 
@@ -104,6 +104,7 @@ class CombatScene(Scene):
         # game won info
         self.game_over = False
         self.player_won = False
+        self.player_died = False
 
         # quitting combat screen
         self._quit_screen = False
@@ -151,25 +152,26 @@ class CombatScene(Scene):
                                            self._highlight_curr_player)
         self._player_list.draw(self.screen)
         self._combat_grid_system.clear_highlights()
-
-        if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected):
-            self._textbox.load_textbox(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40)
+        
+        if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected) \
+                and not self._quit_screen:
+            self._textbox.load_image(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40, "UI/generic-rpg-ui-text-box.png")
             option = "Attack" if self.player_attacking else "Move"
             self._textbox.draw_dialogue(f"Click tile to {option} or press [b] to cancel", 18, 20,
                                         DisplaySettings.SCREEN_RESOLUTION.value[1] - 42)
         elif self.show_text_box and not self._quit_screen:
             if not self._hide_prompt:
                 text_box_height = 40 + 30 * len(self.prompt_options)
-                self._textbox.load_textbox(400, 370, 430, text_box_height)
+                self._textbox.load_image(400, 370, 430, text_box_height, "UI/generic-rpg-ui-text-box.png")
                 self._textbox.draw_options(self.prompt, self.prompt_options, 24, 300, 400)
             else:
-                self._textbox.load_textbox(DisplaySettings.SCREEN_RESOLUTION.value[0] - 200,
-                                           DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40)
+                self._textbox.load_image(DisplaySettings.SCREEN_RESOLUTION.value[0] - 200,
+                                           DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40, "UI/generic-rpg-ui-text-box.png")
                 self._textbox.draw_dialogue(f"Press [SPACE] to show prompt.", 18,
                                             DisplaySettings.SCREEN_RESOLUTION.value[0] - 300,
                                             DisplaySettings.SCREEN_RESOLUTION.value[1] - 40)
         elif self._quit_screen:
-            self._textbox.load_textbox(400, 150, 400, 150)
+            self._textbox.load_image(400, 150, 400, 150, "UI/generic-rpg-ui-text-box.png")
             options = ["[Y]    YES", "[N]    NO"]
             size = 24
             x, y = 320, 200
@@ -213,8 +215,9 @@ class CombatScene(Scene):
         self.prompt_options = ""
 
     def update_initiative_system(self):
-        if self.remove_dead_players():
+        if self.player_died:
             player_list = self._participants
+            self.player_died = False
         else:
             player_list = None
 
@@ -246,6 +249,8 @@ class CombatScene(Scene):
         index = 0
         for player in self._participants:
             if player.hp <= 0:
+                self._map.tilemap[(player.ypos - 30) // 60][
+                    (player.xpos - 30) // 60].unoccupy()
                 player.kill()
                 self._participants.pop(index)
                 return True
@@ -383,21 +388,20 @@ class CombatScene(Scene):
                 self.move_counter -= 1
 
     def check_for_winner(self):
-        player = False
-        enemy = False
+        player_alive = False
+        enemy_alive = False
 
         for player in self._participants:
-            if player.alive:
-                if player.get_is_enemy():
-                    enemy = True
-                else:
-                    player = True
+            if player.get_is_enemy():
+                enemy_alive = True
+            else:
+                player_alive = True
 
-        if not player:
+        if not player_alive:
             self.player_won = False
             self.game_over = True
-        elif not enemy:
-            self.player_won = False
+        elif not enemy_alive:
+            self.player_won = True
             self.game_over = True
 
     ##########################################################################
@@ -405,10 +409,14 @@ class CombatScene(Scene):
     ##########################################################################
 
     def play_game(self):
-        self.check_for_winner()
+
+        if self.remove_dead_players():
+            self.check_for_winner()
+            if self.game_over:
+                self.next_move()
+            self.player_died = True
 
         if self.game_over:
-            self.clear_prompt()
             # Need data to show who one ect...
             if self.player_won:
                 winner = self.game_state.player_name
@@ -463,6 +471,7 @@ class CombatScene(Scene):
                     # if there is no movement and no target then game is over
                     if self.ai_new_x is None and self.ai_new_y is None and self.target_to_attack is None:
                         self.ai_turn_finished = True
+                        self.ai_completed_decision = True
                         self.game_over = True
 
                     # if there is a movement that needs to be made
@@ -539,11 +548,16 @@ class CombatScene(Scene):
                     else:
                         enemy_choice = "attacked!"
 
-                    self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "Press [Enter] to continue..."])
-                    if self.key_dict['SELECT']:
+                    if self.game_over:
                         self.enemy_moved = False
                         self.enemy_attacked = False
                         self.next_move()
+                    else:
+                        self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "Press [Enter] to continue..."])
+                        if self.key_dict['SELECT']:
+                            self.enemy_moved = False
+                            self.enemy_attacked = False
+                            self.next_move()
             else:
                 if not self.player_attacking and not self.player_moving:
                     if self.move_counter:
@@ -599,8 +613,17 @@ class CombatScene(Scene):
         selectable_tiles = []
         for tile in combat_map[y_pos][x_pos].adjacencies:
             if select_type == "movement":
-                if not tile.is_occupied and not tile.is_wall and not tile.is_blocking:
-                    selectable_tiles.append(tile)
+                occ = "none"
+                if not tile.is_wall and not tile.is_blocking:
+                    if tile.is_occupied:
+                        occ_id = tile.unit
+                        for units in self._participants:
+                            if occ_id == units.get_id() and not units.get_is_enemy():
+                                occ = "player"
+                            elif occ_id == units.get_id() and units.get_is_enemy():
+                                occ = "enemy"
+                    if occ == "none" or occ == "player":
+                        selectable_tiles.append(tile)
             elif select_type == "attack":
                 if not tile.is_wall:
                     selectable_tiles.append(tile)
@@ -615,18 +638,34 @@ class CombatScene(Scene):
                             _unique = False
                     if _unique:
                         if select_type == "movement":
-                            if not tile.is_occupied and not tile.is_wall and not tile.is_blocking:
-                                new_tiles.append(tile)
+                            occ = "none"
+                            if not tile.is_wall and not tile.is_blocking:
+                                if tile.is_occupied:
+                                    occ_id = tile.unit
+                                    for units in self._participants:
+                                        if occ_id == units.get_id() and not units.get_is_enemy():
+                                            occ = "player"
+                                        elif occ_id == units.get_id() and units.get_is_enemy():
+                                            occ = "enemy"
+                                if occ == "none" or occ == "player":
+                                    new_tiles.append(tile)
                         elif select_type == "attack":
                             if not tile.is_wall:
                                 new_tiles.append(tile)
             selectable_tiles.extend(new_tiles)
             input_range -= 1
         s_tile_ids = []
+        semi_selectable_tiles = []
         final_selectable_tiles = []
         for tile in selectable_tiles:
             if tile.id not in s_tile_ids:
                 s_tile_ids.append(tile.id)
         for tile_id in s_tile_ids:
-            final_selectable_tiles.append(combat_map[int(tile_id[1] / 60)][int(tile_id[0] / 60)])
+            semi_selectable_tiles.append(combat_map[int(tile_id[1] / 60)][int(tile_id[0] / 60)])
+        for tile in semi_selectable_tiles:
+            if select_type == "movement":
+                if not tile.is_occupied:
+                    final_selectable_tiles.append(tile)
+            elif select_type == "attack":
+                final_selectable_tiles = semi_selectable_tiles
         return final_selectable_tiles

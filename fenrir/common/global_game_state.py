@@ -1,3 +1,4 @@
+
 """Global Game state object used to track game state when switching scenes etc.
 """
 

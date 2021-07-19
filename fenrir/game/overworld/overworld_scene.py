@@ -34,7 +34,7 @@ class OverworldScene(Scene):
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
         pygame.mixer.init()
-        pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
+        pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.wav")
         pygame.mixer.music.play()
 
         self.npc = character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"))

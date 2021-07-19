@@ -39,7 +39,7 @@ class CombatGridSystem:
                 temp_list.append(grid)
             self._grid.append(temp_list)
 
-    def draw_grid(self, mouse_x, mouse_y):
+    def draw_grid(self, mouse_x, mouse_y, player_x, player_y, highlighting_player):
         for i in range(0, self._rows):
             for j in range(0, self.cols):
                 pygame.draw.rect(self._screen, Colors.GRID_GRAY.value, self._grid[i][j], 1)
@@ -49,6 +49,8 @@ class CombatGridSystem:
 
         if self._highlighted_tiles:
             self.mouse_hover_highlight(mouse_x, mouse_y)
+        if highlighting_player:
+            self._highlight_current_player(player_x, player_y)
 
     def _highlight_tile_by_index(self, tile, color):
         shape_surf = pygame.Surface((60, 60), pygame.SRCALPHA)
@@ -78,4 +80,11 @@ class CombatGridSystem:
         shape_surf = pygame.Surface((60, 60), pygame.SRCALPHA)
         shape_surf.set_alpha(190)
         pygame.draw.rect(shape_surf, color, shape_surf.get_rect())
+        self._screen.blit(shape_surf, tile)
+
+    def _highlight_current_player(self, x, y):
+        tile = self._grid[int(y // 60)][int(x // 60)]
+        shape_surf = pygame.Surface((60, 60), pygame.SRCALPHA)
+        shape_surf.set_alpha(180)
+        pygame.draw.rect(shape_surf, Colors.WHITE.value, shape_surf.get_rect())
         self._screen.blit(shape_surf, tile)

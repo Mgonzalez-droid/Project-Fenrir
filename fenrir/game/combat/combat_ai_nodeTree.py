@@ -1,3 +1,4 @@
+
 """
 .. module:: combat_ai_NodeTree
   :synopsis: module for building a node version of the map for the AI to path

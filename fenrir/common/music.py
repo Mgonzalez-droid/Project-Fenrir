@@ -10,7 +10,7 @@ class Music:
         mixer.init()
 
         # Loading the song
-        mixer.music.load(os.path.join(PATH_TO_RESOURCES, "soundtrack/" + song + ".mp3"))
+        mixer.music.load(os.path.join(PATH_TO_RESOURCES, "soundtrack/" + song + ".wav"))
 
         # Setting the volume
         mixer.music.set_volume(0.7)

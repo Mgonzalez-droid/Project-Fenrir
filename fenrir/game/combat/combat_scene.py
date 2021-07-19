@@ -152,7 +152,8 @@ class CombatScene(Scene):
         self._player_list.draw(self.screen)
         self._combat_grid_system.clear_highlights()
 
-        if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected):
+        if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected) \
+                and not self._quit_screen:
             self._textbox.load_textbox(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40)
             option = "Attack" if self.player_attacking else "Move"
             self._textbox.draw_dialogue(f"Click tile to {option} or press [b] to cancel", 18, 20,
@@ -213,12 +214,6 @@ class CombatScene(Scene):
         self.prompt_options = ""
 
     def update_initiative_system(self):
-        # for character in self._participants:
-        #     if character.get_is_enemy():
-        #         print("For the enemy " + character.get_type() + " HP is: " + str(character.hp))
-        #     else:
-        #         print("For the hero " + character.get_type() + " HP is: " + str(character.hp))
-        # print("")
         if self.remove_dead_players():
             player_list = self._participants
         else:

@@ -246,6 +246,8 @@ class CombatScene(Scene):
         index = 0
         for player in self._participants:
             if player.hp <= 0:
+                self._map.tilemap[(player.ypos - 30) // 60][
+                    (player.xpos - 30) // 60].unoccupy()
                 player.kill()
                 self._participants.pop(index)
                 return True

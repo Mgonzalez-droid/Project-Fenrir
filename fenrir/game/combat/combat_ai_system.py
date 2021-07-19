@@ -121,7 +121,7 @@ class CombatAISystem:
             if currentTile.get_totalDistance() - currentTile.get_distanceFromStart() <= self._me.attack_range:
                 self._targetNode = currentTile
                 self._targetNodeLessThanTargetPosition = True
-                self._targetDistance = currentTile.get_distanceFromStart()
+                self._targetDistance = currentTile.get_distanceFromStart() + 1
                 return
 
             # loop and add all of the current node's neighbors to the list to search if not occupied
@@ -165,16 +165,16 @@ class CombatAISystem:
         currentTile = self._targetNode
         if self._targetNode.get_xPos() == self._targetX and self._targetNode.get_yPos() == self._targetY:
             numberOfTilesToMove -= 1
-            for i in range(self._targetDistance - numberOfTilesToMove):
+            for i in range(self._targetDistance - 1 - numberOfTilesToMove):
                 currentTile = currentTile.get_parent()
             self._goalX = (currentTile.get_xPos() * 60) + 30
             self._goalY = (currentTile.get_yPos() * 60) + 30
         elif self._targetNodeLessThanTargetPosition:
-            if self._targetDistance < numberOfTilesToMove:
+            if self._targetDistance - 1 < numberOfTilesToMove:
                 self._goalX = (self._targetNode.get_xPos() * 60) + 30
                 self._goalY = (self._targetNode.get_yPos() * 60) + 30
             else:
-                for i in range(self._targetDistance - numberOfTilesToMove):
+                for i in range(self._targetDistance - 1 - numberOfTilesToMove):
                     currentTile = currentTile.get_parent()
                 self._goalX = (currentTile.get_xPos() * 60) + 30
                 self._goalY = (currentTile.get_yPos() * 60) + 30
@@ -191,15 +191,15 @@ class CombatAISystem:
             if self._me.get_type() == 'mage':
                 self._me.mana -= (self._me.mana * .05)
             return None, None, self._target.get_id()
-        elif self._targetDistance > (self._me.move_range + self._me.attack_range):
-            self.build_path_to_target()
-            self.set_ai_goal_position(self._me.move_range + math.floor(self._me.move_range * .5))
-            if self._me.get_type() == 'mage':
-                self._me.mana += (self._me.mana * .03)
-            return self._goalX, self._goalY, None
         else:
             self.build_path_to_target()
-            self.set_ai_goal_position(self._me.move_range)
-            if self._me.get_type() == 'mage':
-                self._me.mana -= (self._me.mana * .05)
-            return self._goalX, self._goalY, self._target.get_id()
+            if self._targetDistance > (self._me.move_range + self._me.attack_range):
+                self.set_ai_goal_position(self._me.move_range + math.floor(self._me.move_range * .5))
+                if self._me.get_type() == 'mage':
+                    self._me.mana += (self._me.mana * .03)
+                return self._goalX, self._goalY, None
+            else:
+                self.set_ai_goal_position(self._me.move_range)
+                if self._me.get_type() == 'mage':
+                    self._me.mana -= (self._me.mana * .05)
+                return self._goalX, self._goalY, self._target.get_id()

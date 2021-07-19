@@ -24,15 +24,8 @@ class Collision:
 
         self.repulsion = 0
 
-        if hero_rect.colliderect(npc_rect):
-            if abs(npc_rect.top - hero_rect.bottom) < self.__tolerance:
-                return True
-            if abs(npc_rect.bottom - hero_rect.top) < self.__tolerance:
-                return True
-            if abs(npc_rect.right - hero_rect.left) < self.__tolerance:
-                return True
-            if abs(npc_rect.left - hero_rect.right) < self.__tolerance:
-                return True
+        if self.check_collision(hero_rect, npc_rect):
+            return True
         else:
             return False
 
@@ -44,19 +37,8 @@ class Collision:
                 obstacle_rects.append(self.make_obstacle_rect(obstacle))
 
         for obstacle_rect in obstacle_rects:
-            if hero_rect.colliderect(obstacle_rect):
-                if abs(obstacle_rect.top - hero_rect.bottom) < self.__tolerance:
-                    # move opposite y direction
-                    return True
-                if abs(obstacle_rect.bottom - hero_rect.top) < self.__tolerance:
-                    # move opposite y direction
-                    return True
-                if abs(obstacle_rect.right - hero_rect.left) < self.__tolerance:
-                    # move opposite x direction
-                    return True
-                if abs(obstacle_rect.left - hero_rect.right) < self.__tolerance:
-                    # move opposite x direction
-                    return True
+            if self.check_collision(hero_rect, obstacle_rect):
+                return True
         return False
 
     def entry_collision(self, hero, entries):
@@ -69,15 +51,8 @@ class Collision:
 
         self.entry_index = 0
         for entry_rect in entry_rects:
-            if hero_rect.colliderect(entry_rect):
-                if abs(entry_rect.top - hero_rect.bottom) < self.__tolerance:
-                    return True
-                if abs(entry_rect.bottom - hero_rect.top) < self.__tolerance:
-                    return True
-                if abs(entry_rect.right - hero_rect.left) < self.__tolerance:
-                    return True
-                if abs(entry_rect.left - hero_rect.right) < self.__tolerance:
-                    return True
+            if self.check_collision(hero_rect, entry_rect):
+                return True
             self.entry_index = self.entry_index + 1
         return False
 
@@ -97,25 +72,25 @@ class Collision:
             for obstacle in obstacles:
                 obstacle_rects.append(self.make_obstacle_rect(obstacle))
 
-        if hero_rect.colliderect(npc_rect):
-            if abs(npc_rect.top - hero_rect.bottom) < self.__tolerance:
-                return True
-            if abs(npc_rect.bottom - hero_rect.top) < self.__tolerance:
-                return True
-            if abs(npc_rect.right - hero_rect.left) < self.__tolerance:
-                return True
-            if abs(npc_rect.left - hero_rect.right) < self.__tolerance:
-                return True
+        if self.check_collision(hero_rect, npc_rect):
+            return True
 
         for obstacle_rect in obstacle_rects:
-            if hero_rect.colliderect(obstacle_rect):
-                if abs(obstacle_rect.top - hero_rect.bottom) < self.__tolerance:
-                    return True
-                if abs(obstacle_rect.bottom - hero_rect.top) < self.__tolerance:
-                    return True
-                if abs(obstacle_rect.right - hero_rect.left) < self.__tolerance:
-                    return True
-                if abs(obstacle_rect.left - hero_rect.right) < self.__tolerance:
-                    return True
+            if self.check_collision(hero_rect, obstacle_rect):
+                return True
+        return False
+
+    # This method determines where is the collision happening between two rects
+    def check_collision(self, hero_rect, other_rect):
+
+        if hero_rect.colliderect(other_rect):
+            if abs(other_rect.top - hero_rect.bottom) < self.__tolerance:
+                return True
+            if abs(other_rect.bottom - hero_rect.top) < self.__tolerance:
+                return True
+            if abs(other_rect.right - hero_rect.left) < self.__tolerance:
+                return True
+            if abs(other_rect.left - hero_rect.right) < self.__tolerance:
+                return True
 
         return False

@@ -152,7 +152,8 @@ class CombatScene(Scene):
         self._player_list.draw(self.screen)
         self._combat_grid_system.clear_highlights()
 
-        if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected):
+        if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected) \
+                and not self._quit_screen:
             self._textbox.load_textbox(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40)
             option = "Attack" if self.player_attacking else "Move"
             self._textbox.draw_dialogue(f"Click tile to {option} or press [b] to cancel", 18, 20,
@@ -213,12 +214,6 @@ class CombatScene(Scene):
         self.prompt_options = ""
 
     def update_initiative_system(self):
-        # for character in self._participants:
-        #     if character.get_is_enemy():
-        #         print("For the enemy " + character.get_type() + " HP is: " + str(character.hp))
-        #     else:
-        #         print("For the hero " + character.get_type() + " HP is: " + str(character.hp))
-        # print("")
         if self.remove_dead_players():
             player_list = self._participants
         else:
@@ -252,6 +247,8 @@ class CombatScene(Scene):
         index = 0
         for player in self._participants:
             if player.hp <= 0:
+                self._map.tilemap[(player.ypos - 30) // 60][
+                    (player.xpos - 30) // 60].unoccupy()
                 player.kill()
                 self._participants.pop(index)
                 return True
@@ -469,6 +466,7 @@ class CombatScene(Scene):
                     # if there is no movement and no target then game is over
                     if self.ai_new_x is None and self.ai_new_y is None and self.target_to_attack is None:
                         self.ai_turn_finished = True
+                        self.ai_completed_decision = True
                         self.game_over = True
 
                     # if there is a movement that needs to be made
@@ -516,9 +514,13 @@ class CombatScene(Scene):
                                 if self.curr_player.get_type() == 'mage':
                                     character.take_damage(self.curr_player.magic_attack, 'magic')
                                     character.animate_damage()
+                                    # print("The enemy mage attacked the hero " + character.get_type() + " for " + str(
+                                    #     self.curr_player.magic_attack))
                                 else:
                                     character.take_damage(self.curr_player.attack, 'physical')
                                     character.animate_damage()
+                                    # print("The enemy knight attacked the hero " + character.get_type() + " for " + str(
+                                    #     self.curr_player.attack))
                                 self.curr_player.attack_enemy()
                                 self.ai_attack_finished = True
                                 break

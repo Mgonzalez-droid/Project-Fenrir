@@ -32,7 +32,6 @@ class OverworldScene(Scene):
 
         self.collision = Collision()
 
-
         '''
         # Dark Desert 
         # Boundaries:
@@ -41,6 +40,9 @@ class OverworldScene(Scene):
         obstacle(650, 0, 250, 70),  # Top right stone wall
         obstacle(0, 410, 75, 70),  # Bottom left prompts
         obstacle(200, 410, 70, 1),  # Bottom left prompts (fallen tree)
+        obstacle(760, 410, 1, 1),  # Bottom tombstone
+        obstacle(740, 280, 1, 1),  # Middle tombstone
+        obstacle(860, 160, 1, 1),  # Top tombstone (looks broken)
         
         # Entry points:
         obstacle(0, 260, 21, 60),  # World_1_Entry

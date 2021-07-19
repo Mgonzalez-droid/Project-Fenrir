@@ -613,8 +613,15 @@ class CombatScene(Scene):
         selectable_tiles = []
         for tile in combat_map[y_pos][x_pos].adjacencies:
             if select_type == "movement":
-                if not tile.is_occupied and not tile.is_wall and not tile.is_blocking:
-                    selectable_tiles.append(tile)
+                occ = "none"
+                if not tile.is_wall and not tile.is_blocking:
+                    if tile.is_occupied:
+                        occ_id = tile.unit
+                        for units in self._participants:
+                            if occ_id == units.get_id() and not units.get_is_enemy():
+                                occ = "player"
+                    if not tile.is_occupied or occ == "player":
+                        selectable_tiles.append(tile)
             elif select_type == "attack":
                 if not tile.is_wall:
                     selectable_tiles.append(tile)
@@ -629,18 +636,29 @@ class CombatScene(Scene):
                             _unique = False
                     if _unique:
                         if select_type == "movement":
-                            if not tile.is_occupied and not tile.is_wall and not tile.is_blocking:
-                                new_tiles.append(tile)
+                            occ = "none"
+                            if not tile.is_wall and not tile.is_blocking:
+                                if tile.is_occupied:
+                                    occ_id = tile.unit
+                                    for units in self._participants:
+                                        if occ_id == units.get_id() and not units.get_is_enemy():
+                                            occ = "player"
+                                if not tile.is_occupied or occ == "player":
+                                    new_tiles.append(tile)
                         elif select_type == "attack":
                             if not tile.is_wall:
                                 new_tiles.append(tile)
             selectable_tiles.extend(new_tiles)
             input_range -= 1
         s_tile_ids = []
+        semi_selectable_tiles = []
         final_selectable_tiles = []
         for tile in selectable_tiles:
             if tile.id not in s_tile_ids:
                 s_tile_ids.append(tile.id)
         for tile_id in s_tile_ids:
-            final_selectable_tiles.append(combat_map[int(tile_id[1] / 60)][int(tile_id[0] / 60)])
+            semi_selectable_tiles.append(combat_map[int(tile_id[1] / 60)][int(tile_id[0] / 60)])
+        for tile in semi_selectable_tiles:
+            if not tile.is_occupied:
+                final_selectable_tiles.append(tile)
         return final_selectable_tiles

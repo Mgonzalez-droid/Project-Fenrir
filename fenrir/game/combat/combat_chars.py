@@ -446,7 +446,7 @@ class KnightChar(CombatCharSprite):
 
     def get_health_bar_location(self):
         x, y = self.rect.midtop
-        
+
         if self.ypos < 45:
             y = 5
 

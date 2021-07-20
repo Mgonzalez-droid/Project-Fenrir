@@ -221,14 +221,8 @@ class CombatScene(Scene):
         self.prompt_options = ""
 
     def update_initiative_system(self):
-        if self.player_died:
-            player_list = self._participants
-            self.player_died = False
-        else:
-            player_list = None
-
         # will update initiative system with new list if player was removed
-        self.initiative_system.update_system(player_list)
+        self.initiative_system.update_system()
         self.curr_player = self.initiative_system.get_current_player()
         self.next_player = self.initiative_system.get_next_player_up()
 
@@ -259,6 +253,7 @@ class CombatScene(Scene):
                     (player.xpos - 30) // 60].unoccupy()
                 player.kill()
                 self._participants.pop(index)
+                self.initiative_system.remove_player(player.get_id())
                 return True
             else:
                 index += 1

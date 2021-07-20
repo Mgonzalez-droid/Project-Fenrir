@@ -58,7 +58,7 @@ class CombatInitiativeSystem:
         self._player_killed = True
         for i in range(0, len(self._ordered_initiative_list)):
             if self._ordered_initiative_list[i].get_id() == player_id:
-                self._ordered_initiative_list.pop(i)
                 if i == len(self._ordered_initiative_list) - 1:
                     self._last_player_killed = True
+                self._ordered_initiative_list.pop(i)
                 break

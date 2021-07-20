@@ -7,7 +7,6 @@ import pygame
 from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
 import fenrir.game.overworld.overworld_scene_hub as overscene
-from fenrir.common.music import Music
 from fenrir.game.combat.combat_chars import ArcherChar, KnightChar, MageChar
 import fenrir.game.combat.combat_map_data as md
 from fenrir.common.config import Colors, DisplaySettings, PATH_TO_RESOURCES
@@ -38,7 +37,11 @@ class CombatScene(Scene):
         self._hide_prompt = False
 
         # Play Music
-        Music.play_song("The Arrival (BATTLE II)")
+        pygame.mixer.init()
+        pygame.mixer.music.load(os.path.join(PATH_TO_RESOURCES, "soundtrack", "The Arrival (BATTLE II).wav"))
+        pygame.mixer.music.set_volume(.4)
+        pygame.mixer.music.play(-1)
+        self._sound_effects = {}
 
         # Player char
         self._participants.append(KnightChar(0, 4, False))
@@ -171,7 +174,7 @@ class CombatScene(Scene):
                 self._textbox.draw_options(self.prompt, self.prompt_options, 24, 300, 400)
             else:
                 self._textbox.load_image(DisplaySettings.SCREEN_RESOLUTION.value[0] - 200,
-                                          DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40,
+                                         DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40,
                                          "UI/generic-rpg-ui-text-box.png")
                 self._textbox.draw_dialogue(f"Press [SPACE] to show prompt.", 18,
                                             DisplaySettings.SCREEN_RESOLUTION.value[0] - 300,
@@ -251,6 +254,7 @@ class CombatScene(Scene):
             if player.hp <= 0:
                 self._map.tilemap[(player.ypos - 30) // 60][
                     (player.xpos - 30) // 60].unoccupy()
+                self.play_death_sound()
                 player.kill()
                 self._participants.pop(index)
                 self.initiative_system.remove_player(player.get_id())
@@ -301,6 +305,8 @@ class CombatScene(Scene):
                 self._map.tilemap[endingY][endingX].occupy(self.curr_player.get_id)
                 self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
                                          (self._move_list[-1].get_yPos() * 60) + 30)
+
+                self.play_movement_sound()
                 self._move_list.pop()
                 self._highlight_curr_player = False
                 self._move_selected = True
@@ -318,6 +324,8 @@ class CombatScene(Scene):
             if not self.curr_player.is_animating():
                 self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
                                          (self._move_list[-1].get_yPos() * 60) + 30)
+
+                self.play_movement_sound()
                 self._move_list.pop()
 
             if not self._move_list:
@@ -373,7 +381,7 @@ class CombatScene(Scene):
                         left = False
                     else:
                         left = True
-
+                self.play_attack_sound()
                 self.curr_player.attack_enemy(left)
                 self.attack_complete = True
 
@@ -484,6 +492,7 @@ class CombatScene(Scene):
                             self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
                                 self.curr_player.get_id())
                             self.curr_player.move_to(self.ai_new_x, self.ai_new_y)
+                            self.play_movement_sound()
                             self.ai_first_pass = True
                             self.ai_movement_finished = True
                         elif self.curr_player.get_type() != "mage":
@@ -499,7 +508,7 @@ class CombatScene(Scene):
                                                                    self._ai_Tree, self._map)
                                 self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
                                                          (self._move_list[-1].get_yPos() * 60) + 30)
-
+                                self.play_movement_sound()
                                 self.ai_first_pass = True
                                 self._move_list.pop()
 
@@ -507,6 +516,7 @@ class CombatScene(Scene):
                                 if not self.curr_player.is_animating():
                                     self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
                                                              (self._move_list[-1].get_yPos() * 60) + 30)
+                                    self.play_movement_sound()
                                     self._move_list.pop()
                             else:
                                 if not self.curr_player.is_animating():
@@ -524,6 +534,7 @@ class CombatScene(Scene):
                                     character.take_damage(self.curr_player.attack, 'physical')
                                     character.animate_damage()
                                 self.curr_player.attack_enemy()
+                                self.play_attack_sound()
                                 self.ai_attack_finished = True
                                 break
 
@@ -670,3 +681,31 @@ class CombatScene(Scene):
             elif select_type == "attack":
                 final_selectable_tiles = semi_selectable_tiles
         return final_selectable_tiles
+
+    def play_sound_effect(self, sound_name, time_lim=None):
+        # function play sound from library or load it if not there yet
+
+        if sound_name in self._sound_effects.keys():
+            sound = self._sound_effects[sound_name]
+        else:
+            print(os.getcwd())
+            path = os.path.join(PATH_TO_RESOURCES, "soundtrack", "combat_char_sounds", sound_name + ".wav")
+            sound = pygame.mixer.Sound(path)
+            self._sound_effects[sound_name] = sound
+        sound.set_volume(.6)
+        if time_lim:
+            sound.play(maxtime=time_lim)
+        else:
+            sound.play()
+
+    def play_movement_sound(self):
+        if self.curr_player.get_type() == "mage":
+            self.play_sound_effect("teleport")
+        else:
+            self.play_sound_effect("walk", 900)
+
+    def play_attack_sound(self):
+        self.play_sound_effect("attack_" + self.curr_player.get_type())
+
+    def play_death_sound(self):
+        self.play_sound_effect("death")

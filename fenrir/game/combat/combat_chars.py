@@ -1,6 +1,5 @@
 import os
 import pygame
-import time
 from fenrir.common.config import PATH_TO_RESOURCES, Colors
 from fenrir.game.combat.combat_character_data import CombatCharacterData
 

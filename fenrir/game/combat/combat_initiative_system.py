@@ -3,8 +3,6 @@
   :synopsis: module that determines the order of units in turn based combat mode.
 """
 
-from itertools import cycle
-
 
 class CombatInitiativeSystem:
     """Class represents the initiative system that will be deployed in each combat instance and will determine

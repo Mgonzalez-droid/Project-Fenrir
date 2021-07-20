@@ -24,6 +24,12 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         self._took_damage = False
         self._damage_animation_counter = 0
         self.image = None
+        self.rect = pygame.Rect(0, 0, 0, 0)
+        self._health_bar_rects = [pygame.Rect(0, 0, 50, 5), pygame.Rect(0, 0, 50, 5)]
+        self.get_health_bar_location()  # implemented in each char class
+
+        # TODO new max hp will be implemented in the char data class: Remove this one then
+        self._dummy_max_hp = self.hp  # set the original hp value to the max hp of the char
 
     @property
     def animation_state(self):
@@ -103,6 +109,21 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
     def animate_damage(self):
         self._took_damage = True
         self._damage_animation_counter = 0
+
+    def draw_health_bar(self, screen):
+        for rect in self._health_bar_rects:
+            rect.midbottom = self.get_health_bar_location()
+
+        percent_health = int((self.hp / self._dummy_max_hp) * 50)
+        # bg color red
+        pygame.draw.rect(screen, Colors.RED.value, self._health_bar_rects[0])
+        # remaining health bar
+        self._health_bar_rects[1].width = percent_health
+        self._health_bar_rects[1].left = self._health_bar_rects[0].left
+        pygame.draw.rect(screen, Colors.GREEN.value, self._health_bar_rects[1])
+
+    def get_health_bar_location(self):
+        raise NotImplementedError
 
 
 class MageChar(CombatCharSprite):
@@ -241,6 +262,15 @@ class MageChar(CombatCharSprite):
             self.animate_attack()
         else:
             self.animate(images)
+
+    def get_health_bar_location(self):
+        if self.ypos < 60:
+            x, y = self.rect.midbottom
+            y = 5
+        else:
+            x, y = self.rect.midtop
+            y = y + 65
+        return x, y
 
 
 class KnightChar(CombatCharSprite):
@@ -414,6 +444,14 @@ class KnightChar(CombatCharSprite):
         delta_y = y_target - self.rect.centery - 5
         self.move(delta_x, delta_y)
 
+    def get_health_bar_location(self):
+        x, y = self.rect.midtop
+
+        if self.ypos < 60:
+            y = 5
+
+        return x, y
+
 
 class ArcherChar(CombatCharSprite):
 
@@ -585,3 +623,12 @@ class ArcherChar(CombatCharSprite):
         delta_x = x_target - self.rect.centerx
         delta_y = y_target - self.rect.centery - 10
         self.move(delta_x, delta_y)
+
+    def get_health_bar_location(self):
+        if self.ypos < 60:
+            x, y = self.rect.midbottom
+            y = 5
+        else:
+            x, y = self.rect.midtop
+            y += 38
+        return x, y

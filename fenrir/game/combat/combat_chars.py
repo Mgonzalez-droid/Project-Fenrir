@@ -1,6 +1,5 @@
 import os
 import pygame
-import time
 from fenrir.common.config import PATH_TO_RESOURCES, Colors
 from fenrir.game.combat.combat_character_data import CombatCharacterData
 
@@ -21,12 +20,14 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         self._animation_speed = 3  # number of frames to show image
         self._face_left = False
         self._animating = False
+        self._move_speed = 4
         self._took_damage = False
         self._damage_animation_counter = 0
         self.image = None
         self.rect = pygame.Rect(0, 0, 0, 0)
         self._health_bar_rects = [pygame.Rect(0, 0, 50, 5), pygame.Rect(0, 0, 50, 5)]
         self.get_health_bar_location()  # implemented in each char class
+
 
         # TODO new max hp will be implemented in the char data class: Remove this one then
         self._dummy_max_hp = self.hp  # set the original hp value to the max hp of the char
@@ -289,7 +290,6 @@ class KnightChar(CombatCharSprite):
         self.load_assets()
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
-
         self.animation_state = "idle"
 
         if enemy:
@@ -384,36 +384,36 @@ class KnightChar(CombatCharSprite):
 
         if self.move_x > 0:
             self._face_left = False
-            if self.move_x < 2:
-                self.rect += self.move_x
-                self.move_x = 2
+            if self.move_x < self._move_speed:
+                self.rect.x += self.move_x
+                self.move_x = self._move_speed
             else:
-                self.rect.x += 2
-                self.move_x -= 2
+                self.rect.x += self._move_speed
+                self.move_x -= self._move_speed
         elif self.move_x < 0:
             self._face_left = True
-            if self.move_x > -2:
-                self.rect += self.move_x
+            if self.move_x > -self._move_speed:
+                self.rect.x += self.move_x
                 self.move_x = 0
             else:
-                self.rect.x += -2
-                self.move_x -= -2
+                self.rect.x += -self._move_speed
+                self.move_x -= -self._move_speed
 
         # y axis movements will only start when x-movements are done
         if self.move_y > 0 and self.move_x == 0:
-            if self.move_y < 2:
-                self.rect += self.move_x
+            if self.move_y < self._move_speed:
+                self.rect.y += self.move_x
                 self.move_y = 0
             else:
-                self.rect.y += 2
-                self.move_y -= 2
+                self.rect.y += self._move_speed
+                self.move_y -= self._move_speed
         elif self.move_y < 0 and self.move_x == 0:
-            if self.move_y > -2:
-                self.rect += self.move_y
+            if self.move_y > -self._move_speed:
+                self.rect.y += self.move_y
                 self.move_y = 0
             else:
-                self.rect.y += -2
-                self.move_y -= -2
+                self.rect.y += -self._move_speed
+                self.move_y -= -self._move_speed
 
     def update(self):
 
@@ -564,36 +564,36 @@ class ArcherChar(CombatCharSprite):
 
         if self.move_x > 0:
             self._face_left = False
-            if self.move_x < 2:
-                self.rect += self.move_x
-                self.move_x = 2
-            else:
-                self.rect.x += 2
-                self.move_x -= 2
-        elif self.move_x < 0:
-            self._face_left = True
-            if self.move_x > -2:
-                self.rect += self.move_x
+            if self.move_x < self._move_speed:
+                self.rect.x += self.move_x
                 self.move_x = 0
             else:
-                self.rect.x += -2
-                self.move_x -= -2
+                self.rect.x += self._move_speed
+                self.move_x -= self._move_speed
+        elif self.move_x < 0:
+            self._face_left = True
+            if self.move_x > -self._move_speed:
+                self.rect.x += self.move_x
+                self.move_x = 0
+            else:
+                self.rect.x += -self._move_speed
+                self.move_x -= -self._move_speed
 
         # y axis movements will only start when x-movements are done
         if self.move_y > 0 and self.move_x == 0:
-            if self.move_y < 2:
-                self.rect += self.move_x
+            if self.move_y < self._move_speed:
+                self.rect.y += self.move_y
                 self.move_y = 0
             else:
-                self.rect.y += 2
-                self.move_y -= 2
+                self.rect.y += self._move_speed
+                self.move_y -= self._move_speed
         elif self.move_y < 0 and self.move_x == 0:
-            if self.move_y > -2:
-                self.rect += self.move_y
+            if self.move_y > -self._move_speed:
+                self.rect.y += self.move_y
                 self.move_y = 0
             else:
-                self.rect.y += -2
-                self.move_y -= -2
+                self.rect.y += -self._move_speed
+                self.move_y -= -self._move_speed
 
     def update(self):
 

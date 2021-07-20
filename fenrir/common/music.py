@@ -16,7 +16,7 @@ class Music:
         mixer.music.set_volume(0.7)
 
         # Start playing the song
-        mixer.music.play(-1)
+        mixer.music.play()
 
     @staticmethod
     def stop_song():

@@ -74,17 +74,28 @@ class OverworldScene(Scene):
             music="Windless Slopes"
         )
 
-        """
         self.dark_desert_world = world_obj(
-            obstacles=[],
-            entries=[],
+            obstacles=[
+                obstacle(0, 0, 280, 170),  # Top left prompts
+                obstacle(281, 0, 180, 70),  # Top left stone wall
+                obstacle(650, 0, 250, 70),  # Top right stone wall
+                obstacle(0, 410, 75, 70),  # Bottom left prompts
+                obstacle(200, 410, 70, 1),  # Bottom left prompts (fallen tree)
+                obstacle(760, 410, 1, 1),  # Bottom tombstone
+                obstacle(740, 280, 1, 1),  # Middle tombstone
+                obstacle(860, 160, 1, 1),  # Top tombstone (looks broken)
+            ],
+            entries=[
+                obstacle(0, 260, 21, 60),  # World_1_Entry
+                obstacle(462, 0, 187, 20),  # Dark_Desert_Boss
+            ],
+            entry_dests=[],
             npc="",  # defaults to sensei
             npc_spawn=(100, 100),
             hero_spawn=(100, 100),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/Overworld_Correct_size.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark-desert-world.png")),
             music="Windless Slopes"
         )
-        """
 
         self.end_world = world_obj(
             obstacles=[
@@ -122,7 +133,7 @@ class OverworldScene(Scene):
             music="Windless Slopes"
         )
 
-        self.hub_world.entry_dests = [self.aquatic_world, self.end_world]
+        self.hub_world.entry_dests = [self.dark_desert_world, self.end_world]
         self.end_world.entry_dests = [self.boss_den, self.hub_world]
 
         # Defaults to hub world
@@ -134,23 +145,6 @@ class OverworldScene(Scene):
         self.textbox = TextBox(self.screen)
         self._quit_screen = False
         self.collision = Collision()
-
-        '''
-        # Dark Desert 
-        # Boundaries:
-        obstacle(0, 0, 280, 170),  # Top left prompts
-        obstacle(281, 0, 180, 70),  # Top left stone wall
-        obstacle(650, 0, 250, 70),  # Top right stone wall
-        obstacle(0, 410, 75, 70),  # Bottom left prompts
-        obstacle(200, 410, 70, 1),  # Bottom left prompts (fallen tree)
-        obstacle(760, 410, 1, 1),  # Bottom tombstone
-        obstacle(740, 280, 1, 1),  # Middle tombstone
-        obstacle(860, 160, 1, 1),  # Top tombstone (looks broken)
-        
-        # Entry points:
-        obstacle(0, 260, 21, 60),  # World_1_Entry
-        obstacle(462, 0, 187, 20),  # Dark_Desert_Boss
-        '''
 
         # Define in world barriers
         self.obstacles = [
@@ -182,7 +176,7 @@ class OverworldScene(Scene):
         # pygame.mixer.music.stop()
         # pygame.mixer.music.play()
 
-        Music.play_song(self.active_world.music)
+        # Music.play_song(self.active_world.music)
 
         self.npc = self.active_world.npc
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)

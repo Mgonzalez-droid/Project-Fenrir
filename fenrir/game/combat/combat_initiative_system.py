@@ -37,10 +37,14 @@ class CombatInitiativeSystem:
         """Updates the combat initiative system by updating current position in list. Operates as a cycle and will move
             to position 0 when reaching last participant. Must be called after each turn is completed.
         """
+        self._current_position += 1
+
         if player_list:
             self._ordered_initiative_list = sorted(list(player_list), key=lambda p: p.speed, reverse=True)
-
-        if self._current_position >= len(self._ordered_initiative_list) - 1:
-            self._current_position = 0
+            if self._current_position == len(self._ordered_initiative_list):
+                self._current_position = len(self._ordered_initiative_list) - 1
+            elif self._current_position == len(self._ordered_initiative_list) + 1:
+                self._current_position = 0
         else:
-            self._current_position += 1
+            if self._current_position >= len(self._ordered_initiative_list):
+                self._current_position = 0

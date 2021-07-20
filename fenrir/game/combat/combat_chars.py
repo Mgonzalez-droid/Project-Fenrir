@@ -264,11 +264,11 @@ class MageChar(CombatCharSprite):
             self.animate(images)
 
     def get_health_bar_location(self):
-        if self.ypos < 60:
-            x, y = self.rect.midbottom
+        x, y = self.rect.midtop
+        if self.ypos < 45:
             y = 5
         else:
-            x, y = self.rect.midtop
+
             y = y + 65
         return x, y
 
@@ -447,7 +447,7 @@ class KnightChar(CombatCharSprite):
     def get_health_bar_location(self):
         x, y = self.rect.midtop
 
-        if self.ypos < 60:
+        if self.ypos < 45:
             y = 5
 
         return x, y
@@ -625,10 +625,10 @@ class ArcherChar(CombatCharSprite):
         self.move(delta_x, delta_y)
 
     def get_health_bar_location(self):
-        if self.ypos < 60:
-            x, y = self.rect.midbottom
+        x, y = self.rect.midtop
+
+        if self.ypos < 45:
             y = 5
         else:
-            x, y = self.rect.midtop
             y += 38
         return x, y

@@ -16,50 +16,137 @@ from fenrir.game.overworld.overworld_collisions import Collision
 from fenrir.game.overworld.overworld_obstacle import overworld_obstacle as obstacle
 from fenrir.data.save_game_to_db import save_game
 from fenrir.game.overworld.inventory import Inventory
+from fenrir.game.overworld.overworld_world_obj import overworld_world_obj as world_obj
 
 class OverworldScene(Scene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
 
-        original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png"))
-        self.background = pygame.transform.scale(original_background, (960, 540))
+        # new world objs
+        self.hub_world = world_obj(
+            obstacles=[
+                obstacle(0, 0, 324, 234),  # Flower_Patch_Barrier
+                obstacle(461, 0, 89, 260),  # Left_House_Barrier
+                obstacle(550, 0, 88, 165),  # Center_house_Barrier
+                obstacle(637, 0, 323, 246),  # House_River_Bridge_Barrier
+                obstacle(736, 367, 224, 121),  # bottom_river_Barrier
+                obstacle(604, 477, 133, 62),  # Bottom_River_Left_Barrier
+                obstacle(0, 401, 200, 139)  # Pond_Barrier
+            ],
+            entries=[
+                obstacle(939, 260, 21, 97),  # World_1_Entry
+                obstacle(327, 0, 116, 18),  # World_3_Entry
+            ],
+            entry_dests=[],
+            npc=character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png")),  # FILL in with npc
+            npc_spawn=(100, 100),  # Fill in with npc
+            hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png")),
+            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+        )
+
+        self.aquatic_world = world_obj(
+            obstacles=[
+                obstacle(0, 0, 189, 229),  # Left_Column_Barrier
+                obstacle(189, 0, 208, 119),  # left_entry_Barrier
+                obstacle(543, 0, 306, 119),  # Right_Entry
+                obstacle(849, 0, 110, 192),  # right_column
+                obstacle(378, 191, 30, 141),  # left_barricade
+                obstacle(408, 191, 135, 24),  # top_barricade
+                obstacle(543, 191, 23, 140),  # right_barricade
+                obstacle(766, 298, 87, 84),  # anchor_barrier
+                obstacle(0, 342, 69, 198),  # pot_barrier
+                obstacle(69, 412, 43, 129),  # half_column_barrier
+                obstacle(110, 449, 745, 90),  # sea_wall_barrier
+                obstacle(856, 405, 104, 134)  # bottom_right_barrier
+            ],
+            entries=[
+                obstacle(397, 0, 146, 20) # world_1_entry
+            ],
+            entry_dests=[
+                self.hub_world
+            ],
+            npc=character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png")),  # defaults to sensei
+            npc_spawn=(100, 100),
+            hero_spawn=(400, 25),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "aquatic-world.png")),
+            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+        )
+
+        """
+        self.dark_desert_world = world_obj(
+            obstacles=[],
+            entries=[],
+            npc="",  # defaults to sensei
+            npc_spawn=(100, 100),
+            hero_spawn=(100, 100),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png")),
+            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+        )
+        """
+
+        self.end_world = world_obj(
+            obstacles=[
+                obstacle(0, 0, 416, 542),  # Main_barrier_left
+                obstacle(555, 0, 404, 540)  # Main_barrier_right
+            ],
+            entries=[
+                obstacle(443, 254, 87, 18),  # hub_exit
+                obstacle(415, 523, 140, 15)  # boss_den_entry
+            ],
+            entry_dests=[],
+            npc="",  # defaults to sensei
+            npc_spawn=(100, 100),
+            hero_spawn=(470, 350),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "dark-world-demo.png")),
+            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+        )
+
+        self.boss_den = world_obj(
+            obstacles=[
+                obstacle(0, 0, 960, 359),  # Boss_den_barrier_0
+                obstacle(0, 358, 401, 180),  # Boss_den_barrier_1
+                obstacle(545, 358, 412, 180),  # Boss_den_barrier_2
+            ],
+            entries=[
+                obstacle(401, 540, 144, 20)  # World exit
+            ],
+            entry_dests=[
+                self.end_world
+            ],
+            npc="",  # defaults to sensei
+            npc_spawn=(100, 100),
+            hero_spawn=(406, 400),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "boss-den.png")),
+            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+        )
+
+        self.hub_world.entry_dests = [self.aquatic_world, self.end_world]
+        self.end_world.entry_dests = [self.boss_den, self.hub_world]
+
+        # Defaults to hub world
+        self.active_world = self.hub_world
+
+
+        self.background = pygame.transform.scale(self.active_world.background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
         self.textbox = TextBox(self.screen)
         self._quit_screen = False
-
         self.collision = Collision()
 
-        # Define in world barriers
-        self.obstacles = [
-            obstacle(0, 0, 324, 234),  # Flower_Patch_Barrier
-            obstacle(461, 0, 89, 260),  # Left_House_Barrier
-            obstacle(550, 0, 88, 165),  # Center_house_Barrier
-            obstacle(637, 0, 323, 246),  # House_River_Bridge_Barrier
-            obstacle(736, 367, 224, 121),  # bottom_river_Barrier
-            obstacle(604, 477, 133, 62),  # Bottom_River_Left_Barrier
-            obstacle(0, 401, 200, 139)  # Pond_Barrier
-        ]
-
-        # Define in world entries
-        self.entries = [
-            obstacle(939, 260, 21, 97),  # World_1_Entry
-            obstacle(327, 0, 116, 18),  # World_3_Entry
-        ]
-
-        # TODO: Need to add secondary list and behavior for entries...
 
         self.level = self.game_state.player_level
-        self.hero = character_animated(self.game_state.game_state_location_x, self.game_state.game_state_location_y,
+        self.hero = character_animated(self.active_world.hero_spawn[0], self.active_world.hero_spawn[1],
                                        os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"))
-
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
         pygame.mixer.init()
-        pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.mp3")
+        pygame.mixer.music.load(self.active_world.music)
+        #pygame.mixer.music.stop()
         pygame.mixer.music.play()
         
-        self.npc = character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"))
+        self.npc = self.active_world.npc
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)
         self.npc.sprite = pygame.transform.scale(self.npc.sprite, (75, 75))
         self.exclamation_mark = character(860, 170, os.path.join(PATH_TO_RESOURCES, "exclamation.png"))
@@ -81,6 +168,7 @@ class OverworldScene(Scene):
         self.party_index = 0
         self.hero_index = 0
 
+
     def handle_event(self, event):
 
         # TRACK MOVEMENT
@@ -94,7 +182,7 @@ class OverworldScene(Scene):
             if keys[pygame.K_w]:
                 self.hero.y = boundaries.collision_up()  # Check if player hits top of window
 
-                if self.collision.barrier_collision(self.hero, self.obstacles):
+                if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
                     # For debugging purposes
                     print("player hit barrier up")
                     self.hero.y += 10
@@ -103,7 +191,7 @@ class OverworldScene(Scene):
             if keys[pygame.K_s]:
                 self.hero.y = boundaries.collision_down()  # Check if player hits bottom of window
 
-                if self.collision.barrier_collision(self.hero, self.obstacles):
+                if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
                     # For debugging purposes
                     print("player hit barrier down")
                     self.hero.y -= 10
@@ -111,7 +199,7 @@ class OverworldScene(Scene):
                 self.hero.adjust_movement()
             if keys[pygame.K_a]:
                 self.hero.x = boundaries.collision_left()  # Check if player hits left of window
-                if self.collision.barrier_collision(self.hero, self.obstacles):
+                if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
                     # For debugging purposes
                     print("player hit barrier left")
                     self.hero.x += 10
@@ -120,7 +208,7 @@ class OverworldScene(Scene):
             if keys[pygame.K_d]:
                 self.hero.x = boundaries.collision_right()  # Check if player hits right of window
 
-                if self.collision.barrier_collision(self.hero, self.obstacles):
+                if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
                     # For debugging purposes
                     print("player hit barrier right")
                     self.hero.x -= 10
@@ -133,16 +221,13 @@ class OverworldScene(Scene):
         else:
             self.show_interaction = False
 
-        if self.collision.entry_collision(self.hero, self.entries):
-            if self.collision.get_collided_entry() == 0:
-                # For debugging purposes
-                print("player hit entry world 1")
-            elif self.collision.get_collided_entry() == 1:
-                # For debugging purposes
-                print("player hit entry world 3")
-            else:
-                # For debugging purposes
-                print("player hit some entry")
+        if self.collision.entry_collision(self.hero, self.active_world.entries):
+            print(self.collision.get_collided_entry())
+            self.active_world = self.active_world.entry_dests[self.collision.get_collided_entry()]
+            self.background = pygame.transform.scale(self.active_world.background, (960, 540))
+            self.hero.x = self.active_world.hero_spawn[0]
+            self.hero.y = self.active_world.hero_spawn[1]
+
 
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu

@@ -151,11 +151,16 @@ class CombatScene(Scene):
         self._combat_grid_system.draw_grid(self.mouse_x, self.mouse_y, self.curr_player.xpos, self.curr_player.ypos,
                                            self._highlight_curr_player)
         self._player_list.draw(self.screen)
+
+        for player in self._participants:
+            player.draw_health_bar(self.screen)
+
         self._combat_grid_system.clear_highlights()
-        
+
         if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected) \
                 and not self._quit_screen:
-            self._textbox.load_image(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40, "UI/generic-rpg-ui-text-box.png")
+            self._textbox.load_image(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40,
+                                     "UI/generic-rpg-ui-text-box.png")
             option = "Attack" if self.player_attacking else "Move"
             self._textbox.draw_dialogue(f"Click tile to {option} or press [b] to cancel", 18, 20,
                                         DisplaySettings.SCREEN_RESOLUTION.value[1] - 42)
@@ -166,7 +171,8 @@ class CombatScene(Scene):
                 self._textbox.draw_options(self.prompt, self.prompt_options, 24, 300, 400)
             else:
                 self._textbox.load_image(DisplaySettings.SCREEN_RESOLUTION.value[0] - 200,
-                                           DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40, "UI/generic-rpg-ui-text-box.png")
+                                          DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40,
+                                         "UI/generic-rpg-ui-text-box.png")
                 self._textbox.draw_dialogue(f"Press [SPACE] to show prompt.", 18,
                                             DisplaySettings.SCREEN_RESOLUTION.value[0] - 300,
                                             DisplaySettings.SCREEN_RESOLUTION.value[1] - 40)

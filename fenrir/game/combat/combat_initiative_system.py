@@ -43,7 +43,7 @@ class CombatInitiativeSystem:
             self._ordered_initiative_list = sorted(list(player_list), key=lambda p: p.speed, reverse=True)
             if self._current_position == len(self._ordered_initiative_list):
                 self._current_position = len(self._ordered_initiative_list) - 1
-            elif self._current_position == len(self._ordered_initiative_list) + 1:
+            elif self._current_position >= len(self._ordered_initiative_list) + 1:
                 self._current_position = 0
         else:
             if self._current_position >= len(self._ordered_initiative_list):

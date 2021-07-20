@@ -23,7 +23,6 @@ class OverworldScene(Scene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
 
-<<<<<<< HEAD:fenrir/game/overworld/overworld_scene.py
         # new world objs
         self.hub_world = world_obj(
             obstacles=[
@@ -43,8 +42,8 @@ class OverworldScene(Scene):
             npc=character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png")),  # FILL in with npc
             npc_spawn=(100, 100),  # Fill in with npc
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png")),
-            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/Overworld_Correct_size.png")),
+            music="Windless Slopes"
         )
 
         self.aquatic_world = world_obj(
@@ -63,7 +62,7 @@ class OverworldScene(Scene):
                 obstacle(856, 405, 104, 134)  # bottom_right_barrier
             ],
             entries=[
-                obstacle(397, 0, 146, 20) # world_1_entry
+                obstacle(397, 0, 146, 20)  # world_1_entry
             ],
             entry_dests=[
                 self.hub_world
@@ -71,8 +70,8 @@ class OverworldScene(Scene):
             npc=character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png")),  # defaults to sensei
             npc_spawn=(100, 100),
             hero_spawn=(400, 25),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "aquatic-world.png")),
-            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/aquatic-world.png")),
+            music="Windless Slopes"
         )
 
         """
@@ -82,8 +81,8 @@ class OverworldScene(Scene):
             npc="",  # defaults to sensei
             npc_spawn=(100, 100),
             hero_spawn=(100, 100),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Overworld_Correct_size.png")),
-            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/Overworld_Correct_size.png")),
+            music="Windless Slopes"
         )
         """
 
@@ -100,8 +99,8 @@ class OverworldScene(Scene):
             npc="",  # defaults to sensei
             npc_spawn=(100, 100),
             hero_spawn=(470, 350),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "dark-world-demo.png")),
-            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark-world-demo.png")),
+            music="Windless Slopes"
         )
 
         self.boss_den = world_obj(
@@ -119,8 +118,8 @@ class OverworldScene(Scene):
             npc="",  # defaults to sensei
             npc_spawn=(100, 100),
             hero_spawn=(406, 400),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "boss-den.png")),
-            music="fenrir/resources/soundtrack/Windless Slopes.mp3"
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/boss-den.png")),
+            music="Windless Slopes"
         )
 
         self.hub_world.entry_dests = [self.aquatic_world, self.end_world]
@@ -129,21 +128,13 @@ class OverworldScene(Scene):
         # Defaults to hub world
         self.active_world = self.hub_world
 
-
         self.background = pygame.transform.scale(self.active_world.background, (960, 540))
-=======
-        original_background = pygame.image.load(os.path.join(PATH_TO_RESOURCES,
-                                                             "overworld_maps/Overworld_Correct_size.png"))
 
-        self.background = pygame.transform.scale(original_background, (960, 540))
->>>>>>> 7b0891459f64268697f0bccbfd9c3d182715a8ab:fenrir/game/overworld/overworld_scene_hub.py
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
         self.textbox = TextBox(self.screen)
         self._quit_screen = False
         self.collision = Collision()
 
-<<<<<<< HEAD:fenrir/game/overworld/overworld_scene.py
-=======
         '''
         # Dark Desert 
         # Boundaries:
@@ -179,7 +170,6 @@ class OverworldScene(Scene):
         ]
 
         # TODO: Need to add secondary list and behavior for entries...
->>>>>>> 7b0891459f64268697f0bccbfd9c3d182715a8ab:fenrir/game/overworld/overworld_scene_hub.py
 
         self.level = self.game_state.player_level
         self.hero = character_animated(self.active_world.hero_spawn[0], self.active_world.hero_spawn[1],
@@ -187,15 +177,13 @@ class OverworldScene(Scene):
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
-        pygame.mixer.init()
-<<<<<<< HEAD:fenrir/game/overworld/overworld_scene.py
-        pygame.mixer.music.load(self.active_world.music)
-        #pygame.mixer.music.stop()
-=======
-        pygame.mixer.music.load("fenrir/resources/soundtrack/Windless Slopes.wav")
->>>>>>> 7b0891459f64268697f0bccbfd9c3d182715a8ab:fenrir/game/overworld/overworld_scene_hub.py
-        pygame.mixer.music.play()
-        
+        # pygame.mixer.init()
+        # pygame.mixer.music.load(self.active_world.music)
+        # pygame.mixer.music.stop()
+        # pygame.mixer.music.play()
+
+        Music.play_song(self.active_world.music)
+
         self.npc = self.active_world.npc
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)
         self.npc.sprite = pygame.transform.scale(self.npc.sprite, (75, 75))
@@ -217,7 +205,6 @@ class OverworldScene(Scene):
         self.party_section = True
         self.party_index = 0
         self.hero_index = 0
-
 
     def handle_event(self, event):
 
@@ -277,7 +264,6 @@ class OverworldScene(Scene):
             self.background = pygame.transform.scale(self.active_world.background, (960, 540))
             self.hero.x = self.active_world.hero_spawn[0]
             self.hero.y = self.active_world.hero_spawn[1]
-
 
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu

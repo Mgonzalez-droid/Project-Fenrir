@@ -73,3 +73,4 @@ class Scene:
     @game_state.setter
     def game_state(self, game_state):
         self._game_state = game_state
+

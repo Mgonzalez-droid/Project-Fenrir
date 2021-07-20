@@ -8,16 +8,14 @@ from fenrir.common.global_game_state import GameState
 from fenrir.data.db_connection import initialize_db
 
 
-
 def run():
-
     # this will initialize the database if not done
     initialize_db()
 
     # initialize the pygame module
     pygame.init()
 
-    screen = pygame.display.set_mode(DisplaySettings.SCREEN_RESOLUTION.value)
+    screen = pygame.display.set_mode(DisplaySettings.SCREEN_RESOLUTION.value, pygame.DOUBLEBUF)
     clock = pygame.time.Clock()
 
     pygame.display.set_caption(GAME_TITLE)

@@ -25,8 +25,6 @@ class CombatCharacterData:
     :move_range: (int) the distance the unit can move in a battle turn.
     :attack_range: (int) the distance the unit can hit other units from.
     :luck: (int) value provided to the combat system for a chance of an incoming attack to miss.
-    :moveable_tiles: (???)
-    :attackable_tiles: (???)
     :mana: (float) the total amount of energy available to a mage unit.
     :magic_attack: (float) base damage for magic type attacks.
     :magic_defense: (float) base magic defense from magic attacks.
@@ -243,9 +241,9 @@ class CombatCharacterData:
         """
         damage = 0
         if attackType == 'magic':
-            damage = incomingAttackValue - self.magic_defense
+            damage = incomingAttackValue
         elif attackType == 'physical':
-            damage = incomingAttackValue - self.defense
+            damage = incomingAttackValue
         didTheyMiss = self.check_if_incoming_attack_misses(incomingAttackValue, attackType)
         if not didTheyMiss:
             damageSuccess = 1
@@ -256,27 +254,3 @@ class CombatCharacterData:
                 damageSuccess = 2
         else:
             damageSuccess = 0
-
-    # NOTE: selectable_tiles should be an EMPTY list (either movable or attackable tiles)
-    # If they aren't empty they SHOULD BE CLEARED before using them as a param for this function
-    # Tilemap has to be accessed as tilemap[y][x], it HAS to be backwards
-    def find_tiles_in_range(self, input_range, selectable_tiles, combat_map, select_type="movement"):
-        range_counter = input_range
-        if range_counter > 0:
-            for tile in combat_map.tilemap[int((self.ypos - 30) / 60)][int((self.xpos - 30) / 60)].adjacencies:
-                _unique = True
-                for tile_c in selectable_tiles:
-                    if tile_c.id == tile.id:
-                        _unique = False
-                if _unique:
-                    if select_type == "movement":
-                        if not tile.is_blocking or not tile.is_wall:
-                            selectable_tiles.append(tile)
-                    elif select_type == "attack":
-                        if not tile.is_wall:
-                            selectable_tiles.append(tile)
-            range_counter -= 1
-            selectable_tiles = self.find_tiles_in_range(range_counter, selectable_tiles, combat_map, select_type)
-            return selectable_tiles
-        else:
-            return selectable_tiles

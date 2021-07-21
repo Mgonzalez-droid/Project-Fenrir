@@ -2,11 +2,14 @@
 import pygame
 from fenrir.game.overworld.Spritesheet import Spritesheet
 
+
 class overworld_npc:
-    def __init__(self, x, y, filename):
+    def __init__(self, x, y,  filename, level, party):
         self.__x = x
         self.__y = y
         self.__sprite = pygame.image.load(filename)
+        self.__level = level
+        self.__party = party
 
     @property
     def x(self):
@@ -31,3 +34,19 @@ class overworld_npc:
     @sprite.setter
     def sprite(self, sprite):
         self.__sprite = sprite
+
+    @property
+    def level(self):
+        return self.__level
+
+    @level.setter
+    def level(self, level):
+        self.__level = level
+
+    @property
+    def party(self):
+        return self.__party
+
+    @party.setter
+    def party(self, party):
+        self.__party = party

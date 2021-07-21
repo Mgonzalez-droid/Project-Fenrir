@@ -634,17 +634,8 @@ class CombatScene(Scene):
         selectable_tiles = []
         for tile in combat_map[y_pos][x_pos].adjacencies:
             if select_type == "movement":
-                occ = "none"
-                if not tile.is_wall and not tile.is_blocking:
-                    if tile.is_occupied:
-                        occ_id = tile.unit
-                        for units in self._participants:
-                            if occ_id == units.get_id() and not units.get_is_enemy():
-                                occ = "player"
-                            elif occ_id == units.get_id() and units.get_is_enemy():
-                                occ = "enemy"
-                    if occ == "none" or occ == "player":
-                        selectable_tiles.append(tile)
+                if not tile.is_wall and not tile.is_blocking and not tile.is_occupied:
+                    selectable_tiles.append(tile)
             elif select_type == "attack":
                 if not tile.is_wall:
                     selectable_tiles.append(tile)
@@ -659,17 +650,8 @@ class CombatScene(Scene):
                             _unique = False
                     if _unique:
                         if select_type == "movement":
-                            occ = "none"
-                            if not tile.is_wall and not tile.is_blocking:
-                                if tile.is_occupied:
-                                    occ_id = tile.unit
-                                    for units in self._participants:
-                                        if occ_id == units.get_id() and not units.get_is_enemy():
-                                            occ = "player"
-                                        elif occ_id == units.get_id() and units.get_is_enemy():
-                                            occ = "enemy"
-                                if occ == "none" or occ == "player":
-                                    new_tiles.append(tile)
+                            if not tile.is_wall and not tile.is_blocking and not tile.is_occupied:
+                                new_tiles.append(tile)
                         elif select_type == "attack":
                             if not tile.is_wall:
                                 new_tiles.append(tile)
@@ -685,10 +667,20 @@ class CombatScene(Scene):
             semi_selectable_tiles.append(combat_map[int(tile_id[1] / 60)][int(tile_id[0] / 60)])
         for tile in semi_selectable_tiles:
             if select_type == "movement":
+                final_selectable_tiles = semi_selectable_tiles
+            elif select_type == "attack":
                 if not tile.is_occupied:
                     final_selectable_tiles.append(tile)
-            elif select_type == "attack":
-                final_selectable_tiles = semi_selectable_tiles
+                elif tile.is_occupied:
+                    occ = "player"
+                    occ_id = tile.unit
+                    for units in self._participants:
+                        if occ_id == units.get_id() and not units.get_is_enemy():
+                            occ = "player"
+                        elif occ_id == units.get_id() and units.get_is_enemy():
+                            occ = "enemy"
+                    if occ == "enemy":
+                        final_selectable_tiles.append(tile)
         return final_selectable_tiles
 
     def play_sound_effect(self, sound_name, time_lim=None):

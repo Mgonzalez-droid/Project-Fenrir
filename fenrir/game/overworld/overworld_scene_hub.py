@@ -39,7 +39,9 @@ class OverworldScene(Scene):
                 obstacle(301, 1, 100, 1),  # World_3_Entry (Dark World/ Top Path)
             ],
             entry_dests=[],
-            npc=character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png")),  # FILL in with npc
+            # FILL in with npc
+            npc=character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
+                          ["knight", "chars/knight/knight_menu.png"]),
             npc_spawn=(100, 100),  # Fill in with npc
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/Overworld_Correct_size.png")),
@@ -67,7 +69,7 @@ class OverworldScene(Scene):
             entry_dests=[
                 self.hub_world
             ],
-            npc=character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png")),  # defaults to sensei
+            npc="",  # defaults to sensei
             npc_spawn=(100, 100),
             hero_spawn=(400, 25),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/aquatic-world.png")),
@@ -153,7 +155,9 @@ class OverworldScene(Scene):
 
         self.level = self.game_state.player_level
         self.hero = character_animated(self.active_world.hero_spawn[0], self.active_world.hero_spawn[1],
-                                       os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"))
+                                       os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"),
+                                       self.game_state.player_level, [["knight", "chars/knight/knight_menu.png"]])
+
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
@@ -167,8 +171,8 @@ class OverworldScene(Scene):
         self.npc = self.active_world.npc
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)
         self.npc.sprite = pygame.transform.scale(self.npc.sprite, (75, 75))
-        self.exclamation_mark = character(860, 170, os.path.join(PATH_TO_RESOURCES, "exclamation.png"))
-        self.exclamation_mark.sprite = pygame.transform.scale(self.exclamation_mark.sprite, (100, 100))
+        # self.exclamation_mark = character(860, 170, os.path.join(PATH_TO_RESOURCES, "exclamation.png"))
+        # self.exclamation_mark.sprite = pygame.transform.scale(self.exclamation_mark.sprite, (100, 100))
         self.show_controls = False
         self.show_characters = True
         self.show_interaction = False
@@ -177,11 +181,12 @@ class OverworldScene(Scene):
         self.show_inventory = False
 
         # Inventory system
-        self.current_party = [[self.hero, "chars/gabe/Gabe.png"]]
-        self.all_heroes = [[self.hero, "chars/gabe/Gabe.png"], [self.npc, "chars/sensei/Sensei_menu.png"],
-                           [self.hero, "UI/Girl.png"]]
+        # self.current_party = [[self.hero, "chars/gabe/Gabe.png"]]
+        # self.all_heroes = [[self.hero, "chars/gabe/Gabe.png"], [self.npc, "chars/sensei/Sensei_menu.png"],
+        # [self.hero, "UI/Girl.png"]]
+        # self.current_party = [["knight", "chars/knight/knight_menu.png"]]
 
-        self.inventory = Inventory(self.textbox, self.current_party, self.all_heroes)
+        self.inventory = Inventory(self.textbox, self.hero.party, self.game_state.all_heroes)
         self.party_section = True
         self.party_index = 0
         self.hero_index = 0
@@ -384,7 +389,8 @@ class OverworldScene(Scene):
 
         # Show if player can interact with npc displaying an exclamation mark
         if self.show_interaction and not self.show_controls:
-            self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
+            self.textbox.load_image(900, 170, 100, 100, "exclamation.png")
+        # self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
 
         if self._quit_screen:
             self.textbox.load_image(400, 150, 400, 150, "UI/generic-rpg-ui-text-box.png")
@@ -429,6 +435,11 @@ class OverworldScene(Scene):
     def update_game_state(self):
         self.game_state.game_state_location_x = self.hero.x
         self.game_state.game_state_location_y = self.hero.y
+
+        for i in range(len(self.hero.party)):
+            self.game_state.player_party.append(self.hero.party[i][0])
+
+        print(self.game_state.player_party)
 
     def quit_game(self, saving):
         # saves game progress to database and stops music

@@ -21,7 +21,7 @@ class GameState:
         self._game_state_location_y = location_y
 
         # All possible heroes to use in combat
-        self._all_heroes = [["knight", "chars/knight/knight_menu.png"], ["archer", "chars/archer/archer.png"],
+        self._all_heroes = [["knight", "chars/knight/knight_menu.png"], ["archer", "chars/archer/archer_menu.png"],
                             ["mage", "chars/mage/mage_menu.png"]]
 
         # TODO need inventory and other persistent data to save in Database

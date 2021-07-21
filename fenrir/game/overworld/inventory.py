@@ -33,7 +33,7 @@ class Inventory:
         # Set position were characters sprite will be displayed for the party and heroes sections
         party_x = 160
         party_y = 95
-        heroes_x = 142
+        heroes_x = 146
         heroes_y = 206
 
         self.display_section(party_x, party_y, party, 0)
@@ -78,16 +78,12 @@ class Inventory:
         self.textbox.load_image(self.tile_x[index], self.tile_y[index], 35, 39, "UI/generic-rpg-ui-inventario01.png")
 
     # Swap characters in current party to the one selected in the heroes section
-    def swap_characters(self, party_index, hero_index):
-
+    def swap_characters(self, hero_index):
         party_hero = self.heroes[int(hero_index)]
         return party_hero
 
     def add_to_party(self, hero):
-
         self.party.append(hero)
-        # self.heroes.remove(hero)
-
         return self.party, self.heroes
 
     @property

@@ -9,9 +9,9 @@ from fenrir.game.combat.combat_character_data import CombatCharacterData
 
 class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
 
-    def __init__(self, char_id, char_type, level, hp, speed, attack, enemy):
+    def __init__(self, char_id, char_type, level, enemy):
         # attrs used for sprite and animation
-        super().__init__(char_id, char_type, level, hp, speed, attack, enemy)
+        super().__init__(char_id, char_type, level, enemy)
         pygame.sprite.Sprite.__init__(self)
         self._animation_state = "idle"  # default state of all chars
         self._move_x = 0  # amount char sprite needs to move on x-axis
@@ -130,7 +130,7 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
 class MageChar(CombatCharSprite):
 
     def __init__(self, char_id, level, enemy):
-        super().__init__(char_id, "mage", level, 50, 10, 40, enemy)
+        super().__init__(char_id, "mage", level, enemy)
 
         # animation images
         self.attack_images = []
@@ -277,7 +277,7 @@ class MageChar(CombatCharSprite):
 class KnightChar(CombatCharSprite):
 
     def __init__(self, char_id, level, enemy):
-        super().__init__(char_id, "knight", level, 100, 2, 100, enemy)
+        super().__init__(char_id, "knight", level, enemy)
 
         # animation images
         self.attack_images = []
@@ -456,7 +456,7 @@ class KnightChar(CombatCharSprite):
 class ArcherChar(CombatCharSprite):
 
     def __init__(self, char_id, level, enemy):
-        super().__init__(char_id, "archer", level, 50, 5, 50, enemy)
+        super().__init__(char_id, "archer", level, enemy)
 
         # animation images
         self.attack_images = []

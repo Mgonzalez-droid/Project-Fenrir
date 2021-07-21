@@ -196,7 +196,7 @@ class CombatCharacterData:
             self._attack = 20 + (self.level * 3)
             self._defense = 10 + (self.level * 7)
         elif self._type == 'archer':
-            self.move_range = 1
+            self.move_range = 2
             self.attack_range = 4
             self.attack = 10 + (self.level * 5)
             self.defense = 20 + (self.level * 5)

@@ -109,7 +109,7 @@ class OverworldScene(Scene):
             ],
             entries=[
                 obstacle(430, 215, 130, 1),  # boss_den_entry
-                obstacle(417, 539, 138, 1)  # hub_exit
+                obstacle(417, 539, 138, 1)  # hub
             ],
             entry_dests=[],
             npc="",  # defaults to sensei
@@ -171,8 +171,6 @@ class OverworldScene(Scene):
         self.npc = self.active_world.npc
         self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)
         self.npc.sprite = pygame.transform.scale(self.npc.sprite, (75, 75))
-        # self.exclamation_mark = character(860, 170, os.path.join(PATH_TO_RESOURCES, "exclamation.png"))
-        # self.exclamation_mark.sprite = pygame.transform.scale(self.exclamation_mark.sprite, (100, 100))
         self.show_controls = False
         self.show_characters = True
         self.show_interaction = False
@@ -181,11 +179,6 @@ class OverworldScene(Scene):
         self.show_inventory = False
 
         # Inventory system
-        # self.current_party = [[self.hero, "chars/gabe/Gabe.png"]]
-        # self.all_heroes = [[self.hero, "chars/gabe/Gabe.png"], [self.npc, "chars/sensei/Sensei_menu.png"],
-        # [self.hero, "UI/Girl.png"]]
-        # self.current_party = [["knight", "chars/knight/knight_menu.png"]]
-
         self.inventory = Inventory(self.textbox, self.hero.party, self.game_state.all_heroes)
         self.party_section = True
         self.party_index = 0
@@ -335,7 +328,7 @@ class OverworldScene(Scene):
                         self.party_section = True
 
                         if self.inventory.swapping:  # Swap hero between the 2 sections
-                            temp_party = self.inventory.swap_characters(self.party_index, self.hero_index)
+                            temp_party = self.inventory.swap_characters(self.hero_index)
                             self.inventory.party[self.inventory.tile_pos[0]] = temp_party
 
                         else:  # Add hero to current party from heroes section
@@ -435,6 +428,8 @@ class OverworldScene(Scene):
     def update_game_state(self):
         self.game_state.game_state_location_x = self.hero.x
         self.game_state.game_state_location_y = self.hero.y
+
+        self.game_state.player_party.clear()
 
         for i in range(len(self.hero.party)):
             self.game_state.player_party.append(self.hero.party[i][0])

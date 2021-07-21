@@ -18,6 +18,7 @@ class CombatInitiativeSystem:
         self._current_position = 0
         self._player_killed = False
         self._last_player_killed = False
+        self._popped_prior_index = False
 
     def get_current_player(self):
         """Gets the character that is up for turn in combat
@@ -39,7 +40,8 @@ class CombatInitiativeSystem:
         """Updates the combat initiative system by updating current position in list. Operates as a cycle and will move
             to position 0 when reaching last participant. Must be called after each turn is completed.
         """
-        self._current_position += 1
+        if not self._popped_prior_index:
+            self._current_position += 1
 
         if self._last_player_killed:
             if self._current_position >= len(self._ordered_initiative_list):
@@ -51,6 +53,7 @@ class CombatInitiativeSystem:
 
         self._player_killed = False
         self._last_player_killed = False
+        self._popped_prior_index = False
 
     def remove_player(self, player_id):
         self._player_killed = True

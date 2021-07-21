@@ -108,6 +108,8 @@ class CombatScene(Scene):
         self.game_over = False
         self.player_won = False
         self.player_died = False
+        # used to only play victory sound once
+        self.played_victory_sound = False
 
         # quitting combat screen
         self._quit_screen = False
@@ -427,10 +429,17 @@ class CombatScene(Scene):
 
         if self.game_over:
             # Need data to show who one ect...
+            pygame.mixer.music.stop()
             if self.player_won:
                 winner = self.game_state.player_name
+                if not self.played_victory_sound:
+                    self.play_sound_effect("victory")
             else:
                 winner = "Sensei"
+                if not self.played_victory_sound:
+                    self.play_sound_effect("lose")
+                    
+            self.played_victory_sound = True
 
             self.show_prompt("Battle Complete",
                              [f"{winner} won the battle!", "Press [enter] to exit."])
@@ -692,7 +701,9 @@ class CombatScene(Scene):
             path = os.path.join(PATH_TO_RESOURCES, "soundtrack", "combat_char_sounds", sound_name + ".wav")
             sound = pygame.mixer.Sound(path)
             self._sound_effects[sound_name] = sound
-        sound.set_volume(.6)
+        sound.set_volume(.7)
+
+        # optional time limit for sound effect, currently used for walking to match char pace
         if time_lim:
             sound.play(maxtime=time_lim)
         else:

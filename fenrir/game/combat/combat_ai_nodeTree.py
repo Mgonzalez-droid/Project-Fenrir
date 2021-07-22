@@ -1,4 +1,4 @@
-
+import math
 """
 .. module:: combat_ai_NodeTree
   :synopsis: module for building a node version of the map for the AI to path
@@ -20,6 +20,11 @@ class Node:
     def __init__(self, x, y):
         self._xPos = x
         self._yPos = y
+        self._nodeWeight = 1
+        self._givenCost = 0
+        self._distanceToGoal = 0
+        self._finalCost = 0
+
         self._distanceFromStart = 0
         self._totalDistance = 0
         self._neighbors = []
@@ -30,6 +35,30 @@ class Node:
 
     def get_yPos(self):
         return self._yPos
+
+    def get_nodeWeight(self):
+        return self._nodeWeight
+
+    def get_givenCost(self):
+        return self._givenCost
+
+    def calculate_givenCost(self, parentGivenCost):
+        return self._nodeWeight + parentGivenCost
+
+    def set_givenCost(self, newGivenCost):
+        self._givenCost = newGivenCost
+
+    def get_distanceToGoal(self):
+        return self._distanceToGoal
+
+    def set_distanceToGoal(self, goalX, goalY):
+        self._distanceToGoal = abs(goalX - self._xPos) + abs(goalY - self._yPos)
+
+    def get_finalCost(self):
+        return self._finalCost
+
+    def set_finalCost(self):
+        self._finalCost = self._givenCost + (self._distanceToGoal * 1.2)
 
     def get_distanceFromStart(self):
         return self._distanceFromStart
@@ -58,6 +87,10 @@ class Node:
     def clear_data(self):
         self._distanceFromStart = 0
         self._totalDistance = 0
+        self._givenCost = 0
+        self._givenCost = 0
+        self._distanceToGoal = 0
+        self._finalCost = 0
         self._myParent = None
 
 

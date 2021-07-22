@@ -80,6 +80,7 @@ class CombatScene(Scene):
         self.player_turn = False
 
         # used for player choices
+        self.wait_for_action = False    # This flag will prevent multiple inputs while an action is being animated
         self.player_attacking = False
         self.attack_complete = False
         self.player_moving = False
@@ -289,31 +290,33 @@ class CombatScene(Scene):
         elif self.key_dict['L_CLICK']:
             # Need to have unit object
             # selectable_tiles needs to be created upon a player selecting they want to move and cleared after
-            end_tile = self.select_tile()
-            selectable = False
-            for tile in movable_tiles:
-                if tile.id == end_tile:
-                    selectable = True
-            if selectable:
-                startingX = int((self.curr_player.xpos - 30) // 60)
-                startingY = int((self.curr_player.ypos - 30) // 60)
-                endingX = int((end_tile[0]) // 60)
-                endingY = int((end_tile[1]) // 60)
-                self._move_list = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
+            if not self.wait_for_action:
+                end_tile = self.select_tile()
+                selectable = False
+                for tile in movable_tiles:
+                    if tile.id == end_tile:
+                        selectable = True
+                if selectable:
+                    startingX = int((self.curr_player.xpos - 30) // 60)
+                    startingY = int((self.curr_player.ypos - 30) // 60)
+                    endingX = int((end_tile[0]) // 60)
+                    endingY = int((end_tile[1]) // 60)
+                    self._move_list = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
 
-                # initial move starts here
-                self._map.tilemap[(self.curr_player.ypos - 30) // 60][
-                    (self.curr_player.xpos - 30) // 60].unoccupy()
-                self._map.tilemap[endingY][endingX].occupy(self.curr_player.get_id)
-                self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
-                                         (self._move_list[-1].get_yPos() * 60) + 30)
+                    # initial move starts here
+                    self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                        (self.curr_player.xpos - 30) // 60].unoccupy()
+                    self._map.tilemap[endingY][endingX].occupy(self.curr_player.get_id)
+                    self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                             (self._move_list[-1].get_yPos() * 60) + 30)
 
-                self.play_movement_sound()
-                self._move_list.pop()
-                self._highlight_curr_player = False
-                self._move_selected = True
+                    self.play_movement_sound()
+                    self._move_list.pop()
+                    self._highlight_curr_player = False
+                    self._move_selected = True
+                    self.wait_for_action = True
 
-                self._combat_grid_system.clear_highlights()
+                    self._combat_grid_system.clear_highlights()
 
         if self.move_complete:
             # need to clear highlights after move complete
@@ -321,6 +324,7 @@ class CombatScene(Scene):
                 self.player_moving = False
                 self._move_selected = False
                 self.move_complete = False
+                self.wait_for_action = False
                 self.move_counter -= 1
         elif self._move_list:
             if not self.curr_player.is_animating():
@@ -357,35 +361,37 @@ class CombatScene(Scene):
         elif self.key_dict['L_CLICK']:
             # Need to have unit object
             # selectable_tiles needs to be created upon a player selecting they want to move and cleared after
-            end_tile = self.select_tile()
-            selectable = False
-            for tile in attack_tiles:
-                if tile.id == end_tile:
-                    selectable = True
-            if selectable:
-                # will be used to get player on tile to attack
-                x = int(end_tile[0] / 60)
-                y = int(end_tile[1] / 60)
-                enemy_id = self._map.tilemap[y][x].unit
-                for character in self._participants:
-                    if character.get_id() == enemy_id:
-                        if self.curr_player.get_type() == 'mage':
-                            character.take_damage(self.curr_player.magic_attack, 'magic')
-                            character.animate_damage()
-                        else:
-                            character.take_damage(self.curr_player.attack, 'physical')
-                            character.animate_damage()
-                        break
-                if self.curr_player.xpos == end_tile[0] + 30:
-                    left = None
-                else:
-                    if self.curr_player.xpos < end_tile[0]:
-                        left = False
+            if not self.wait_for_action:
+                end_tile = self.select_tile()
+                selectable = False
+                for tile in attack_tiles:
+                    if tile.id == end_tile:
+                        selectable = True
+                if selectable:
+                    # will be used to get player on tile to attack
+                    x = int(end_tile[0] / 60)
+                    y = int(end_tile[1] / 60)
+                    enemy_id = self._map.tilemap[y][x].unit
+                    for character in self._participants:
+                        if character.get_id() == enemy_id:
+                            if self.curr_player.get_type() == 'mage':
+                                character.take_damage(self.curr_player.magic_attack, 'magic')
+                                character.animate_damage()
+                            else:
+                                character.take_damage(self.curr_player.attack, 'physical')
+                                character.animate_damage()
+                            break
+                    if self.curr_player.xpos == end_tile[0] + 30:
+                        left = None
                     else:
-                        left = True
-                self.play_attack_sound()
-                self.curr_player.attack_enemy(left)
-                self.attack_complete = True
+                        if self.curr_player.xpos < end_tile[0]:
+                            left = False
+                        else:
+                            left = True
+                    self.play_attack_sound()
+                    self.curr_player.attack_enemy(left)
+                    self.attack_complete = True
+                    self.wait_for_action = True
 
         if self.attack_complete:
             self._highlight_curr_player = False
@@ -396,6 +402,7 @@ class CombatScene(Scene):
             if not self.curr_player.is_animating():
                 self.player_attacking = False
                 self.player_used_attack = True
+                self.wait_for_action = False
                 self.move_counter -= 1
 
     def check_for_winner(self):

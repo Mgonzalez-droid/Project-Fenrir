@@ -35,6 +35,14 @@ class overworld_npc:
     def sprite(self, sprite):
         self.__sprite = sprite
 
+    def scale_sprite(self, x, y):
+        self.sprite = pygame.transform.scale(self.sprite, (x, y))
+        # self.sprite = pygame.transform.scale(self.sprite, (75, 75))
+
+    def flip_sprite(self, left, flip):
+        self.sprite = pygame.transform.flip(self.sprite, left, flip)
+        # self.sprite = pygame.transform.flip(self.sprite, True, False)
+
     @property
     def level(self):
         return self.__level

@@ -94,7 +94,8 @@ class OverworldScene(Scene):
                 obstacle(462, 0, 187, 20),  # Dark_Desert_Boss
             ],
             entry_dests=[],
-            npc="",  # defaults to sensei
+            npc=character(350, 430, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
+                          ["knight", "chars/knight/knight_menu.png"]),
             npc_spawn=(100, 100),
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark-desert-world.png")),
@@ -168,9 +169,10 @@ class OverworldScene(Scene):
 
         Music.play_song(self.active_world.music)
 
-        self.npc = self.active_world.npc
-        self.npc.sprite = pygame.transform.flip(self.npc.sprite, True, False)
-        self.npc.sprite = pygame.transform.scale(self.npc.sprite, (75, 75))
+        # Default npc scale and position
+        self.active_world.npc.sprite = pygame.transform.flip(self.active_world.npc.sprite, True, False)
+        self.active_world.npc.sprite = pygame.transform.scale(self.active_world.npc.sprite, (75, 75))
+
         self.show_controls = False
         self.show_characters = True
         self.show_interaction = False
@@ -230,11 +232,13 @@ class OverworldScene(Scene):
 
                 self.hero.adjust_movement()
 
-        if self.collision.npc_collision(self.hero, self.npc):
-            # Show exclamation mark
-            self.show_interaction = True
-        else:
-            self.show_interaction = False
+        # If there is an npc in the world
+        if self.active_world.npc:
+            if self.collision.npc_collision(self.hero, self.active_world.npc):
+                # Show exclamation mark
+                self.show_interaction = True
+            else:
+                self.show_interaction = False
 
         if self.collision.entry_collision(self.hero, self.active_world.entries):
             print(self.collision.get_collided_entry())
@@ -244,11 +248,20 @@ class OverworldScene(Scene):
 
             # Check current Map and which entry point was collided
             if self.active_world == self.dark_desert_world:
+                if self.active_world.npc:
+                    self.active_world.npc.scale_sprite(75, 75)
+                    self.active_world.npc.flip_sprite(False, False)
+
                 if self.collision.get_collided_entry() == 0:  # From hub
                     print("You are in the dark desert")
                     self.active_world.hero_spawn = [10, 260]
 
             elif self.active_world == self.hub_world:
+                # Set size for npc and where it will face
+                if self.active_world.npc:
+                    self.active_world.npc.scale_sprite(75, 75)
+                    self.active_world.npc.flip_sprite(True, False)
+
                 if self.collision.get_collided_entry() == 0:  # From dark desert
                     print("You are in the hub")
                     self.active_world.hero_spawn = [875, 260]
@@ -257,6 +270,10 @@ class OverworldScene(Scene):
                     self.active_world.hero_spawn = [350, 20]
 
             elif self.active_world == self.dark_world:
+                if self.active_world.npc:
+                    self.active_world.npc.scale_sprite(75, 75)
+                    self.active_world.npc.flip_sprite(True, False)
+
                 if self.collision.get_collided_entry() == 0:  # From dark dimension
                     print("You are in the dark world")
                     self.active_world.hero_spawn = [450, 250]
@@ -265,6 +282,10 @@ class OverworldScene(Scene):
                     self.active_world.hero_spawn = [450, 450]
 
             elif self.active_world == self.dark_world_boss:
+                if self.active_world.npc:
+                    self.active_world.npc.scale_sprite(75, 75)
+                    self.active_world.npc.flip_sprite(True, False)
+
                 if self.collision.get_collided_entry() == 0:  # From dark world
                     print("You are in the dark dimension")
                     self.active_world.hero_spawn = [450, 450]
@@ -345,7 +366,7 @@ class OverworldScene(Scene):
             if event.key == pygame.K_SPACE and not self.show_controls and not self.show_inventory \
                     and not self._quit_screen:
                 # Check for collision
-                if self.collision.check_collisions(self.hero, self.npc):
+                if self.collision.check_collisions(self.hero, self.active_world.npc):
                     # if text box is displayed, stop characters movements
                     self.show_textbox = True
 
@@ -378,11 +399,15 @@ class OverworldScene(Scene):
         # Display hero and npcs
         if self.show_characters:
             self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
-            self.screen.blit(self.npc.sprite, (self.npc.x, self.npc.y))
+            # If there is an npc on the map
+            if self.active_world.npc:
+                self.screen.blit(self.active_world.npc.sprite, (self.active_world.npc.x, self.active_world.npc.y))
 
         # Show if player can interact with npc displaying an exclamation mark
         if self.show_interaction and not self.show_controls:
-            self.textbox.load_image(900, 170, 100, 100, "exclamation.png")
+            # self.textbox.load_image(900, 170, 100, 100, "exclamation.png")
+            self.textbox.load_image(self.active_world.npc.x + 15, self.active_world.npc.y - 100, 100, 100,
+                                    "exclamation.png")
         # self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
 
         if self._quit_screen:
@@ -430,11 +455,16 @@ class OverworldScene(Scene):
         self.game_state.game_state_location_y = self.hero.y
 
         self.game_state.player_party.clear()
+        self.game_state.enemy_party.clear()
 
         for i in range(len(self.hero.party)):
             self.game_state.player_party.append(self.hero.party[i][0])
 
-        print(self.game_state.player_party)
+        for i in range(len(self.active_world.npc.party)):
+            self.game_state.enemy_party.append(self.active_world.npc.party[i][0])
+
+        print("My party: ", self.game_state.player_party)
+        print("Enemy Party: ", self.game_state.player_party)
 
     def quit_game(self, saving):
         # saves game progress to database and stops music

@@ -49,7 +49,7 @@ class CombatScene(Scene):
         self._participants.append(MageChar(2, 1, False))
 
         # Enemy char
-        self._participants.append(KnightChar(3, 2, True))
+        self._participants.append(KnightChar(3, 1, True))
         self._participants.append(MageChar(4, 1, True))
 
         # used for displaying on screen surface
@@ -80,7 +80,7 @@ class CombatScene(Scene):
         self.player_turn = False
 
         # used for player choices
-        self.wait_for_action = False    # This flag will prevent multiple inputs while an action is being animated
+        self.wait_for_action = False  # This flag will prevent multiple inputs while an action is being animated
         self.player_attacking = False
         self.attack_complete = False
         self.player_moving = False
@@ -108,9 +108,11 @@ class CombatScene(Scene):
         # game won info
         self.game_over = False
         self.player_won = False
-        self.player_died = False
         # used to only play victory sound once
         self.played_victory_sound = False
+
+        # used for killing players
+        self.dead_player = None
 
         # quitting combat screen
         self._quit_screen = False
@@ -258,7 +260,8 @@ class CombatScene(Scene):
                 self._map.tilemap[(player.ypos - 30) // 60][
                     (player.xpos - 30) // 60].unoccupy()
                 self.play_death_sound()
-                player.kill()
+                player.kill_player()
+                self.dead_player = player
                 self._participants.pop(index)
                 self.initiative_system.remove_player(player.get_id())
                 return True
@@ -432,7 +435,6 @@ class CombatScene(Scene):
             self.check_for_winner()
             if self.game_over:
                 self.next_move()
-            self.player_died = True
 
         if self.game_over:
             # Need data to show who one ect...
@@ -445,7 +447,7 @@ class CombatScene(Scene):
                 winner = "Sensei"
                 if not self.played_victory_sound:
                     self.play_sound_effect("lose")
-                    
+
             self.played_victory_sound = True
 
             self.show_prompt("Battle Complete",
@@ -454,10 +456,12 @@ class CombatScene(Scene):
             if self.key_dict['SELECT']:
                 # Todo this will increase player level now regardless of victory or not. Need to update this later
                 self.game_state.increase_player_level()
+                pygame.mixer.stop()
                 self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
 
         elif self.turn_counter == 0:
-            self.show_prompt("Welcome to combat", ["Press [Enter] to get started"])
+            self.show_prompt("Welcome to combat", ["Press [Enter] to get started!",
+                                                   "Press [Space] to hide prompt."])
             if self.key_dict['SELECT']:
                 self.clear_prompt()
                 self.turn_counter += 1
@@ -508,6 +512,7 @@ class CombatScene(Scene):
                             self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
                                 self.curr_player.get_id())
                             self.curr_player.move_to(self.ai_new_x, self.ai_new_y)
+                            self._highlight_curr_player = False
                             self.play_movement_sound()
                             self.ai_first_pass = True
                             self.ai_movement_finished = True
@@ -524,6 +529,7 @@ class CombatScene(Scene):
                                                                    self._ai_Tree, self._map)
                                 self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
                                                          (self._move_list[-1].get_yPos() * 60) + 30)
+                                self._highlight_curr_player = False
                                 self.play_movement_sound()
                                 self.ai_first_pass = True
                                 self._move_list.pop()
@@ -696,7 +702,6 @@ class CombatScene(Scene):
         if sound_name in self._sound_effects.keys():
             sound = self._sound_effects[sound_name]
         else:
-            print(os.getcwd())
             path = os.path.join(PATH_TO_RESOURCES, "soundtrack", "combat_char_sounds", sound_name + ".wav")
             sound = pygame.mixer.Sound(path)
             self._sound_effects[sound_name] = sound

@@ -20,6 +20,7 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         self._animation_speed = 3  # number of frames to show image
         self._face_left = False
         self._animating = False
+        self._player_died = False
         self._move_speed = 4
         self._took_damage = False
         self._damage_animation_counter = 0
@@ -126,6 +127,20 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
     def get_health_bar_location(self):
         raise NotImplementedError
 
+    def kill_player(self):
+        self._player_died = True
+        self._frame = 0
+        self._animating = True
+        self.animation_state = "death"
+
+    def animate_death(self):
+
+        if self._frame < (len(self.death_images) - 1) * self._animation_speed:
+            self.animate(self.death_images)
+        else:
+            self._animating = False
+            self.kill()
+
 
 class MageChar(CombatCharSprite):
 
@@ -137,6 +152,7 @@ class MageChar(CombatCharSprite):
         self.idle_images = []
         self.run_images = []
         self.death_images = []
+
 
         self.load_assets()
         self.image = self.idle_images[0]
@@ -236,7 +252,6 @@ class MageChar(CombatCharSprite):
             self._animating = False
 
     def update(self):
-
         if self.animation_state == "idle":
             images = self.idle_images
         elif self.animation_state == "attack":
@@ -261,6 +276,8 @@ class MageChar(CombatCharSprite):
             self.animate_teleport()
         elif self.attacking:
             self.animate_attack()
+        elif self._player_died:
+            self.animate_death()
         else:
             self.animate(images)
 
@@ -284,7 +301,6 @@ class KnightChar(CombatCharSprite):
         self.idle_images = []
         self.walk_images = []
         self.death_images = []
-
         self.attacking = False
 
         self.load_assets()
@@ -432,6 +448,8 @@ class KnightChar(CombatCharSprite):
 
         if self.attacking:
             self.animate_attack()
+        elif self._player_died:
+            self.animate_death()
         else:
             self.animate(images)
 
@@ -463,13 +481,11 @@ class ArcherChar(CombatCharSprite):
         self.idle_images = []
         self.walk_images = []
         self.death_images = []
-
         self.attacking = False
 
         self.load_assets()
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
-
         self.animation_state = "idle"
 
         if enemy:
@@ -612,6 +628,8 @@ class ArcherChar(CombatCharSprite):
 
         if self.attacking:
             self.animate_attack()
+        elif self._player_died:
+            self.animate_death()
         else:
             self.animate(images)
 

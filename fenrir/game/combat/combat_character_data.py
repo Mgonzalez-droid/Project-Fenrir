@@ -195,16 +195,19 @@ class CombatCharacterData:
             self._attack_range = 1
             self._attack = 20 + (self.level * 3)
             self._defense = 10 + (self.level * 7)
+            self._speed = 5 + (self.level * 5)
         elif self._type == 'archer':
             self.move_range = 2
             self.attack_range = 4
             self.attack = 10 + (self.level * 5)
             self.defense = 20 + (self.level * 5)
+            self._speed = 20 + (self.level * 5)
         elif self._type == 'mage':
             self.move_range = 2
             self.attack_range = 3
             self.magic_attack = 15 + (self.level * 7)
             self.magic_defense = 15 + (self.level * 3)
+            self._speed = 15 + (self.level * 5)
 
         if self.get_is_enemy():
             self.attack = self.attack + (math.ceil(self.level/5) - 1) * 2

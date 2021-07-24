@@ -4,13 +4,13 @@ from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.game.overworld.overworld_obstacle import overworld_obstacle as obstacle
 from fenrir.game.overworld.overworld_npc import overworld_npc as character
 
+
 class overworld_world_obj:
-    def __init__(self, obstacles, entries, entry_dests, npc, npc_spawn, hero_spawn, background, music, visited=False):
+    def __init__(self, obstacles, entries, entry_dests, npc, hero_spawn, background, music, visited=False):
         self.__obstacles = obstacles
         self.__entries = entries
         self.__entry_dests = entry_dests
         self.__npc = npc
-        self.__npc_spawn = npc_spawn
         self.__hero_spawn = hero_spawn
         self.__background = background
         self.__music = music
@@ -21,7 +21,7 @@ class overworld_world_obj:
         return self.__obstacles
 
     @obstacles.setter
-    def obstalces(self, obstacles):
+    def obstacles(self, obstacles):
         self.__obstacles = obstacles
 
     @property
@@ -47,14 +47,6 @@ class overworld_world_obj:
     @npc.setter
     def npc(self, npc):
         self.__npc = npc
-
-    @property
-    def npc_spawn(self):
-        return self.__npc_spawn
-
-    @npc_spawn.setter
-    def npc_spawn(self, npc_spawn):
-        self.__npc_spawn = npc_spawn
 
     @property
     def hero_spawn(self):

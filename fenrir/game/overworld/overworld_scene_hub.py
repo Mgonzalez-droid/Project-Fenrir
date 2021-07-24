@@ -25,6 +25,7 @@ class OverworldScene(Scene):
 
         # new world objs
         self.hub_world = world_obj(
+            map_name="hub_world",
             obstacles=[
                 obstacle(0, 0, 300, 180),  # Flower_Patch_Barrier
                 obstacle(480, 0, 60, 200),  # Left_House_Barrier
@@ -45,13 +46,13 @@ class OverworldScene(Scene):
                           [["knight", "chars/knight/knight_menu.png"]], True,
                           ["Hello Gabe, do you wanna go to the combat phase?",
                            "[1] Yes, I am ready to go to the combat phase", "[2] No, I want to keep walking here"]),
-
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/Overworld_Correct_size.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/hub_world.png")),
             music="Windless Slopes"
         )
 
-        self.aquatic_world = world_obj(
+        self.atlantis_world = world_obj(
+            map_name="atlantis",
             obstacles=[
                 obstacle(0, 0, 189, 229),  # Left_Column_Barrier
                 obstacle(189, 0, 208, 119),  # left_entry_Barrier
@@ -76,11 +77,12 @@ class OverworldScene(Scene):
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
             npc="",
             hero_spawn=(400, 25),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/aquatic-world.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/atlantis.png")),
             music="Windless Slopes"
         )
 
-        self.dark_desert_world = world_obj(
+        self.ashlands = world_obj(
+            map_name="ashlands",
             obstacles=[
                 obstacle(0, 0, 280, 170),  # Top left prompts
                 obstacle(281, 0, 180, 70),  # Top left stone wall
@@ -104,11 +106,12 @@ class OverworldScene(Scene):
                           [["knight", "chars/knight/knight_menu.png"]], False,
                           ["This is just a test to see if this is working", "And this one too"]),
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark-desert-world.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/ashlands.png")),
             music="Windless Slopes"
         )
 
-        self.dark_world = world_obj(
+        self.dark_dimension = world_obj(
+            map_name="dark_dimension",
             obstacles=[
                 obstacle(0, 0, 400, 542),  # Main_barrier_left
                 obstacle(570, 0, 404, 540),  # Main_barrier_right
@@ -123,11 +126,12 @@ class OverworldScene(Scene):
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
             npc="",
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark-world-demo.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark_dimension.png")),
             music="Windless Slopes"
         )
 
-        self.dark_world_boss = world_obj(
+        self.dark_dimension_boss = world_obj(
+            map_name="dark_dimension_boss",
             obstacles=[
                 obstacle(0, 0, 960, 359),  # Boss_den_top_barrier
                 obstacle(0, 358, 380, 180),  # Boss_den_left_barrier
@@ -136,19 +140,19 @@ class OverworldScene(Scene):
             entries=[
                 obstacle(410, 539, 130, 1)  # World exit
             ],
-            entry_dests=[self.dark_world
+            entry_dests=[self.dark_dimension
                          ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
             npc="",
             hero_spawn=(406, 400),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/boss-den.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark_dimension_boss.png")),
             music="Windless Slopes"
         )
 
-        self.hub_world.entry_dests = [self.dark_desert_world, self.dark_world]
-        self.dark_world.entry_dests = [self.dark_world_boss, self.hub_world]
-        self.dark_desert_world.entry_dests = [self.hub_world]
+        self.hub_world.entry_dests = [self.ashlands, self.dark_dimension]
+        self.dark_dimension.entry_dests = [self.dark_dimension_boss, self.hub_world]
+        self.ashlands.entry_dests = [self.hub_world]
 
         # Defaults to hub world and hero default position
         self.active_world = self.hub_world
@@ -254,47 +258,55 @@ class OverworldScene(Scene):
             print(self.collision.get_collided_entry())
 
             self.active_world = self.active_world.entry_dests[self.collision.get_collided_entry()]
+            # Store the current map name in the game state
+            self.game_state.game_state_current_map = self.active_world.map_name
             self.background = pygame.transform.scale(self.active_world.background, (960, 540))
 
             # Check current Map and which entry point was collided
-            if self.active_world == self.dark_desert_world:
+            if self.active_world == self.ashlands:
                 # Set size for npc and where it will face
                 if self.active_world.npc:
                     self.active_world.npc.scale_sprite(75, 75)
                     self.active_world.npc.flip_sprite(False, False)
 
                 if self.collision.get_collided_entry() == 0:  # From hub
-                    print("You are in the dark desert")
+                    # print("You are in the ashlands")
+                    print("You are in the", self.game_state.game_state_current_map)
                     self.active_world.hero_spawn = [10, 260]
 
             elif self.active_world == self.hub_world:
 
-                if self.collision.get_collided_entry() == 0:  # From dark desert
-                    print("You are in the hub")
+                if self.collision.get_collided_entry() == 0:  # From ashland
+                    # print("You are in the hub")
+                    print("You are in the", self.game_state.game_state_current_map)
                     self.active_world.hero_spawn = [875, 260]
-                elif self.collision.get_collided_entry() == 1:  # From dark world
-                    print("You are in the hub")
+                elif self.collision.get_collided_entry() == 1:  # From dark dimension
+                    print("You are in the", self.game_state.game_state_current_map)
+                    # print("You are in the hub")
                     self.active_world.hero_spawn = [350, 20]
 
-            elif self.active_world == self.dark_world:
+            elif self.active_world == self.dark_dimension:
+                if self.active_world.npc:
+                    self.active_world.npc.scale_sprite(75, 75)
+                    self.active_world.npc.flip_sprite(True, False)
+
+                if self.collision.get_collided_entry() == 0:  # From boss den
+                    print("You are in the", self.game_state.game_state_current_map)
+                    # print("You are in the dark dimension")
+                    self.active_world.hero_spawn = [450, 250]
+                if self.collision.get_collided_entry() == 1:  # From hub
+                    print("You are in the", self.game_state.game_state_current_map)
+                    # print("You are in the dark dimension")
+                    self.active_world.hero_spawn = [450, 450]
+
+            elif self.active_world == self.dark_dimension_boss:
                 if self.active_world.npc:
                     self.active_world.npc.scale_sprite(75, 75)
                     self.active_world.npc.flip_sprite(True, False)
 
                 if self.collision.get_collided_entry() == 0:  # From dark dimension
-                    print("You are in the dark world")
-                    self.active_world.hero_spawn = [450, 250]
-                if self.collision.get_collided_entry() == 1:  # From hub
-                    print("You are in the dark world")
-                    self.active_world.hero_spawn = [450, 450]
-
-            elif self.active_world == self.dark_world_boss:
-                if self.active_world.npc:
-                    self.active_world.npc.scale_sprite(75, 75)
-                    self.active_world.npc.flip_sprite(True, False)
-
-                if self.collision.get_collided_entry() == 0:  # From dark world
-                    print("You are in the dark dimension")
+                    print("You are in the", self.game_state.game_state_current_map)
+                    # print("You are in the dark dimension boss den")
                     self.active_world.hero_spawn = [450, 450]
 
             self.hero.x = self.active_world.hero_spawn[0]
@@ -396,7 +408,6 @@ class OverworldScene(Scene):
                     self.quit_game(True)
 
     def render(self):
-
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self.background, (0, 0))
         self.hero.play_animation()

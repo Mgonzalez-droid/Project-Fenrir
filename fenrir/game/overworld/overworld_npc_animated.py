@@ -1,13 +1,11 @@
-import time
-
 from fenrir.game.overworld.overworld_npc import overworld_npc
 from fenrir.game.overworld.Spritesheet import Spritesheet
 import pygame
 
 
 class overworld_npc_animated(overworld_npc):
-    def __init__(self, x, y, filename, level, party):
-        super().__init__(x, y, filename, level, party)
+    def __init__(self, x, y, filename, level, party, is_choice, dialogue):
+        super().__init__(x, y, filename, level, party, is_choice, dialogue)
         self.__spritesheet = Spritesheet(filename)
         self.__index = 0
         self.__sprite_names = []

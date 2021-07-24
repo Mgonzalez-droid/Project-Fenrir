@@ -16,6 +16,9 @@ class CombatInitiativeSystem:
         """
         self._ordered_initiative_list = sorted(list(participants), key=lambda p: p.speed, reverse=True)
         self._current_position = 0
+        self._player_killed = False
+        self._last_player_killed = False
+        self._popped_prior_index = False
 
     def get_current_player(self):
         """Gets the character that is up for turn in combat
@@ -33,14 +36,30 @@ class CombatInitiativeSystem:
             self._ordered_initiative_list) else 0
         return self._ordered_initiative_list[index]
 
-    def update_system(self, player_list=None):
+    def update_system(self):
         """Updates the combat initiative system by updating current position in list. Operates as a cycle and will move
             to position 0 when reaching last participant. Must be called after each turn is completed.
         """
-        if player_list:
-            self._ordered_initiative_list = sorted(list(player_list), key=lambda p: p.speed, reverse=True)
-
-        if self._current_position >= len(self._ordered_initiative_list) - 1:
-            self._current_position = 0
-        else:
+        if not self._popped_prior_index:
             self._current_position += 1
+
+        if self._last_player_killed:
+            if self._current_position >= len(self._ordered_initiative_list):
+                self._current_position = 0
+        elif self._player_killed and self._current_position == len(self._ordered_initiative_list):
+            self._current_position -= 1
+        elif self._current_position >= len(self._ordered_initiative_list):
+            self._current_position = 0
+
+        self._player_killed = False
+        self._last_player_killed = False
+        self._popped_prior_index = False
+
+    def remove_player(self, player_id):
+        self._player_killed = True
+        for i in range(0, len(self._ordered_initiative_list)):
+            if self._ordered_initiative_list[i].get_id() == player_id:
+                if i == len(self._ordered_initiative_list) - 1:
+                    self._last_player_killed = True
+                self._ordered_initiative_list.pop(i)
+                break

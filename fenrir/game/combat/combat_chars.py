@@ -1,6 +1,5 @@
 import os
 import pygame
-import time
 from fenrir.common.config import PATH_TO_RESOURCES, Colors
 from fenrir.game.combat.combat_character_data import CombatCharacterData
 
@@ -10,9 +9,9 @@ from fenrir.game.combat.combat_character_data import CombatCharacterData
 
 class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
 
-    def __init__(self, char_id, char_type, level, hp, speed, attack, enemy):
+    def __init__(self, char_id, char_type, level, enemy):
         # attrs used for sprite and animation
-        super().__init__(char_id, char_type, level, hp, speed, attack, enemy)
+        super().__init__(char_id, char_type, level, enemy)
         pygame.sprite.Sprite.__init__(self)
         self._animation_state = "idle"  # default state of all chars
         self._move_x = 0  # amount char sprite needs to move on x-axis
@@ -21,9 +20,18 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         self._animation_speed = 3  # number of frames to show image
         self._face_left = False
         self._animating = False
+        self._player_died = False
+        self._move_speed = 4
         self._took_damage = False
         self._damage_animation_counter = 0
         self.image = None
+        self.rect = pygame.Rect(0, 0, 0, 0)
+        self._health_bar_rects = [pygame.Rect(0, 0, 50, 5), pygame.Rect(0, 0, 50, 5)]
+        self.get_health_bar_location()  # implemented in each char class
+
+
+        # TODO new max hp will be implemented in the char data class: Remove this one then
+        self._dummy_max_hp = self.hp  # set the original hp value to the max hp of the char
 
     @property
     def animation_state(self):
@@ -104,17 +112,47 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         self._took_damage = True
         self._damage_animation_counter = 0
 
+    def draw_health_bar(self, screen):
+        for rect in self._health_bar_rects:
+            rect.midbottom = self.get_health_bar_location()
+
+        percent_health = int((self.hp / self._dummy_max_hp) * 50)
+        # bg color red
+        pygame.draw.rect(screen, Colors.RED.value, self._health_bar_rects[0])
+        # remaining health bar
+        self._health_bar_rects[1].width = percent_health
+        self._health_bar_rects[1].left = self._health_bar_rects[0].left
+        pygame.draw.rect(screen, Colors.GREEN.value, self._health_bar_rects[1])
+
+    def get_health_bar_location(self):
+        raise NotImplementedError
+
+    def kill_player(self):
+        self._player_died = True
+        self._frame = 0
+        self._animating = True
+        self.animation_state = "death"
+
+    def animate_death(self):
+
+        if self._frame < (len(self.death_images) - 1) * self._animation_speed:
+            self.animate(self.death_images)
+        else:
+            self._animating = False
+            self.kill()
+
 
 class MageChar(CombatCharSprite):
 
     def __init__(self, char_id, level, enemy):
-        super().__init__(char_id, "mage", level, 50, 10, 40, enemy)
+        super().__init__(char_id, "mage", level, enemy)
 
         # animation images
         self.attack_images = []
         self.idle_images = []
         self.run_images = []
         self.death_images = []
+
 
         self.load_assets()
         self.image = self.idle_images[0]
@@ -214,7 +252,6 @@ class MageChar(CombatCharSprite):
             self._animating = False
 
     def update(self):
-
         if self.animation_state == "idle":
             images = self.idle_images
         elif self.animation_state == "attack":
@@ -239,27 +276,36 @@ class MageChar(CombatCharSprite):
             self.animate_teleport()
         elif self.attacking:
             self.animate_attack()
+        elif self._player_died:
+            self.animate_death()
         else:
             self.animate(images)
+
+    def get_health_bar_location(self):
+        x, y = self.rect.midtop
+        if self.ypos < 45:
+            y = 5
+        else:
+
+            y = y + 65
+        return x, y
 
 
 class KnightChar(CombatCharSprite):
 
     def __init__(self, char_id, level, enemy):
-        super().__init__(char_id, "knight", level, 100, 2, 100, enemy)
+        super().__init__(char_id, "knight", level, enemy)
 
         # animation images
         self.attack_images = []
         self.idle_images = []
         self.walk_images = []
         self.death_images = []
-
         self.attacking = False
 
         self.load_assets()
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
-
         self.animation_state = "idle"
 
         if enemy:
@@ -354,36 +400,36 @@ class KnightChar(CombatCharSprite):
 
         if self.move_x > 0:
             self._face_left = False
-            if self.move_x < 2:
-                self.rect += self.move_x
-                self.move_x = 2
+            if self.move_x < self._move_speed:
+                self.rect.x += self.move_x
+                self.move_x = self._move_speed
             else:
-                self.rect.x += 2
-                self.move_x -= 2
+                self.rect.x += self._move_speed
+                self.move_x -= self._move_speed
         elif self.move_x < 0:
             self._face_left = True
-            if self.move_x > -2:
-                self.rect += self.move_x
+            if self.move_x > -self._move_speed:
+                self.rect.x += self.move_x
                 self.move_x = 0
             else:
-                self.rect.x += -2
-                self.move_x -= -2
+                self.rect.x += -self._move_speed
+                self.move_x -= -self._move_speed
 
         # y axis movements will only start when x-movements are done
         if self.move_y > 0 and self.move_x == 0:
-            if self.move_y < 2:
-                self.rect += self.move_x
+            if self.move_y < self._move_speed:
+                self.rect.y += self.move_x
                 self.move_y = 0
             else:
-                self.rect.y += 2
-                self.move_y -= 2
+                self.rect.y += self._move_speed
+                self.move_y -= self._move_speed
         elif self.move_y < 0 and self.move_x == 0:
-            if self.move_y > -2:
-                self.rect += self.move_y
+            if self.move_y > -self._move_speed:
+                self.rect.y += self.move_y
                 self.move_y = 0
             else:
-                self.rect.y += -2
-                self.move_y -= -2
+                self.rect.y += -self._move_speed
+                self.move_y -= -self._move_speed
 
     def update(self):
 
@@ -402,6 +448,8 @@ class KnightChar(CombatCharSprite):
 
         if self.attacking:
             self.animate_attack()
+        elif self._player_died:
+            self.animate_death()
         else:
             self.animate(images)
 
@@ -414,24 +462,30 @@ class KnightChar(CombatCharSprite):
         delta_y = y_target - self.rect.centery - 5
         self.move(delta_x, delta_y)
 
+    def get_health_bar_location(self):
+        x, y = self.rect.midtop
+
+        if self.ypos < 45:
+            y = 5
+
+        return x, y
+
 
 class ArcherChar(CombatCharSprite):
 
     def __init__(self, char_id, level, enemy):
-        super().__init__(char_id, "archer", level, 50, 5, 50, enemy)
+        super().__init__(char_id, "archer", level, enemy)
 
         # animation images
         self.attack_images = []
         self.idle_images = []
         self.walk_images = []
         self.death_images = []
-
         self.attacking = False
 
         self.load_assets()
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
-
         self.animation_state = "idle"
 
         if enemy:
@@ -526,36 +580,36 @@ class ArcherChar(CombatCharSprite):
 
         if self.move_x > 0:
             self._face_left = False
-            if self.move_x < 2:
-                self.rect += self.move_x
-                self.move_x = 2
-            else:
-                self.rect.x += 2
-                self.move_x -= 2
-        elif self.move_x < 0:
-            self._face_left = True
-            if self.move_x > -2:
-                self.rect += self.move_x
+            if self.move_x < self._move_speed:
+                self.rect.x += self.move_x
                 self.move_x = 0
             else:
-                self.rect.x += -2
-                self.move_x -= -2
+                self.rect.x += self._move_speed
+                self.move_x -= self._move_speed
+        elif self.move_x < 0:
+            self._face_left = True
+            if self.move_x > -self._move_speed:
+                self.rect.x += self.move_x
+                self.move_x = 0
+            else:
+                self.rect.x += -self._move_speed
+                self.move_x -= -self._move_speed
 
         # y axis movements will only start when x-movements are done
         if self.move_y > 0 and self.move_x == 0:
-            if self.move_y < 2:
-                self.rect += self.move_x
+            if self.move_y < self._move_speed:
+                self.rect.y += self.move_y
                 self.move_y = 0
             else:
-                self.rect.y += 2
-                self.move_y -= 2
+                self.rect.y += self._move_speed
+                self.move_y -= self._move_speed
         elif self.move_y < 0 and self.move_x == 0:
-            if self.move_y > -2:
-                self.rect += self.move_y
+            if self.move_y > -self._move_speed:
+                self.rect.y += self.move_y
                 self.move_y = 0
             else:
-                self.rect.y += -2
-                self.move_y -= -2
+                self.rect.y += -self._move_speed
+                self.move_y -= -self._move_speed
 
     def update(self):
 
@@ -574,6 +628,8 @@ class ArcherChar(CombatCharSprite):
 
         if self.attacking:
             self.animate_attack()
+        elif self._player_died:
+            self.animate_death()
         else:
             self.animate(images)
 
@@ -585,3 +641,12 @@ class ArcherChar(CombatCharSprite):
         delta_x = x_target - self.rect.centerx
         delta_y = y_target - self.rect.centery - 10
         self.move(delta_x, delta_y)
+
+    def get_health_bar_location(self):
+        x, y = self.rect.midtop
+
+        if self.ypos < 45:
+            y = 5
+        else:
+            y += 38
+        return x, y

@@ -8,7 +8,7 @@ from fenrir.common.config import DisplaySettings
 class GameState:
 
     def __init__(self, player_id=None, player_name="Player 1", last_save=None,
-                 player_level=1, location_x=555, location_y=180):
+                 player_level=1,location_x=555, location_y=180):
         # when we start saving games and other data
         self._player_name = player_name
         self._player_id = player_id
@@ -16,8 +16,10 @@ class GameState:
         self._player_level = player_level
         self._player_party = []
         self._enemy_party = []
+        self._game_state_current_map = ""
 
         # overworld player location variables
+
         self._game_state_location_x = location_x
         self._game_state_location_y = location_y
 
@@ -85,6 +87,14 @@ class GameState:
     @player_party.setter
     def player_party(self, player_party):
         self._player_party = player_party
+
+    @property
+    def game_state_current_map(self):
+        return self._game_state_current_map
+
+    @game_state_current_map.setter
+    def game_state_current_map(self, game_state_current_map):
+        self._game_state_current_map = game_state_current_map
 
     @property
     def enemy_party(self):

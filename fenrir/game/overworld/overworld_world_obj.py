@@ -6,7 +6,8 @@ from fenrir.game.overworld.overworld_npc import overworld_npc as character
 
 
 class overworld_world_obj:
-    def __init__(self, obstacles, entries, entry_dests, npc, hero_spawn, background, music, visited=False):
+    def __init__(self, map_name, obstacles, entries, entry_dests, npc, hero_spawn, background, music, visited=False):
+        self.__map_name = map_name
         self.__obstacles = obstacles
         self.__entries = entries
         self.__entry_dests = entry_dests
@@ -15,6 +16,14 @@ class overworld_world_obj:
         self.__background = background
         self.__music = music
         self.__visited = visited
+
+    @property
+    def map_name(self):
+        return self.__map_name
+
+    @map_name.setter
+    def map_name(self, map_name):
+        self.__map_name = map_name
 
     @property
     def obstacles(self):

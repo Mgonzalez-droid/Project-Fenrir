@@ -4,13 +4,14 @@ from pygame import mixer
 
 
 class Music:
+
     @staticmethod
     def play_song(song):
         # Initialize mixer
         mixer.init()
 
         # Loading the song
-        mixer.music.load(os.path.join(PATH_TO_RESOURCES, "soundtrack/" + song + ".wav"))
+        mixer.music.load(os.path.join(PATH_TO_RESOURCES, "soundtrack", + song + ".wav"))
 
         # Setting the volume
         mixer.music.set_volume(0.7)

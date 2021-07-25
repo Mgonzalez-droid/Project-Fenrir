@@ -18,7 +18,9 @@ def initialize_db():
                     last_save text,
                     player_level integer,
                     x_location integer,
-                    y_location integer       
+                    y_location integer,
+                    player_party text,
+                    current_map text    
                     )""")
 
     conn.commit()

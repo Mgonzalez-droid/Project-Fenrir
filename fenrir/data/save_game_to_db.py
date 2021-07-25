@@ -33,7 +33,7 @@ def save_game(state_obj):
                                  '{formatted_player_party}',
                                  '{state_obj.game_state_current_map}')
                                  """
-    print(statement)
+
     curs.execute(statement)
 
     conn.commit()

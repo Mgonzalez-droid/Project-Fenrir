@@ -16,6 +16,7 @@ class GameState:
         self._player_level = player_level
         self._player_party = player_party
         self._enemy_party = []
+        self._enemy_level = None
         self._game_state_current_map = map_name
 
         # overworld player location variables
@@ -103,6 +104,14 @@ class GameState:
     @enemy_party.setter
     def enemy_party(self, enemy_party):
         self._enemy_party = enemy_party
+
+    @property
+    def enemy_level(self):
+        return self._enemy_level
+
+    @enemy_level.setter
+    def enemy_level(self, level):
+        self._enemy_level = level
 
     def reset_game_state(self):
         self._player_name = "Player 1"

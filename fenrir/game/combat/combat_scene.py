@@ -21,14 +21,14 @@ from fenrir.game.combat.combat_ai_nodeTree import CombatAINodeTree
 
 class CombatScene(Scene):
 
-    def __init__(self, screen, game_state, map_name):
+    def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
-        self._map_name = map_name
-        self._map = md.MapData(map_name, 16, 9)
+        self._map_name = "combat_" + self.game_state.game_state_current_map
+        self._map = md.MapData(self._map_name, 16, 9)
         self._ai_Tree_init = CombatAINodeTree(16, 9, self._map)
         self._ai_Tree = self._ai_Tree_init.get_ai_node_tree()
-        self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(map_name + ".png")))
-        self._participants = []
+        self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(self._map_name + ".png")))
+        self._participants = self.add_participants()
         self._player_list = pygame.sprite.Group()
         self._combat_grid_system = CombatGridSystem(9, 16, self.screen)
 
@@ -42,15 +42,6 @@ class CombatScene(Scene):
         pygame.mixer.music.set_volume(.4)
         pygame.mixer.music.play(-1)
         self._sound_effects = {}
-
-        # Player char
-        self._participants.append(KnightChar(0, 1, False))
-        self._participants.append(ArcherChar(1, 1, False))
-        self._participants.append(MageChar(2, 1, False))
-
-        # Enemy char
-        self._participants.append(KnightChar(3, 1, True))
-        self._participants.append(MageChar(4, 1, True))
 
         # used for displaying on screen surface
         for player in self._participants:
@@ -198,6 +189,31 @@ class CombatScene(Scene):
     #########################################
     # Helper functions for combat game play #
     #########################################
+    def add_participants(self):
+        participants = []
+        id = 0
+        player_level = self.game_state.player_level
+        for unit in self.game_state.player_party:
+            print("player id:", id)
+            if unit == "knight":
+                participants.append(KnightChar(id, player_level, False))
+            elif unit == "archer":
+                participants.append(ArcherChar(id, player_level, False))
+            elif unit == "mage":
+                participants.append(MageChar(id, player_level, False))
+            id += 1
+
+        for unit in self.game_state.enemy_party:
+            print("enemy id:", id)
+            if unit == "knight":
+                participants.append(KnightChar(id, player_level, True))
+            elif unit == "archer":
+                participants.append(ArcherChar(id, player_level, True))
+            elif unit == "mage":
+                participants.append(MageChar(id, player_level, True))
+            id += 1
+
+        return participants
 
     def spawn_participants(self):
         for player in self._participants:

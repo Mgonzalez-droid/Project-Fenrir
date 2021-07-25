@@ -175,12 +175,13 @@ class OverworldScene(Scene):
         self.level = self.game_state.player_level
         self.hero = character_animated(self.active_world.hero_spawn[0], self.active_world.hero_spawn[1],
                                        os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"),
-                                       self.game_state.player_level, [["knight", "chars/knight/knight_menu.png"]],
+                                       self.game_state.player_level, [],
                                        False, [])
 
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
+        self.hero.party = self.formatted_hero_party()
         # pygame.mixer.init()
         # pygame.mixer.music.load(self.active_world.music)
         # pygame.mixer.music.stop()
@@ -402,7 +403,7 @@ class OverworldScene(Scene):
                 if self.active_world.npc.is_choice:
                     if event.key == pygame.K_1:
                         self.update_game_state()
-                        self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state, "combat_001"))
+                        self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state))
                     if event.key == pygame.K_2:
                         self.show_textbox = False
                 else:
@@ -496,7 +497,7 @@ class OverworldScene(Scene):
         self.game_state.game_state_location_x = self.hero.x
         self.game_state.game_state_location_y = self.hero.y
 
-        # self.game_state.player_party.clear()
+        self.game_state.player_party.clear()
         self.game_state.enemy_party.clear()
 
         for i in range(len(self.hero.party)):
@@ -506,8 +507,7 @@ class OverworldScene(Scene):
             for i in range(len(self.active_world.npc.party)):
                 self.game_state.enemy_party.append(self.active_world.npc.party[i][0])
 
-        print("My party: ", self.game_state.player_party)
-        print("Enemy Party: ", self.game_state.enemy_party)
+        self.game_state.enemy_level = self.active_world.npc.level
 
     def quit_game(self, saving):
         # saves game progress to database and stops music
@@ -532,3 +532,11 @@ class OverworldScene(Scene):
             return self.dark_dimension
         elif map_name == "dark_dimension_boss":
             return self.dark_dimension_boss
+
+    def formatted_hero_party(self):
+        party_list = []
+
+        for unit in self.game_state.player_party:
+            party_list.append([unit, f"chars/{unit}/{unit}_menu.png"])
+
+        return party_list

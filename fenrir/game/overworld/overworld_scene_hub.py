@@ -51,36 +51,6 @@ class OverworldScene(Scene):
             music="Windless Slopes"
         )
 
-        self.atlantis_world = world_obj(
-            map_name="atlantis",
-            obstacles=[
-                obstacle(0, 0, 189, 229),  # Left_Column_Barrier
-                obstacle(189, 0, 208, 119),  # left_entry_Barrier
-                obstacle(543, 0, 306, 119),  # Right_Entry
-                obstacle(849, 0, 110, 192),  # right_column
-                obstacle(378, 191, 30, 141),  # left_barricade
-                obstacle(408, 191, 135, 24),  # top_barricade
-                obstacle(543, 191, 23, 140),  # right_barricade
-                obstacle(766, 298, 87, 84),  # anchor_barrier
-                obstacle(0, 342, 69, 198),  # pot_barrier
-                obstacle(69, 412, 43, 129),  # half_column_barrier
-                obstacle(110, 449, 745, 90),  # sea_wall_barrier
-                obstacle(856, 405, 104, 134)  # bottom_right_barrier
-            ],
-            entries=[
-                obstacle(397, 0, 146, 20)  # world_1_entry
-            ],
-            entry_dests=[
-                self.hub_world
-            ],
-            # FILL in with npc data:
-            # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc="",
-            hero_spawn=(400, 25),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/atlantis.png")),
-            music="Windless Slopes"
-        )
-
         self.ashlands = world_obj(
             map_name="ashlands",
             obstacles=[
@@ -91,22 +61,54 @@ class OverworldScene(Scene):
                 obstacle(200, 410, 70, 1),  # Bottom left prompts (fallen tree)
                 obstacle(760, 410, 1, 1),  # Bottom tombstone
                 obstacle(740, 280, 1, 1),  # Middle tombstone
-                obstacle(860, 160, 1, 1),  # Top tombstone (looks broken)
-                obstacle(462, 0, 187, 20)
-
+                obstacle(860, 160, 1, 1)  # Top tombstone (looks broken)
             ],
             entries=[
                 obstacle(1, 240, 1, 100),  # Hub Entry
-                obstacle(462, 0, 187, 20),  # Dark_Desert_Boss
+                obstacle(490, 0, 120, 1),  # atlantis
             ],
             entry_dests=[],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
             npc=character(350, 430, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
-                          [["knight", "chars/knight/knight_menu.png"]], False,
-                          ["This is just a test to see if this is working", "And this one too"]),
+                          [["mage", "chars/mage/mage_menu.png"]], True,
+                          ["Wanna fight?", "[1] Yes", "[2] No"]),
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/ashlands.png")),
+            music="Windless Slopes"
+        )
+
+        self.atlantis_world = world_obj(
+            map_name="atlantis",
+            obstacles=[
+                obstacle(0, 0, 165, 170),  # Left_Column_Barrier
+                obstacle(189, 0, 60, 60),  # left_Column_Rocks
+                obstacle(350, 0, 20, 60),  # Left_Entry
+                obstacle(560, 0, 50, 60),  # Right_Entry
+                obstacle(860, 0, 110, 120),  # right_column
+                obstacle(730, 0, 70, 20),  # right_column_pebbles
+                obstacle(390, 191, 10, 90),  # left_barricade
+                obstacle(401, 191, 120, 5),  # top_barricade
+                obstacle(550, 191, 10, 90),  # right_barricade
+                obstacle(766, 298, 87, 60),  # anchor_barrier
+                obstacle(0, 350, 60, 40),  # pot_barrier
+                obstacle(0, 430, 100, 20),  # half_column_barrier (bottom right)
+                obstacle(0, 460, 960, 80),  # sea_wall_barrier
+                obstacle(860, 430, 100, 20),  # half_column_barrier (bottom left)
+            ],
+            entries=[
+                obstacle(430, 0, 100, 1)  # ashlands
+            ],
+            entry_dests=[
+                self.ashlands
+            ],
+            # FILL in with npc data:
+            # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
+            npc=character(450, 250, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
+                          [["archer", "chars/archer/archer_menu.png"]], True,
+                          ["Fight?", "[1] Yeah", "[2] Nope"]),
+            hero_spawn=(400, 25),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/atlantis.png")),
             music="Windless Slopes"
         )
 
@@ -138,13 +140,17 @@ class OverworldScene(Scene):
                 obstacle(580, 358, 380, 180),  # Boss_den_right_barrier
             ],
             entries=[
-                obstacle(410, 539, 130, 1)  # World exit
+                obstacle(410, 539, 130, 1)  # Dark dimension
             ],
             entry_dests=[self.dark_dimension
                          ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc="",
+            npc=character(450, 355, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
+                          [["knight", "chars/knight/knight_menu.png"], ["archer", "chars/archer/archer_menu.png"],
+                           ["mage", "chars/mage/mage_menu.png"]], True,
+                          ["Hello Gabe, do you wanna go to the combat phase?",
+                           "[1] Yes, I am ready to go to the combat phase", "[2] No, I want to keep walking here"]),
             hero_spawn=(406, 400),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark_dimension_boss.png")),
             music="Windless Slopes"
@@ -152,7 +158,7 @@ class OverworldScene(Scene):
 
         self.hub_world.entry_dests = [self.ashlands, self.dark_dimension]
         self.dark_dimension.entry_dests = [self.dark_dimension_boss, self.hub_world]
-        self.ashlands.entry_dests = [self.hub_world]
+        self.ashlands.entry_dests = [self.hub_world, self.atlantis_world]
 
         # Defaults to hub world and hero default position
         self.active_world = self.load_active_world()
@@ -183,8 +189,9 @@ class OverworldScene(Scene):
         Music.play_song(self.active_world.music)
 
         # Default npc scale and position
-        self.active_world.npc.sprite = pygame.transform.flip(self.active_world.npc.sprite, True, False)
-        self.active_world.npc.sprite = pygame.transform.scale(self.active_world.npc.sprite, (75, 75))
+        if self.active_world.npc:
+            self.active_world.npc.sprite = pygame.transform.flip(self.active_world.npc.sprite, True, False)
+            self.active_world.npc.sprite = pygame.transform.scale(self.active_world.npc.sprite, (75, 75))
 
         self.show_controls = False
         self.show_characters = True
@@ -255,27 +262,31 @@ class OverworldScene(Scene):
                 self.show_interaction = False
 
         if self.collision.entry_collision(self.hero, self.active_world.entries):
-            print(self.collision.get_collided_entry())
-
+            print("Entry:", self.collision.get_collided_entry())
+            prev = self.active_world
             self.active_world = self.active_world.entry_dests[self.collision.get_collided_entry()]
+
             # Store the current map name in the game state
             self.game_state.game_state_current_map = self.active_world.map_name
+            # Update background
             self.background = pygame.transform.scale(self.active_world.background, (960, 540))
+
+            # Set size for npc and where it will face
+            if self.active_world.npc:
+                self.active_world.npc.sprite = pygame.transform.scale(self.active_world.npc.sprite, (75, 75))
+                # self.active_world.npc.sprite = pygame.transform.flip(self.active_world.npc.sprite, True, False)
 
             # Check current Map and which entry point was collided
             if self.active_world == self.ashlands:
-                # Set size for npc and where it will face
-                if self.active_world.npc:
-                    self.active_world.npc.scale_sprite(75, 75)
-                    self.active_world.npc.flip_sprite(False, False)
-
-                if self.collision.get_collided_entry() == 0:  # From hub
+                if self.collision.get_collided_entry() == 0 and prev == self.hub_world:  # From hub
                     # print("You are in the ashlands")
                     print("You are in the", self.game_state.game_state_current_map)
                     self.active_world.hero_spawn = [10, 260]
+                elif self.collision.get_collided_entry() == 0 and prev == self.atlantis_world:  # From atlantis
+                    print("You are in the", self.game_state.game_state_current_map)
+                    self.active_world.hero_spawn = [500, 100]
 
             elif self.active_world == self.hub_world:
-
                 if self.collision.get_collided_entry() == 0:  # From ashland
                     # print("You are in the hub")
                     print("You are in the", self.game_state.game_state_current_map)
@@ -286,10 +297,6 @@ class OverworldScene(Scene):
                     self.active_world.hero_spawn = [350, 20]
 
             elif self.active_world == self.dark_dimension:
-                if self.active_world.npc:
-                    self.active_world.npc.scale_sprite(75, 75)
-                    self.active_world.npc.flip_sprite(True, False)
-
                 if self.collision.get_collided_entry() == 0:  # From boss den
                     print("You are in the", self.game_state.game_state_current_map)
                     # print("You are in the dark dimension")
@@ -300,14 +307,15 @@ class OverworldScene(Scene):
                     self.active_world.hero_spawn = [450, 450]
 
             elif self.active_world == self.dark_dimension_boss:
-                if self.active_world.npc:
-                    self.active_world.npc.scale_sprite(75, 75)
-                    self.active_world.npc.flip_sprite(True, False)
-
                 if self.collision.get_collided_entry() == 0:  # From dark dimension
                     print("You are in the", self.game_state.game_state_current_map)
                     # print("You are in the dark dimension boss den")
                     self.active_world.hero_spawn = [450, 450]
+
+            elif self.active_world == self.atlantis_world:
+                if self.collision.get_collided_entry() == 1:  # From ashlands
+                    print("You are in the", self.game_state.game_state_current_map)
+                    self.active_world.hero_spawn = [450, 30]
 
             self.hero.x = self.active_world.hero_spawn[0]
             self.hero.y = self.active_world.hero_spawn[1]
@@ -488,14 +496,15 @@ class OverworldScene(Scene):
         self.game_state.game_state_location_x = self.hero.x
         self.game_state.game_state_location_y = self.hero.y
 
-        self.game_state.player_party.clear()
+        # self.game_state.player_party.clear()
         self.game_state.enemy_party.clear()
 
         for i in range(len(self.hero.party)):
             self.game_state.player_party.append(self.hero.party[i][0])
 
-        for i in range(len(self.active_world.npc.party)):
-            self.game_state.enemy_party.append(self.active_world.npc.party[i][0])
+        if self.active_world.npc:
+            for i in range(len(self.active_world.npc.party)):
+                self.game_state.enemy_party.append(self.active_world.npc.party[i][0])
 
         print("My party: ", self.game_state.player_party)
         print("Enemy Party: ", self.game_state.enemy_party)

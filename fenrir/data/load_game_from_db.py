@@ -25,7 +25,9 @@ def load_game_save_by_id(player_id: int):
     curs.execute(f"SELECT * FROM game_save WHERE id={player_id}")
     data = curs.fetchone()
 
-    return GameState(data[0], data[1], data[2], data[3], data[4], data[5])
+    player_party = data[6].split(':')
+    print(player_party)
+    return GameState(data[0], data[1], data[2], data[3], data[4], data[5], player_party, data[7])
 
     conn.commit()
     conn.close()

@@ -155,8 +155,8 @@ class OverworldScene(Scene):
         self.ashlands.entry_dests = [self.hub_world]
 
         # Defaults to hub world and hero default position
-        self.active_world = self.hub_world
-        self.active_world.hero_spawn = [550, 230]
+        self.active_world = self.load_active_world()
+        self.active_world.hero_spawn = [self.game_state.game_state_location_x, self.game_state.game_state_location_y]
 
         self.background = pygame.transform.scale(self.active_world.background, (960, 540))
         self.control_hud = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "controls_HUD.png"))
@@ -509,3 +509,17 @@ class OverworldScene(Scene):
 
         Music.stop_song()
         self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))
+
+    def load_active_world(self):
+        map_name = self.game_state.game_state_current_map
+
+        if map_name == "hub_world":
+            return self.hub_world
+        elif map_name == "atlantis":
+            return self.atlantis_world
+        elif map_name == "ashlands":
+            return self.ashlands
+        elif map_name == "dark_dimension":
+            return self.dark_dimension
+        elif map_name == "dark_dimension_boss":
+            return self.dark_dimension_boss

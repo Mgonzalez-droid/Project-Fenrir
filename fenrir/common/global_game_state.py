@@ -8,15 +8,15 @@ from fenrir.common.config import DisplaySettings
 class GameState:
 
     def __init__(self, player_id=None, player_name="Player 1", last_save=None,
-                 player_level=1,location_x=555, location_y=180):
+                 player_level=1, location_x=550, location_y=230, player_party=["knight"], map_name="hub_world"):
         # when we start saving games and other data
         self._player_name = player_name
         self._player_id = player_id
         self._last_save = last_save
         self._player_level = player_level
-        self._player_party = []
+        self._player_party = player_party
         self._enemy_party = []
-        self._game_state_current_map = ""
+        self._game_state_current_map = map_name
 
         # overworld player location variables
 
@@ -109,5 +109,6 @@ class GameState:
         self._player_level = 1  # default starting point
 
         # overworld player location variables
-        self._game_state_location_x = 555
-        self._game_state_location_y = 180
+        self._game_state_current_map = "hub_world"
+        self._game_state_location_x = 550
+        self._game_state_location_y = 230

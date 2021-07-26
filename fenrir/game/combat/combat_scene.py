@@ -54,7 +54,7 @@ class CombatScene(Scene):
 
         # key binding values
         self.key_dict = {'SELECT': False, 'BACK': False, '1': False, '2': False,
-                         '3': False, 'L_CLICK': False, 'SPACE': False}
+                         '3': False, 'L_CLICK': False, 'R_CLICK': False, 'SPACE': False}
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         # spawn players to the map
@@ -141,6 +141,8 @@ class CombatScene(Scene):
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 self.key_dict['L_CLICK'] = True
+            if event.button == 3:
+                self.key_dict['R_CLICK'] = True
 
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
@@ -191,27 +193,26 @@ class CombatScene(Scene):
     #########################################
     def add_participants(self):
         participants = []
-        id = 0
+        unit_id = 0
         player_level = self.game_state.player_level
         for unit in self.game_state.player_party:
-            print("player id:", id)
             if unit == "knight":
-                participants.append(KnightChar(id, player_level, False))
+                participants.append(KnightChar(unit_id, player_level, False))
             elif unit == "archer":
-                participants.append(ArcherChar(id, player_level, False))
+                participants.append(ArcherChar(unit_id, player_level, False))
             elif unit == "mage":
-                participants.append(MageChar(id, player_level, False))
-            id += 1
+                participants.append(MageChar(unit_id, player_level, False))
+            unit_id += 1
 
+        enemy_level = self.game_state.enemy_level
         for unit in self.game_state.enemy_party:
-            print("enemy id:", id)
             if unit == "knight":
-                participants.append(KnightChar(id, player_level, True))
+                participants.append(KnightChar(unit_id, enemy_level, True))
             elif unit == "archer":
-                participants.append(ArcherChar(id, player_level, True))
+                participants.append(ArcherChar(unit_id, enemy_level, True))
             elif unit == "mage":
-                participants.append(MageChar(id, player_level, True))
-            id += 1
+                participants.append(MageChar(unit_id, enemy_level, True))
+            unit_id += 1
 
         return participants
 
@@ -477,7 +478,7 @@ class CombatScene(Scene):
 
         elif self.turn_counter == 0:
             self.show_prompt("Welcome to combat", ["Press [Enter] to get started!",
-                                                   "Press [Space] to hide prompt."])
+                                                   "[Space] will hide prompt."])
             if self.key_dict['SELECT']:
                 self.clear_prompt()
                 self.turn_counter += 1
@@ -603,8 +604,8 @@ class CombatScene(Scene):
                         self.enemy_attacked = False
                         self.next_move()
                     else:
-                        self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "Press [Enter] to continue..."])
-                        if self.key_dict['SELECT']:
+                        self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "[Right Click] to continue..."])
+                        if self.key_dict['R_CLICK']:
                             self.enemy_moved = False
                             self.enemy_attacked = False
                             self.next_move()

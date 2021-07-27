@@ -39,3 +39,11 @@ class Colors(Enum):
     GRID_GRAY = (88, 88, 88)
 
     # add colors here with RGB values the list will lengthen as we go
+
+
+class GameConstants(Enum):
+    """Constant values for game play to be used throughout
+    """
+
+    # the current max level any player can reach in the game
+    MAX_LEVEL = 6

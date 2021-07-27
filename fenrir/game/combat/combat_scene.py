@@ -9,12 +9,10 @@ from fenrir.common.TextBox import TextBox
 import fenrir.game.overworld.overworld_scene_hub as overscene
 from fenrir.game.combat.combat_chars import ArcherChar, KnightChar, MageChar
 import fenrir.game.combat.combat_map_data as md
-from fenrir.common.config import Colors, DisplaySettings, PATH_TO_RESOURCES
+from fenrir.common.config import Colors, DisplaySettings, PATH_TO_RESOURCES, GameConstants
 from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
 from fenrir.game.combat.combat_grid_system import CombatGridSystem
 from fenrir.game.combat.combat_move_list import combat_move_list
-
-# Todo import ai node tree and instantiate it
 from fenrir.game.combat.combat_ai_system import CombatAISystem
 from fenrir.game.combat.combat_ai_nodeTree import CombatAINodeTree
 
@@ -27,7 +25,8 @@ class CombatScene(Scene):
         self._map = md.MapData(self._map_name, 16, 9)
         self._ai_Tree_init = CombatAINodeTree(16, 9, self._map)
         self._ai_Tree = self._ai_Tree_init.get_ai_node_tree()
-        self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(self._map_name + ".png")))
+        self._background = pygame.image.load(
+            os.path.join(PATH_TO_RESOURCES, "combat_maps", str(self._map_name + ".png")))
         self._participants = self.add_participants()
         self._player_list = pygame.sprite.Group()
         self._combat_grid_system = CombatGridSystem(9, 16, self.screen)
@@ -54,7 +53,7 @@ class CombatScene(Scene):
 
         # key binding values
         self.key_dict = {'SELECT': False, 'BACK': False, '1': False, '2': False,
-                         '3': False, 'L_CLICK': False, 'SPACE': False}
+                         '3': False, 'L_CLICK': False, 'R_CLICK': False, 'SPACE': False}
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         # spawn players to the map
@@ -141,6 +140,8 @@ class CombatScene(Scene):
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 self.key_dict['L_CLICK'] = True
+            if event.button == 3:
+                self.key_dict['R_CLICK'] = True
 
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
@@ -191,27 +192,26 @@ class CombatScene(Scene):
     #########################################
     def add_participants(self):
         participants = []
-        id = 0
+        unit_id = 0
         player_level = self.game_state.player_level
         for unit in self.game_state.player_party:
-            print("player id:", id)
             if unit == "knight":
-                participants.append(KnightChar(id, player_level, False))
+                participants.append(KnightChar(unit_id, player_level, False))
             elif unit == "archer":
-                participants.append(ArcherChar(id, player_level, False))
+                participants.append(ArcherChar(unit_id, player_level, False))
             elif unit == "mage":
-                participants.append(MageChar(id, player_level, False))
-            id += 1
+                participants.append(MageChar(unit_id, player_level, False))
+            unit_id += 1
 
+        enemy_level = self.game_state.enemy_level
         for unit in self.game_state.enemy_party:
-            print("enemy id:", id)
             if unit == "knight":
-                participants.append(KnightChar(id, player_level, True))
+                participants.append(KnightChar(unit_id, enemy_level, True))
             elif unit == "archer":
-                participants.append(ArcherChar(id, player_level, True))
+                participants.append(ArcherChar(unit_id, enemy_level, True))
             elif unit == "mage":
-                participants.append(MageChar(id, player_level, True))
-            id += 1
+                participants.append(MageChar(unit_id, enemy_level, True))
+            unit_id += 1
 
         return participants
 
@@ -456,28 +456,36 @@ class CombatScene(Scene):
             # Need data to show who one ect...
             pygame.mixer.music.stop()
             if self.player_won:
-                winner = self.game_state.player_name
+                if self.game_state.player_level == GameConstants.MAX_LEVEL.value:
+                    statement = "You are already at the maximum level!"
+                else:
+                    statement = f"You leveled up to level {self.game_state.player_level + 1}!"
+
                 if not self.played_victory_sound:
                     self.play_sound_effect("victory")
+                self.show_prompt("Battle Complete",
+                                 [f"You won the battle!",
+                                  statement,
+                                  "Press [enter] to exit."])
+                if self.game_state.game_state_current_map == "dark_dimension_boss":
+                    self.game_state.final_victory(1)
             else:
-                winner = "Sensei"
                 if not self.played_victory_sound:
                     self.play_sound_effect("lose")
+                self.show_prompt("Battle Complete",
+                                 ["Enemy won the battle!",
+                                  "Press [enter] to exit."])
 
             self.played_victory_sound = True
 
-            self.show_prompt("Battle Complete",
-                             [f"{winner} won the battle!", "Press [enter] to exit."])
-
             if self.key_dict['SELECT']:
-                # Todo this will increase player level now regardless of victory or not. Need to update this later
                 self.game_state.increase_player_level()
                 pygame.mixer.stop()
                 self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
 
         elif self.turn_counter == 0:
             self.show_prompt("Welcome to combat", ["Press [Enter] to get started!",
-                                                   "Press [Space] to hide prompt."])
+                                                   "[Space] will hide prompt."])
             if self.key_dict['SELECT']:
                 self.clear_prompt()
                 self.turn_counter += 1
@@ -543,12 +551,22 @@ class CombatScene(Scene):
                                 endingY = int((self.ai_new_y - 30) / 60)
                                 self._move_list = combat_move_list(startingX, startingY, endingX, endingY,
                                                                    self._ai_Tree, self._map)
-                                self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
-                                                         (self._move_list[-1].get_yPos() * 60) + 30)
-                                self._highlight_curr_player = False
-                                self.play_movement_sound()
-                                self.ai_first_pass = True
-                                self._move_list.pop()
+                                if len(self._move_list) > 0:
+                                    self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                                        (self.curr_player.xpos - 30) // 60].unoccupy()
+                                    self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                                             (self._move_list[-1].get_yPos() * 60) + 30)
+                                    self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
+                                        self.curr_player.get_id())
+                                    self._highlight_curr_player = False
+                                    self.play_movement_sound()
+                                    self.ai_first_pass = True
+                                    self._move_list.pop()
+                                else:
+                                    self.ai_movement_finished = True
+                                    self.enemy_moved = False
+                                    self.ai_attack_finished = True
+                                    self.enemy_attacked = False
 
                             if self._move_list:
                                 if not self.curr_player.is_animating():
@@ -558,8 +576,6 @@ class CombatScene(Scene):
                                     self._move_list.pop()
                             else:
                                 if not self.curr_player.is_animating():
-                                    self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
-                                        self.curr_player.get_id())
                                     self.ai_movement_finished = True
 
                     if self.ai_movement_finished and not self.ai_attack_finished:
@@ -571,7 +587,11 @@ class CombatScene(Scene):
                                 else:
                                     character.take_damage(self.curr_player.attack, 'physical')
                                     character.animate_damage()
-                                self.curr_player.attack_enemy()
+                                if character.rect.centerx < self.curr_player.xpos:
+                                    left = True
+                                else:
+                                    left = False
+                                self.curr_player.attack_enemy(left)
                                 self.play_attack_sound()
                                 self.ai_attack_finished = True
                                 break
@@ -595,16 +615,18 @@ class CombatScene(Scene):
                         enemy_choice = "moved and attacked!"
                     elif self.enemy_moved:
                         enemy_choice = "moved!"
-                    else:
+                    elif self.enemy_attacked:
                         enemy_choice = "attacked!"
+                    else:
+                        enemy_choice = "skipped Turn!"
 
                     if self.game_over:
                         self.enemy_moved = False
                         self.enemy_attacked = False
                         self.next_move()
                     else:
-                        self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "Press [Enter] to continue..."])
-                        if self.key_dict['SELECT']:
+                        self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "[Right Click] to continue..."])
+                        if self.key_dict['R_CLICK']:
                             self.enemy_moved = False
                             self.enemy_attacked = False
                             self.next_move()

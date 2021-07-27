@@ -20,7 +20,8 @@ def initialize_db():
                     x_location integer,
                     y_location integer,
                     player_party text,
-                    current_map text    
+                    current_map text,
+                    boss_victory integer    
                     )""")
 
     conn.commit()

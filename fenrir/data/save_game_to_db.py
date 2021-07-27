@@ -19,19 +19,21 @@ def save_game(state_obj):
                                 x_location={state_obj.game_state_location_x},
                                 y_location={state_obj.game_state_location_y},
                                 player_party='{formatted_player_party}',
-                                current_map='{state_obj.game_state_current_map}'
+                                current_map='{state_obj.game_state_current_map}',
+                                boss_victory='{state_obj.final_victory}'
                         WHERE id = {state_obj.player_id}"""
     else:
         # if state obj has no id then it is a new save and db will create id
         statement = f"""INSERT INTO game_save (player_name, last_save, player_level, x_location,
-                                                y_location, player_party, current_map) 
+                                                y_location, player_party, current_map, boss_victory) 
                         VALUES ('{state_obj.player_name}',
                                 '{formatted_date}',
                                  {state_obj.player_level},
                                  {state_obj.game_state_location_x},
                                  {state_obj.game_state_location_y},
                                  '{formatted_player_party}',
-                                 '{state_obj.game_state_current_map}')
+                                 '{state_obj.game_state_current_map}',
+                                 '{state_obj.final_victory}')
                                  """
 
     curs.execute(statement)

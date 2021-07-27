@@ -16,6 +16,9 @@ class GameState:
         self._last_save = last_save
         self._player_level = player_level
         self._player_party = player_party
+
+        # Saving enemy data that player will fight against
+        self._enemy_name = ""
         self._enemy_party = []
         self._enemy_level = None
         self._game_state_current_map = map_name
@@ -106,6 +109,14 @@ class GameState:
     @game_state_current_map.setter
     def game_state_current_map(self, game_state_current_map):
         self._game_state_current_map = game_state_current_map
+
+    @property
+    def enemy_name(self):
+        return self._enemy_name
+
+    @enemy_name.setter
+    def enemy_name(self, enemy_name):
+        self._enemy_name = enemy_name
 
     @property
     def enemy_party(self):

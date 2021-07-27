@@ -13,8 +13,6 @@ from fenrir.common.config import Colors, DisplaySettings, PATH_TO_RESOURCES, Gam
 from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
 from fenrir.game.combat.combat_grid_system import CombatGridSystem
 from fenrir.game.combat.combat_move_list import combat_move_list
-
-# Todo import ai node tree and instantiate it
 from fenrir.game.combat.combat_ai_system import CombatAISystem
 from fenrir.game.combat.combat_ai_nodeTree import CombatAINodeTree
 

@@ -21,7 +21,6 @@ class GameState:
         self._enemy_name = ""
         self._enemy_party = []
         self._enemy_level = None
-        self._enemy_name = "Test Name"
         self._game_state_current_map = map_name
         self._final_victory = boss_victory
 
@@ -110,14 +109,6 @@ class GameState:
     @game_state_current_map.setter
     def game_state_current_map(self, game_state_current_map):
         self._game_state_current_map = game_state_current_map
-
-    @property
-    def enemy_name(self):
-        return self._enemy_name
-
-    @enemy_name.setter
-    def enemy_name(self, enemy_name):
-        self._enemy_name = enemy_name
 
     @property
     def enemy_party(self):

@@ -3,12 +3,13 @@
 """
 import os
 import pygame
+import time
 import fenrir.game.menu.menu_scene as menuscene
 import fenrir.game.combat.combat_scene as combscene
 from fenrir.common.scene import Scene
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.common.TextBox import TextBox
-from fenrir.common.music import Music
+# from fenrir.common.music import Music
 from fenrir.game.overworld.overworld_npc import overworld_npc as character
 from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
 from fenrir.game.overworld.overworld_boundaries import Boundaries
@@ -195,12 +196,15 @@ class OverworldScene(Scene):
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
         self.hero.party = self.formatted_hero_party()
-        # pygame.mixer.init()
-        # pygame.mixer.music.load(self.active_world.music)
+        pygame.mixer.init()
+        pygame.mixer.music.load(os.path.join(PATH_TO_RESOURCES, "soundtrack", self.active_world.music + ".wav"))
+        pygame.mixer.music.set_volume(.4)
+        pygame.mixer.music.play(-1)
+        self._sound_effects = {}
         # pygame.mixer.music.stop()
         # pygame.mixer.music.play()
 
-        Music.play_song(self.active_world.music)
+        # Music.play_song(self.active_world.music)
 
         # Default npc scale and position
         if self.active_world.npc:
@@ -235,6 +239,9 @@ class OverworldScene(Scene):
         if not self.show_controls and not self.show_textbox and not self.show_inventory and not self._quit_screen:
             if keys[pygame.K_w]:
                 self.hero.y = boundaries.collision_up()  # Check if player hits top of window
+                self.play_sound_effect("walk", 10)
+
+                # self.play_sound_effect("walk")
 
                 if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
                     # For debugging purposes
@@ -548,7 +555,7 @@ class OverworldScene(Scene):
             self.update_game_state()
             save_game(self.game_state)
 
-        Music.stop_song()
+        # Music.stop_song()
         self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))
 
     def load_active_world(self):
@@ -572,3 +579,18 @@ class OverworldScene(Scene):
             party_list.append([unit, f"chars/{unit}/{unit}_menu.png"])
 
         return party_list
+
+    def play_sound_effect(self, sound_name, time_lim=None):
+        if sound_name in self._sound_effects.keys():
+            sound = self._sound_effects[sound_name]
+        else:
+            path = os.path.join(PATH_TO_RESOURCES, "soundtrack", "overworld_sounds", sound_name + ".wav")
+            sound = pygame.mixer.Sound(path)
+            self._sound_effects[sound_name] = sound
+        sound.set_volume(.7)
+
+        # optional time limit for sound effect, currently used for walking to match char pace
+        if time_lim:
+            sound.play(maxtime=time_lim)
+        else:
+            sound.play()

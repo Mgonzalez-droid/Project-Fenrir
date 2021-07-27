@@ -303,6 +303,7 @@ class KnightChar(CombatCharSprite):
         self.image = self.idle_images[0]
         self.rect = self.image.get_rect()
         self.animation_state = "idle"
+        self.started_death_animation = False
 
         if enemy:
             self._face_left = True
@@ -445,6 +446,9 @@ class KnightChar(CombatCharSprite):
         if self.attacking:
             self.animate_attack()
         elif self._player_died:
+            if self._face_left and not self.started_death_animation:
+                self.rect.centerx -= 30
+                self.started_death_animation = True
             self.animate_death()
         else:
             self.animate(images)

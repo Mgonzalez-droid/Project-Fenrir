@@ -184,6 +184,11 @@ class OverworldScene(Scene):
         self._quit_screen = False
         self.collision = Collision()
 
+        # used for sound effects
+        self.hero_walking = False
+        self.walk_sound_effect = self.get_walk_sound_effect()
+        self.walk_sound_effect_started = False
+
         # TODO: Need to add secondary list and behavior for entries...
 
         self.level = self.game_state.player_level
@@ -239,9 +244,7 @@ class OverworldScene(Scene):
         if not self.show_controls and not self.show_textbox and not self.show_inventory and not self._quit_screen:
             if keys[pygame.K_w]:
                 self.hero.y = boundaries.collision_up()  # Check if player hits top of window
-                self.play_sound_effect("walk", 10)
-
-                # self.play_sound_effect("walk")
+                self.hero_walking = True
 
                 if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
                     # For debugging purposes
@@ -250,6 +253,7 @@ class OverworldScene(Scene):
 
                 self.hero.adjust_movement()
             if keys[pygame.K_s]:
+                self.hero_walking = True
                 self.hero.y = boundaries.collision_down()  # Check if player hits bottom of window
 
                 if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
@@ -259,6 +263,7 @@ class OverworldScene(Scene):
 
                 self.hero.adjust_movement()
             if keys[pygame.K_a]:
+                self.hero_walking = True
                 self.hero.x = boundaries.collision_left()  # Check if player hits left of window
                 if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
                     # For debugging purposes
@@ -267,6 +272,7 @@ class OverworldScene(Scene):
 
                 self.hero.adjust_movement()
             if keys[pygame.K_d]:
+                self.hero_walking = True
                 self.hero.x = boundaries.collision_right()  # Check if player hits right of window
 
                 if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
@@ -275,6 +281,10 @@ class OverworldScene(Scene):
                     self.hero.x -= 10
 
                 self.hero.adjust_movement()
+
+            # if these are all
+            if not (keys[pygame.K_d] or keys[pygame.K_a] or keys[pygame.K_w] or keys[pygame.K_s]):
+                self.hero_walking = False
 
         # If there is an npc in the world
         if self.active_world.npc:
@@ -522,6 +532,13 @@ class OverworldScene(Scene):
             # Display character sprites in the inventory menu
             self.inventory.display_heroes(self.inventory.party, self.inventory.heroes)
 
+        if self.hero_walking and not self.walk_sound_effect_started:
+            self.walk_sound_effect_started = True
+            self.walk_sound_effect.play(-1)
+        elif not self.hero_walking and self.walk_sound_effect_started:
+            self.walk_sound_effect.stop()
+            self.walk_sound_effect_started = False
+
     def update(self):
         pass
 
@@ -580,17 +597,8 @@ class OverworldScene(Scene):
 
         return party_list
 
-    def play_sound_effect(self, sound_name, time_lim=None):
-        if sound_name in self._sound_effects.keys():
-            sound = self._sound_effects[sound_name]
-        else:
-            path = os.path.join(PATH_TO_RESOURCES, "soundtrack", "overworld_sounds", sound_name + ".wav")
-            sound = pygame.mixer.Sound(path)
-            self._sound_effects[sound_name] = sound
+    def get_walk_sound_effect(self):
+        path = os.path.join(PATH_TO_RESOURCES, "soundtrack", "overworld_sounds", "walk" + ".wav")
+        sound = pygame.mixer.Sound(path)
         sound.set_volume(.7)
-
-        # optional time limit for sound effect, currently used for walking to match char pace
-        if time_lim:
-            sound.play(maxtime=time_lim)
-        else:
-            sound.play()
+        return sound

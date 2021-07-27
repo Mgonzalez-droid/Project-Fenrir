@@ -19,6 +19,7 @@ class GameState:
         self._enemy_party = []
         self._enemy_level = None
         self._game_state_current_map = map_name
+        self._final_victory = False
 
         # overworld player location variables
         self._game_state_location_x = location_x
@@ -57,6 +58,14 @@ class GameState:
     def increase_player_level(self):
         if self._player_level < GameConstants.MAX_LEVEL.value:
             self._player_level += 1
+
+    @property
+    def final_victory(self):
+        return self._final_victory
+
+    @final_victory.setter
+    def final_victory(self, victory_bool):
+        self._final_victory = victory_bool
 
     @property
     def game_state_location_x(self):

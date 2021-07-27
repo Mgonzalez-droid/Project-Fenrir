@@ -467,6 +467,8 @@ class CombatScene(Scene):
                                  [f"You won the battle!",
                                   statement,
                                   "Press [enter] to exit."])
+                if self.game_state.game_state_current_map == "dark_dimension_boss":
+                    self.game_state.final_victory(True)
             else:
                 if not self.played_victory_sound:
                     self.play_sound_effect("lose")

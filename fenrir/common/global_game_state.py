@@ -9,7 +9,7 @@ class GameState:
 
     def __init__(self, player_id=None, player_name="Player 1", last_save=None,
                  player_level=1, location_x=550, location_y=230,
-                 player_party=["knight", "mage", "archer", "archer"], map_name="hub_world"):
+                 player_party=["knight", "mage", "archer", "archer"], map_name="hub_world", boss_victory=0):
         # when we start saving games and other data
         self._player_name = player_name
         self._player_id = player_id
@@ -19,7 +19,7 @@ class GameState:
         self._enemy_party = []
         self._enemy_level = None
         self._game_state_current_map = map_name
-        self._final_victory = False
+        self._final_victory = boss_victory
 
         # overworld player location variables
         self._game_state_location_x = location_x

@@ -27,7 +27,7 @@ def load_game_save_by_id(player_id: int):
 
     player_party = data[6].split(':')
     print(player_party)
-    return GameState(data[0], data[1], data[2], data[3], data[4], data[5], player_party, data[7])
+    return GameState(data[0], data[1], data[2], data[3], data[4], data[5], player_party, data[7], data[8])
 
     conn.commit()
     conn.close()

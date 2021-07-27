@@ -2,7 +2,7 @@
 """
 
 from datetime import datetime
-from fenrir.common.config import DisplaySettings
+from fenrir.common.config import GameConstants
 
 
 class GameState:
@@ -55,7 +55,8 @@ class GameState:
         return self._player_level
 
     def increase_player_level(self):
-        self._player_level += 1
+        if self._player_level < GameConstants.MAX_LEVEL.value:
+            self._player_level += 1
 
     @property
     def game_state_location_x(self):

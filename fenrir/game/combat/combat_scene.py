@@ -9,7 +9,7 @@ from fenrir.common.TextBox import TextBox
 import fenrir.game.overworld.overworld_scene_hub as overscene
 from fenrir.game.combat.combat_chars import ArcherChar, KnightChar, MageChar
 import fenrir.game.combat.combat_map_data as md
-from fenrir.common.config import Colors, DisplaySettings, PATH_TO_RESOURCES
+from fenrir.common.config import Colors, DisplaySettings, PATH_TO_RESOURCES, GameConstants
 from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
 from fenrir.game.combat.combat_grid_system import CombatGridSystem
 from fenrir.game.combat.combat_move_list import combat_move_list
@@ -27,7 +27,8 @@ class CombatScene(Scene):
         self._map = md.MapData(self._map_name, 16, 9)
         self._ai_Tree_init = CombatAINodeTree(16, 9, self._map)
         self._ai_Tree = self._ai_Tree_init.get_ai_node_tree()
-        self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(self._map_name + ".png")))
+        self._background = pygame.image.load(
+            os.path.join(PATH_TO_RESOURCES, "combat_maps", str(self._map_name + ".png")))
         self._participants = self.add_participants()
         self._player_list = pygame.sprite.Group()
         self._combat_grid_system = CombatGridSystem(9, 16, self.screen)
@@ -457,21 +458,27 @@ class CombatScene(Scene):
             # Need data to show who one ect...
             pygame.mixer.music.stop()
             if self.player_won:
-                winner = self.game_state.player_name
+                if self.game_state.player_level == GameConstants.MAX_LEVEL.value:
+                    statement = "You are already at the maximum level!"
+                else:
+                    statement = f"You leveled up to level {self.game_state.player_level + 1}!"
+
                 if not self.played_victory_sound:
                     self.play_sound_effect("victory")
+                self.show_prompt("Battle Complete",
+                                 [f"You won the battle!",
+                                  statement,
+                                  "Press [enter] to exit."])
             else:
-                winner = "Sensei"
                 if not self.played_victory_sound:
                     self.play_sound_effect("lose")
+                self.show_prompt("Battle Complete",
+                                 ["Enemy won the battle!",
+                                  "Press [enter] to exit."])
 
             self.played_victory_sound = True
 
-            self.show_prompt("Battle Complete",
-                             [f"{winner} won the battle!", "Press [enter] to exit."])
-
             if self.key_dict['SELECT']:
-                # Todo this will increase player level now regardless of victory or not. Need to update this later
                 self.game_state.increase_player_level()
                 pygame.mixer.stop()
                 self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))

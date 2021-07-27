@@ -240,8 +240,8 @@ class OverworldScene(Scene):
 
         # Player check player movement for up (w), down (s), left (a), right (d)
         keys = pygame.key.get_pressed()
-
-        if not self.show_controls and not self.show_textbox and not self.show_inventory and not self._quit_screen:
+        
+        if not self.show_controls and not self.show_textbox and not self.show_inventory and not self._quit_screen and event.type != pygame.MOUSEMOTION:
             if keys[pygame.K_w]:
                 self.hero.y = boundaries.collision_up()  # Check if player hits top of window
                 self.hero_walking = True

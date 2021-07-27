@@ -22,7 +22,7 @@ class Inventory:
     def display_inventory(self):
         self.textbox.load_image(190, 60, 600, 400, "UI/hero_system_model.png")
 
-        self.textbox.draw_dialogue("Current Party", 30, 305, 160)
+        self.textbox.draw_dialogue("Current Party", 30, 305, 150)
         self.textbox.draw_dialogue("Heroes", 30, 450, 270)
 
         self.textbox.draw_dialogue("Press space bar to add/remove selected", 24, 260, 360)
@@ -76,6 +76,39 @@ class Inventory:
     # Displays tile the user is selecting
     def display_selection(self, index):
         self.textbox.load_image(self.tile_x[index], self.tile_y[index], 35, 39, "UI/generic-rpg-ui-inventario01.png")
+
+        if index == 0:
+            self.display_stats(self.party, self.party_displayed, index)
+        else:
+            self.display_stats(self.heroes, self.heroes_displayed, index)
+
+    def display_stats(self, section, displayed, index):
+        if displayed[self.tile_pos[index]]:
+            if section[self.tile_pos[index]][0] == "knight":
+                # name
+                self.textbox.draw_dialogue("knight", 30, 560, 100)
+                # Attack
+                self.textbox.draw_dialogue("Attack: low", 20, 515, 150)
+                # Defense
+                self.textbox.draw_dialogue("Defense: high", 20, 515, 180)
+                # Attack Range
+                self.textbox.draw_dialogue("Attack Range: short", 20, 506, 210)
+                # Move Range
+                self.textbox.draw_dialogue("Move Range: long", 20, 506, 240)
+
+            elif section[self.tile_pos[index]][0] == "archer":
+                self.textbox.draw_dialogue("archer", 30, 560, 100)
+                self.textbox.draw_dialogue("Attack: medium", 20, 515, 150)
+                self.textbox.draw_dialogue("Defense: medium", 20, 515, 180)
+                self.textbox.draw_dialogue("Attack Range: long", 20, 506, 210)
+                self.textbox.draw_dialogue("Move Range: short", 20, 506, 240)
+
+            elif section[self.tile_pos[index]][0] == "mage":
+                self.textbox.draw_dialogue("mage", 30, 560, 100)
+                self.textbox.draw_dialogue("Attack: high", 20, 515, 150)
+                self.textbox.draw_dialogue("Defense: low", 20, 515, 180)
+                self.textbox.draw_dialogue("Attack Range: medium", 20, 506, 210)
+                self.textbox.draw_dialogue("Move Range: medium", 20, 506, 240)
 
     # Swap characters in current party to the one selected in the heroes section
     def swap_characters(self, hero_index):

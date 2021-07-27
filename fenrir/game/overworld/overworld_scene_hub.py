@@ -361,7 +361,8 @@ class OverworldScene(Scene):
                     self.show_controls = True
                     self.show_characters = False
                     # self.show_interaction = False
-                    self.active_world.npc[:].show_interaction = False
+                    for i in range(len(self.active_world.npc)):
+                        self.active_world.npc[i].show_interaction = False
                     self.show_hud = False
 
             # Press i to open/close inventory system

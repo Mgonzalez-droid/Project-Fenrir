@@ -585,7 +585,11 @@ class CombatScene(Scene):
                                 else:
                                     character.take_damage(self.curr_player.attack, 'physical')
                                     character.animate_damage()
-                                self.curr_player.attack_enemy()
+                                if character.rect.centerx < self.curr_player.xpos:
+                                    left = True
+                                else:
+                                    left = False
+                                self.curr_player.attack_enemy(left)
                                 self.play_attack_sound()
                                 self.ai_attack_finished = True
                                 break

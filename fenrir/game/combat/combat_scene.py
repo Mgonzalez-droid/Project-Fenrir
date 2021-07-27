@@ -473,7 +473,7 @@ class CombatScene(Scene):
                 if not self.played_victory_sound:
                     self.play_sound_effect("lose")
                 self.show_prompt("Battle Complete",
-                                 ["Enemy won the battle!",
+                                 [f"{self.game_state.enemy_name} won the battle!",
                                   "Press [enter] to exit."])
 
             self.played_victory_sound = True
@@ -503,7 +503,7 @@ class CombatScene(Scene):
                     # Sets up all the flags for the ai turn
                     # Occurs on the first entry into the ai for the turn
                     if not self.ai_first_pass:
-                        self.show_prompt("Sensei's Turn", ["Sensei is deciding..."])
+                        self.show_prompt(f"{self.game_state.enemy_name}'s Turn", [f"{self.game_state.enemy_name} is deciding..."])
                         self.ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
                         self.ai_new_x, self.ai_new_y, self.target_to_attack = self.ai_brain.decide_ai_action()
 
@@ -625,7 +625,9 @@ class CombatScene(Scene):
                         self.enemy_attacked = False
                         self.next_move()
                     else:
-                        self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "[Right Click] to continue..."])
+                        self.show_prompt(f"{self.game_state.enemy_name}'s turn",
+                                         [f"{self.game_state.enemy_name} {enemy_choice}!",
+                                          "[Right Click] to continue..."])
                         if self.key_dict['R_CLICK']:
                             self.enemy_moved = False
                             self.enemy_attacked = False

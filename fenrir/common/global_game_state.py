@@ -111,14 +111,6 @@ class GameState:
         self._game_state_current_map = game_state_current_map
 
     @property
-    def enemy_name(self):
-        return self._enemy_name
-
-    @enemy_name.setter
-    def enemy_name(self, enemy_name):
-        self._enemy_name = enemy_name
-
-    @property
     def enemy_party(self):
         return self._enemy_party
 
@@ -133,6 +125,14 @@ class GameState:
     @enemy_level.setter
     def enemy_level(self, level):
         self._enemy_level = level
+
+    @property
+    def enemy_name(self):
+        return self._enemy_name
+
+    @enemy_name.setter
+    def enemy_name(self, name):
+        self._enemy_name = name
 
     def reset_game_state(self):
         self._player_name = "Player 1"

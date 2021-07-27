@@ -189,7 +189,7 @@ class CombatAISystem:
         else:
             self.build_path_to_target()
             if self.me.get_type() == 'knight':
-                if self.enemyPathDistance > (self.me.move_range + self.me.attack_range):
+                if self.enemyPathDistance >= (self.me.move_range + self.me.attack_range):
                     self.set_ai_goal_position(self.me.move_range + math.floor(self.me.move_range * .5))
                     return self._goalX, self._goalY, None
                 else:

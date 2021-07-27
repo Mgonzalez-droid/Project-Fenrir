@@ -237,6 +237,8 @@ class CombatCharacterData:
         elif attackType == 'physical':
             damage = damage - math.floor(self.defense / 2)
         # didTheyMiss = self.check_if_incoming_attack_misses(damage)
+        if damage < 5:
+            damage = 5
         self.hp -= damage
         if self.hp <= 0:
             self.hp = 0

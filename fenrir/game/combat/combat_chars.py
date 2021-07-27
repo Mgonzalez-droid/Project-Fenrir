@@ -29,10 +29,6 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         self._health_bar_rects = [pygame.Rect(0, 0, 50, 5), pygame.Rect(0, 0, 50, 5)]
         self.get_health_bar_location()  # implemented in each char class
 
-
-        # TODO new max hp will be implemented in the char data class: Remove this one then
-        self._dummy_max_hp = self.hp  # set the original hp value to the max hp of the char
-
     @property
     def animation_state(self):
         return self._animation_state
@@ -116,7 +112,7 @@ class CombatCharSprite(CombatCharacterData, pygame.sprite.Sprite):
         for rect in self._health_bar_rects:
             rect.midbottom = self.get_health_bar_location()
 
-        percent_health = int((self.hp / self._dummy_max_hp) * 50)
+        percent_health = int((self.hp / self.max_hp) * 50)
         # bg color red
         pygame.draw.rect(screen, Colors.RED.value, self._health_bar_rects[0])
         # remaining health bar
@@ -550,9 +546,6 @@ class ArcherChar(CombatCharSprite):
 
         self.attacking = True
         self._animating = True
-        # move rect to fix image shift in attack mode
-        self.rect.centerx -= 5
-        self.rect.centery -= 10
         self._frame = 0
 
     def animate_attack(self, left=None):
@@ -563,8 +556,6 @@ class ArcherChar(CombatCharSprite):
             self.animate(self.attack_images)
         else:
             self.animation_state = "idle"
-            self.rect.centerx += 5
-            self.rect.centery += 10
             self.attacking = False
             self._animating = False
 

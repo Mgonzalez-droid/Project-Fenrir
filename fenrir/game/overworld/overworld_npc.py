@@ -3,7 +3,8 @@ from fenrir.game.overworld.Spritesheet import Spritesheet
 
 
 class overworld_npc:
-    def __init__(self, x, y,  filename, level, party, show_interaction, is_choice, dialogue):
+    def __init__(self, name, x, y,  filename, level, party, show_interaction, is_choice, dialogue):
+        self.__name = name
         self.__x = x
         self.__y = y
         self.__sprite = pygame.image.load(filename)
@@ -12,6 +13,14 @@ class overworld_npc:
         self.__show_interaction = show_interaction
         self.__is_choice = is_choice
         self.__dialogue = dialogue
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, name):
+        self.__name = name
 
     @property
     def x(self):

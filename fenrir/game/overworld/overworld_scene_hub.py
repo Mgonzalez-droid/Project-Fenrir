@@ -3,13 +3,11 @@
 """
 import os
 import pygame
-import time
 import fenrir.game.menu.menu_scene as menuscene
 import fenrir.game.combat.combat_scene as combscene
 from fenrir.common.scene import Scene
 from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.common.TextBox import TextBox
-# from fenrir.common.music import Music
 from fenrir.game.overworld.overworld_npc import overworld_npc as character
 from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
 from fenrir.game.overworld.overworld_boundaries import Boundaries
@@ -44,15 +42,15 @@ class OverworldScene(Scene):
             # FILL in with npc data:
             # (x, y, png name, level, party members[], can you interact with npc? (boolean 1),
             # is just text or a choice for the player? (boolean 2), dialogue[])
-            npc=[character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
+            npc=[character("Sensei", 880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
                            [["knight", "chars/knight/knight_menu.png"]], False, True,
                            ["Hello Gabe, do you wanna go to the combat phase?",
                             "[1] Yes, I am ready to go to the combat phase", "[2] No, I want to keep walking here"]),
-                 character(450, 400, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
+                 character("Mani", 450, 400, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
                            [["knight", "chars/knight/knight_menu.png"]], False, False,
                            ["Hello Gabe, do you wanna go to the combat phase?",
                             "I am joking, I can't fight today", "Good luck in your adventure!"]),
-                 character(250, 200, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
+                 character("Old Sage", 250, 200, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
                            [["mage", "chars/mage/mage_menu.png"]], False, True,
                            ["Fight?",
                             "[1] Yes", "[2] Later"])
@@ -81,7 +79,7 @@ class OverworldScene(Scene):
             entry_dests=[],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=[character(350, 430, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
+            npc=[character("Old Sage", 350, 430, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
                            [["mage", "chars/mage/mage_menu.png"]], False, True,
                            ["Wanna fight?", "[1] Yes", "[2] No"])
                  ],
@@ -116,7 +114,7 @@ class OverworldScene(Scene):
             ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=[character(450, 250, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
+            npc=[character("Mani", 450, 250, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
                            [["archer", "chars/archer/archer_menu.png"]], False, True,
                            ["Fight?", "[1] Yeah", "[2] Nope"])
                  ],
@@ -159,7 +157,7 @@ class OverworldScene(Scene):
                          ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=[character(450, 355, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
+            npc=[character("Sensei", 450, 355, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
                            [["knight", "chars/knight/knight_menu.png"], ["archer", "chars/archer/archer_menu.png"],
                             ["mage", "chars/mage/mage_menu.png"]], False, True,
                            ["Hello Gabe, do you wanna go to the combat phase?",
@@ -192,7 +190,7 @@ class OverworldScene(Scene):
         # TODO: Need to add secondary list and behavior for entries...
 
         self.level = self.game_state.player_level
-        self.hero = character_animated(self.active_world.hero_spawn[0], self.active_world.hero_spawn[1],
+        self.hero = character_animated("Gabe", self.active_world.hero_spawn[0], self.active_world.hero_spawn[1],
                                        os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"),
                                        self.game_state.player_level, [],
                                        False, False, [])
@@ -559,7 +557,8 @@ class OverworldScene(Scene):
             self.game_state.player_party.append(self.hero.party[i][0])
 
         if self.active_world.npc:
-            # Save enemy level in game state
+            # Save enemy name and level in game state
+            self.game_state.enemy_name = self.active_world.npc[self.enemy_index].name
             self.game_state.enemy_level = self.active_world.npc[self.enemy_index].level
             # Save enemy party in game state
             for k in range(len(self.active_world.npc[self.enemy_index].party)):
@@ -572,7 +571,7 @@ class OverworldScene(Scene):
             self.update_game_state()
             save_game(self.game_state)
 
-        # Music.stop_song()
+        pygame.mixer.music.stop()
         self.switch_to_scene(menuscene.MainMenuScene(self.screen, self.game_state))
 
     def load_active_world(self):

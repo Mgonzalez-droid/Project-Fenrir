@@ -546,9 +546,6 @@ class ArcherChar(CombatCharSprite):
 
         self.attacking = True
         self._animating = True
-        # move rect to fix image shift in attack mode
-        self.rect.centerx -= 5
-        self.rect.centery -= 10
         self._frame = 0
 
     def animate_attack(self, left=None):
@@ -559,8 +556,6 @@ class ArcherChar(CombatCharSprite):
             self.animate(self.attack_images)
         else:
             self.animation_state = "idle"
-            self.rect.centerx += 5
-            self.rect.centery += 10
             self.attacking = False
             self._animating = False
 

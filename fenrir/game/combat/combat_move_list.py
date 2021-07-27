@@ -8,6 +8,7 @@ def combat_move_list(startingX, startingY, endingX, endingY, nodeTree, mapData):
     moveList = []
     openList = []
     closedList = []
+    pathFound = False
     totalDist = abs(startingX - endingX) + abs(startingY - endingY)
     currentTile = None
     # Find the node with the coal position first and append it to the list
@@ -33,6 +34,7 @@ def combat_move_list(startingX, startingY, endingX, endingY, nodeTree, mapData):
 
         # if currentTile coords match ending coords, then you are finished
         if currentTile.get_xPos() == endingX and currentTile.get_yPos() == endingY:
+            pathFound = True
             break
 
         # loop and add all of the current node's neighbors to the list to search if not occupied
@@ -70,6 +72,8 @@ def combat_move_list(startingX, startingY, endingX, endingY, nodeTree, mapData):
                 neighbor.set_parent(currentTile)
                 openList.append(neighbor)
 
+    if not pathFound:
+        return moveList
     # build the list of tiles to traverse in reverse order
     for _ in range(0, currentTile.get_totalDistance()):
         moveList.append(currentTile)

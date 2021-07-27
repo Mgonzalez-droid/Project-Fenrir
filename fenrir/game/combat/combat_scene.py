@@ -551,12 +551,22 @@ class CombatScene(Scene):
                                 endingY = int((self.ai_new_y - 30) / 60)
                                 self._move_list = combat_move_list(startingX, startingY, endingX, endingY,
                                                                    self._ai_Tree, self._map)
-                                self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
-                                                         (self._move_list[-1].get_yPos() * 60) + 30)
-                                self._highlight_curr_player = False
-                                self.play_movement_sound()
-                                self.ai_first_pass = True
-                                self._move_list.pop()
+                                if len(self._move_list) > 0:
+                                    self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                                        (self.curr_player.xpos - 30) // 60].unoccupy()
+                                    self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                                             (self._move_list[-1].get_yPos() * 60) + 30)
+                                    self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
+                                        self.curr_player.get_id())
+                                    self._highlight_curr_player = False
+                                    self.play_movement_sound()
+                                    self.ai_first_pass = True
+                                    self._move_list.pop()
+                                else:
+                                    self.ai_movement_finished = True
+                                    self.enemy_moved = False
+                                    self.ai_attack_finished = True
+                                    self.enemy_attacked = False
 
                             if self._move_list:
                                 if not self.curr_player.is_animating():
@@ -566,8 +576,6 @@ class CombatScene(Scene):
                                     self._move_list.pop()
                             else:
                                 if not self.curr_player.is_animating():
-                                    self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
-                                        self.curr_player.get_id())
                                     self.ai_movement_finished = True
 
                     if self.ai_movement_finished and not self.ai_attack_finished:
@@ -603,8 +611,10 @@ class CombatScene(Scene):
                         enemy_choice = "moved and attacked!"
                     elif self.enemy_moved:
                         enemy_choice = "moved!"
-                    else:
+                    elif self.enemy_attacked:
                         enemy_choice = "attacked!"
+                    else:
+                        enemy_choice = "skipped Turn!"
 
                     if self.game_over:
                         self.enemy_moved = False

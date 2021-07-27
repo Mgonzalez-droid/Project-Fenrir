@@ -4,8 +4,8 @@ import pygame
 
 
 class overworld_npc_animated(overworld_npc):
-    def __init__(self, x, y, filename, level, party, is_choice, dialogue):
-        super().__init__(x, y, filename, level, party, is_choice, dialogue)
+    def __init__(self, x, y, filename, level, party, show_interaction, is_choice, dialogue):
+        super().__init__(x, y, filename, level, party, show_interaction, is_choice, dialogue)
         self.__spritesheet = Spritesheet(filename)
         self.__index = 0
         self.__sprite_names = []

@@ -41,11 +41,21 @@ class OverworldScene(Scene):
             ],
             entry_dests=[],
             # FILL in with npc data:
-            # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
-                          [["knight", "chars/knight/knight_menu.png"]], True,
-                          ["Hello Gabe, do you wanna go to the combat phase?",
-                           "[1] Yes, I am ready to go to the combat phase", "[2] No, I want to keep walking here"]),
+            # (x, y, png name, level, party members[], can you interact with npc? (boolean 1),
+            # is just text or a choice for the player? (boolean 2), dialogue[])
+            npc=[character(880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
+                           [["knight", "chars/knight/knight_menu.png"]], False, True,
+                           ["Hello Gabe, do you wanna go to the combat phase?",
+                            "[1] Yes, I am ready to go to the combat phase", "[2] No, I want to keep walking here"]),
+                 character(450, 400, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
+                           [["knight", "chars/knight/knight_menu.png"]], False, False,
+                           ["Hello Gabe, do you wanna go to the combat phase?",
+                            "I am joking, I can't fight today", "Good luck in your adventure!"]),
+                 character(250, 200, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
+                           [["mage", "chars/mage/mage_menu.png"]], False, True,
+                           ["Fight?",
+                            "[1] Yes", "[2] Later"])
+                 ],
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/hub_world.png")),
             music="Windless Slopes"
@@ -70,9 +80,10 @@ class OverworldScene(Scene):
             entry_dests=[],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=character(350, 430, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
-                          [["mage", "chars/mage/mage_menu.png"]], True,
-                          ["Wanna fight?", "[1] Yes", "[2] No"]),
+            npc=[character(350, 430, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
+                           [["mage", "chars/mage/mage_menu.png"]], False, True,
+                           ["Wanna fight?", "[1] Yes", "[2] No"])
+                 ],
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/ashlands.png")),
             music="Windless Slopes"
@@ -104,9 +115,10 @@ class OverworldScene(Scene):
             ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=character(450, 250, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
-                          [["archer", "chars/archer/archer_menu.png"]], True,
-                          ["Fight?", "[1] Yeah", "[2] Nope"]),
+            npc=[character(450, 250, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
+                           [["archer", "chars/archer/archer_menu.png"]], False, True,
+                           ["Fight?", "[1] Yeah", "[2] Nope"])
+                 ],
             hero_spawn=(400, 25),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/atlantis.png")),
             music="Windless Slopes"
@@ -146,11 +158,12 @@ class OverworldScene(Scene):
                          ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=character(450, 355, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
-                          [["knight", "chars/knight/knight_menu.png"], ["archer", "chars/archer/archer_menu.png"],
-                           ["mage", "chars/mage/mage_menu.png"]], True,
-                          ["Hello Gabe, do you wanna go to the combat phase?",
-                           "[1] Yes, I am ready to go to the combat phase", "[2] No, I want to keep walking here"]),
+            npc=[character(450, 355, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
+                           [["knight", "chars/knight/knight_menu.png"], ["archer", "chars/archer/archer_menu.png"],
+                            ["mage", "chars/mage/mage_menu.png"]], False, True,
+                           ["Hello Gabe, do you wanna go to the combat phase?",
+                            "[1] Yes, I am ready to go to the combat phase", "[2] No, I want to keep walking here"])
+                 ],
             hero_spawn=(406, 400),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark_dimension_boss.png")),
             music="Windless Slopes"
@@ -176,7 +189,7 @@ class OverworldScene(Scene):
         self.hero = character_animated(self.active_world.hero_spawn[0], self.active_world.hero_spawn[1],
                                        os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"),
                                        self.game_state.player_level, [],
-                                       False, [])
+                                       False, False, [])
 
         self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
                                   "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
@@ -191,12 +204,14 @@ class OverworldScene(Scene):
 
         # Default npc scale and position
         if self.active_world.npc:
-            self.active_world.npc.sprite = pygame.transform.flip(self.active_world.npc.sprite, True, False)
-            self.active_world.npc.sprite = pygame.transform.scale(self.active_world.npc.sprite, (75, 75))
+            for i in range(len(self.active_world.npc)):
+                # NPC faces to the left (True) and is not flipped (False)
+                self.active_world.npc[i].sprite = pygame.transform.flip(self.active_world.npc[i].sprite, True, False)
+                self.active_world.npc[i].sprite = pygame.transform.scale(self.active_world.npc[i].sprite, (75, 75))
 
         self.show_controls = False
         self.show_characters = True
-        self.show_interaction = False
+        # self.show_interaction = False
         self.show_hud = True
         self.show_textbox = False
         self.show_inventory = False
@@ -204,9 +219,9 @@ class OverworldScene(Scene):
         # Inventory system
         self.inventory = Inventory(self.textbox, self.hero.party, self.game_state.all_heroes)
         self.party_section = True
-        self.party_index = 0
         self.hero_index = 0
         self.text_index = -1
+        self.enemy_index = 0
 
     def handle_event(self, event):
 
@@ -256,11 +271,14 @@ class OverworldScene(Scene):
 
         # If there is an npc in the world
         if self.active_world.npc:
-            if self.collision.npc_collision(self.hero, self.active_world.npc):
-                # Show exclamation mark
-                self.show_interaction = True
-            else:
-                self.show_interaction = False
+            for i in range(len(self.active_world.npc)):
+                if self.collision.npc_collision(self.hero, self.active_world.npc[i]):
+                    # Show exclamation mark
+                    self.active_world.npc[i].show_interaction = True
+                    # self.show_interaction = True
+                else:
+                    self.active_world.npc[i].show_interaction = False
+                    # self.show_interaction = False
 
         if self.collision.entry_collision(self.hero, self.active_world.entries):
             print("Entry:", self.collision.get_collided_entry())
@@ -274,8 +292,9 @@ class OverworldScene(Scene):
 
             # Set size for npc and where it will face
             if self.active_world.npc:
-                self.active_world.npc.sprite = pygame.transform.scale(self.active_world.npc.sprite, (75, 75))
-                # self.active_world.npc.sprite = pygame.transform.flip(self.active_world.npc.sprite, True, False)
+                for i in range(len(self.active_world.npc)):
+                    self.active_world.npc[i].sprite = pygame.transform.scale(self.active_world.npc[i].sprite, (75, 75))
+                    # self.active_world.npc.sprite = pygame.transform.flip(self.active_world.npc.sprite, True, False)
 
             # Check current Map and which entry point was collided
             if self.active_world == self.ashlands:
@@ -341,7 +360,8 @@ class OverworldScene(Scene):
                     self.background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "Simple_Control_menu.png"))
                     self.show_controls = True
                     self.show_characters = False
-                    self.show_interaction = False
+                    # self.show_interaction = False
+                    self.active_world.npc[:].show_interaction = False
                     self.show_hud = False
 
             # Press i to open/close inventory system
@@ -361,7 +381,6 @@ class OverworldScene(Scene):
 
                     # If the tile is not empty and the heroes list has heroes available it will swap them
                     if self.inventory.party_displayed[self.inventory.tile_pos[0]]:
-                        self.party_index = self.inventory.tile_pos[0]
                         self.party_section = False
                         self.inventory.swapping = True
 
@@ -393,22 +412,27 @@ class OverworldScene(Scene):
             # Checks if the space bar is pressed
             if event.key == pygame.K_SPACE and not self.show_controls and not self.show_inventory \
                     and not self._quit_screen and not self.show_textbox:
-                # Check for collision
-                if self.collision.check_collisions(self.hero, self.active_world.npc):
-                    # if text box is displayed, stop characters movements
-                    self.show_textbox = True
+
+                for i in range(len(self.active_world.npc)):
+                    # Check for collision
+                    if self.collision.check_collisions(self.hero, self.active_world.npc[i]):
+                        # if text box is displayed, stop characters movements
+                        self.show_textbox = True
 
             # Select options from the text box
             if self.show_textbox:
-                if self.active_world.npc.is_choice:
-                    if event.key == pygame.K_1:
-                        self.update_game_state()
-                        self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state))
-                    if event.key == pygame.K_2:
-                        self.show_textbox = False
-                else:
-                    if event.key == pygame.K_SPACE and self.text_index < len(self.active_world.npc.dialogue):
-                        self.text_index += 1
+                for i in range(len(self.active_world.npc)):
+                    if self.active_world.npc[i].show_interaction:
+                        if self.active_world.npc[i].is_choice:
+                            if event.key == pygame.K_1:
+                                self.enemy_index = i
+                                self.update_game_state()
+                                self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state))
+                            if event.key == pygame.K_2:
+                                self.show_textbox = False
+                        else:
+                            if event.key == pygame.K_SPACE and self.text_index < len(self.active_world.npc[i].dialogue):
+                                self.text_index += 1
 
             if self._quit_screen:
                 if event.key == pygame.K_b:
@@ -433,13 +457,17 @@ class OverworldScene(Scene):
             self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
             # If there is an npc on the map
             if self.active_world.npc:
-                self.screen.blit(self.active_world.npc.sprite, (self.active_world.npc.x, self.active_world.npc.y))
+                for i in range(len(self.active_world.npc)):
+                    self.screen.blit(self.active_world.npc[i].sprite,
+                                     (self.active_world.npc[i].x, self.active_world.npc[i].y))
 
-        # Show if player can interact with npc displaying an exclamation mark
-        if self.show_interaction and not self.show_controls:
+            # Show if player can interact with npc displaying an exclamation mark
+
             # self.textbox.load_image(900, 170, 100, 100, "exclamation.png")
-            self.textbox.load_image(self.active_world.npc.x + 15, self.active_world.npc.y - 100, 100, 100,
-                                    "exclamation.png")
+            for i in range(len(self.active_world.npc)):
+                if self.active_world.npc[i].show_interaction and not self.show_controls:
+                    self.textbox.load_image(self.active_world.npc[i].x + 15, self.active_world.npc[i].y - 100, 100, 100,
+                                            "exclamation.png")
         # self.screen.blit(self.exclamation_mark.sprite, (self.exclamation_mark.x, self.exclamation_mark.y))
 
         if self._quit_screen:
@@ -457,21 +485,23 @@ class OverworldScene(Scene):
             # draw_options(question, options, size, x, y)
 
             # If the npc need the player to take a choice
-            if self.active_world.npc.is_choice:
-                question = self.active_world.npc.dialogue[0]
-                options = self.active_world.npc.dialogue[1:]
+            for i in range(len(self.active_world.npc)):
+                if self.active_world.npc[i].show_interaction:
+                    if self.active_world.npc[i].is_choice:
+                        question = self.active_world.npc[i].dialogue[0]
+                        options = self.active_world.npc[i].dialogue[1:]
 
-                # Text box were the user must pick and option
-                self.textbox.draw_options(question, options, 24, 200, 397)
+                        # Text box were the user must pick and option
+                        self.textbox.draw_options(question, options, 24, 200, 397)
 
-                # If the npc is just displaying some text
-            else:
-                if self.text_index < len(self.active_world.npc.dialogue):
-                    text = self.active_world.npc.dialogue[self.text_index]
-                    self.textbox.draw_dialogue(text, 24, 200, 397)
-                else:
-                    self.text_index = -1
-                    self.show_textbox = False
+                        # If the npc is just displaying some text
+                    else:
+                        if self.text_index < len(self.active_world.npc[i].dialogue):
+                            text = self.active_world.npc[i].dialogue[self.text_index]
+                            self.textbox.draw_dialogue(text, 24, 200, 397)
+                        else:
+                            self.text_index = -1
+                            self.show_textbox = False
 
         # Display inventory box
         if self.show_inventory:
@@ -504,10 +534,11 @@ class OverworldScene(Scene):
             self.game_state.player_party.append(self.hero.party[i][0])
 
         if self.active_world.npc:
-            for i in range(len(self.active_world.npc.party)):
-                self.game_state.enemy_party.append(self.active_world.npc.party[i][0])
-
-        self.game_state.enemy_level = self.active_world.npc.level
+            # Save enemy level in game state
+            self.game_state.enemy_level = self.active_world.npc[self.enemy_index].level
+            # Save enemy party in game state
+            for k in range(len(self.active_world.npc[self.enemy_index].party)):
+                self.game_state.enemy_party.append(self.active_world.npc[self.enemy_index].party[k][0])
 
     def quit_game(self, saving):
         # saves game progress to database and stops music

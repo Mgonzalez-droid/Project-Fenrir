@@ -640,7 +640,6 @@ class CombatScene(Scene):
                 try:
                     self.process_ai_turn()
                 except Exception:
-                    print("crashed")
                     self.show_prompt(f"{self.game_state.enemy_name}'s turn",
                                      [f"{self.game_state.enemy_name} skipped turn!",
                                       "[Right Click] to continue..."])

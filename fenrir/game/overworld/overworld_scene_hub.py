@@ -232,6 +232,10 @@ class OverworldScene(Scene):
 
     def handle_event(self, event):
 
+        # Check for victory
+        if self.game_state.final_victory == 1:
+            self.show_textbox = True
+
         # TRACK MOVEMENT
         # Boundaries class prevent the player character to move outside the current window
         boundaries = Boundaries(self.screen, self.hero)
@@ -239,7 +243,8 @@ class OverworldScene(Scene):
         # Player check player movement for up (w), down (s), left (a), right (d)
         keys = pygame.key.get_pressed()
         
-        if not self.show_controls and not self.show_textbox and not self.show_inventory and not self._quit_screen and event.type != pygame.MOUSEMOTION:
+        if not self.show_controls and not self.show_textbox and not self.show_inventory \
+                and not self._quit_screen and event.type != pygame.MOUSEMOTION:
             if keys[pygame.K_w]:
                 self.hero.y = boundaries.collision_up()  # Check if player hits top of window
                 self.hero_walking = True
@@ -437,18 +442,24 @@ class OverworldScene(Scene):
 
             # Select options from the text box
             if self.show_textbox:
-                for i in range(len(self.active_world.npc)):
-                    if self.active_world.npc[i].show_interaction:
-                        if self.active_world.npc[i].is_choice:
-                            if event.key == pygame.K_1:
-                                self.enemy_index = i
-                                self.update_game_state()
-                                self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state))
-                            if event.key == pygame.K_2:
-                                self.show_textbox = False
-                        else:
-                            if event.key == pygame.K_SPACE and self.text_index < len(self.active_world.npc[i].dialogue):
-                                self.text_index += 1
+                # If game was won
+                if self.game_state.final_victory == 1:
+                    if event.key == pygame.K_SPACE:
+                        self.show_textbox = False
+                        self.game_state.final_victory = 0
+                else:
+                    for i in range(len(self.active_world.npc)):
+                        if self.active_world.npc[i].show_interaction:
+                            if self.active_world.npc[i].is_choice:
+                                if event.key == pygame.K_1:
+                                    self.enemy_index = i
+                                    self.update_game_state()
+                                    self.switch_to_scene(combscene.CombatScene(self.screen, self.game_state))
+                                if event.key == pygame.K_2:
+                                    self.show_textbox = False
+                            else:
+                                if event.key == pygame.K_SPACE and self.text_index < len(self.active_world.npc[i].dialogue):
+                                    self.text_index += 1
 
             if self._quit_screen:
                 if event.key == pygame.K_b:
@@ -498,26 +509,30 @@ class OverworldScene(Scene):
             # load_textbox(x, y, x_scale, y_scale)
             self.textbox.load_image(300, 370, 600, 100, "UI/generic-rpg-ui-text-box.png")
 
-            # draw_options(question, options, size, x, y)
+            # If the game was won display victory message
+            if self.game_state.final_victory == 1:
+                self.textbox.draw_dialogue("Congratulations Gabe, you saved the world from the forces of evil! "
+                                           "Now you are free to roam freely around the world and challenge again the "
+                                           "obstacles in your way.", 24, 200, 397)
+            else:  # Display regular messages
+                # If the npc need the player to take a choice
+                for i in range(len(self.active_world.npc)):
+                    if self.active_world.npc[i].show_interaction:
+                        if self.active_world.npc[i].is_choice:
+                            question = self.active_world.npc[i].dialogue[0]
+                            options = self.active_world.npc[i].dialogue[1:]
 
-            # If the npc need the player to take a choice
-            for i in range(len(self.active_world.npc)):
-                if self.active_world.npc[i].show_interaction:
-                    if self.active_world.npc[i].is_choice:
-                        question = self.active_world.npc[i].dialogue[0]
-                        options = self.active_world.npc[i].dialogue[1:]
+                            # Text box were the user must pick and option
+                            self.textbox.draw_options(question, options, 24, 200, 397)
 
-                        # Text box were the user must pick and option
-                        self.textbox.draw_options(question, options, 24, 200, 397)
-
-                        # If the npc is just displaying some text
-                    else:
-                        if self.text_index < len(self.active_world.npc[i].dialogue):
-                            text = self.active_world.npc[i].dialogue[self.text_index]
-                            self.textbox.draw_dialogue(text, 24, 200, 397)
+                            # If the npc is just displaying some text
                         else:
-                            self.text_index = -1
-                            self.show_textbox = False
+                            if self.text_index < len(self.active_world.npc[i].dialogue):
+                                text = self.active_world.npc[i].dialogue[self.text_index]
+                                self.textbox.draw_dialogue(text, 24, 200, 397)
+                            else:
+                                self.text_index = -1
+                                self.show_textbox = False
 
         # Display inventory box
         if self.show_inventory:

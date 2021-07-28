@@ -23,6 +23,8 @@ class OverworldScene(Scene):
     def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
 
+
+
         # new world objs
         self.hub_world = world_obj(
             map_name="hub_world",
@@ -115,7 +117,7 @@ class OverworldScene(Scene):
             ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=[character(450, 250, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
+            npc=[character(437, 250, os.path.join("fenrir/resources/chars/mermaid/mermaid.png"), 1,
                            [["archer", "chars/archer/archer_menu.png"]], False, True,
                            ["Fight?", "[1] Yeah", "[2] Nope"])
                  ],
@@ -158,7 +160,7 @@ class OverworldScene(Scene):
                          ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=[character(450, 355, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
+            npc=[character(440, 250, os.path.join("fenrir/resources/chars/gargoyle/gargoyle.png"), 1,
                            [["knight", "chars/knight/knight_menu.png"], ["archer", "chars/archer/archer_menu.png"],
                             ["mage", "chars/mage/mage_menu.png"]], False, True,
                            ["Hello Gabe, do you wanna go to the combat phase?",
@@ -202,12 +204,25 @@ class OverworldScene(Scene):
 
         Music.play_song(self.active_world.music)
 
+        self.worlds = []
+        self.worlds.append(self.hub_world)
+        self.worlds.append(self.ashlands)
+        self.worlds.append(self.atlantis_world)
+        self.worlds.append(self.dark_dimension)
+        self.worlds.append(self.dark_dimension_boss)
+
         # Default npc scale and position
-        if self.active_world.npc:
-            for i in range(len(self.active_world.npc)):
-                # NPC faces to the left (True) and is not flipped (False)
-                self.active_world.npc[i].sprite = pygame.transform.flip(self.active_world.npc[i].sprite, True, False)
-                self.active_world.npc[i].sprite = pygame.transform.scale(self.active_world.npc[i].sprite, (75, 75))
+        for world in self.worlds:
+            if world.npc:
+                for i in range(len(world.npc)):
+                    # NPC faces to the left (True) and is not flipped (False)
+                    world.npc[i].sprite = pygame.transform.flip(world.npc[i].sprite, True, False)
+                    if world.map_name == "dark_dimension_boss":
+                        print("Gargoyle")
+                        world.npc[i].sprite = pygame.transform.scale(world.npc[i].sprite, (70, 70))
+                        self.dark_dimension_boss = world
+                    else:
+                        world.npc[i].sprite = pygame.transform.scale(world.npc[i].sprite, (75, 75))
 
         self.show_controls = False
         self.show_characters = True

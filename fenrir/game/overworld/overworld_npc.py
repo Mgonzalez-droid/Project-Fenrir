@@ -6,6 +6,7 @@ class overworld_npc:
     def __init__(self, x, y,  filename, level, party, show_interaction, is_choice, dialogue):
         self.__x = x
         self.__y = y
+        self.__filename = filename
         self.__sprite = pygame.image.load(filename)
         self.__level = level
         self.__party = party
@@ -28,6 +29,14 @@ class overworld_npc:
     @y.setter
     def y(self, y):
         self.__y = y
+
+    @property
+    def filename(self):
+        return self.__filename
+
+    @filename.setter
+    def filename(self, filename):
+        self.__filename = filename
 
     @property
     def sprite(self):

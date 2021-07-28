@@ -458,7 +458,8 @@ class OverworldScene(Scene):
                                 if event.key == pygame.K_2:
                                     self.show_textbox = False
                             else:
-                                if event.key == pygame.K_SPACE and self.text_index < len(self.active_world.npc[i].dialogue):
+                                if event.key == pygame.K_SPACE and \
+                                        self.text_index < len(self.active_world.npc[i].dialogue):
                                     self.text_index += 1
 
             if self._quit_screen:
@@ -511,9 +512,8 @@ class OverworldScene(Scene):
 
             # If the game was won display victory message
             if self.game_state.final_victory == 1:
-                self.textbox.draw_dialogue("Congratulations Gabe, you saved the world from the forces of evil! "
-                                           "Now you are free to roam freely around the world and challenge again the "
-                                           "obstacles in your way.", 24, 200, 397)
+                self.textbox.draw_dialogue("Congratulations Gabe, you saved the world from the forces of evil!"
+                                           , 24, 200, 397)
             else:  # Display regular messages
                 # If the npc need the player to take a choice
                 for i in range(len(self.active_world.npc)):

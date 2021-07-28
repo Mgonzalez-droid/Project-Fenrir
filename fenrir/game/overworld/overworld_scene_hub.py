@@ -10,7 +10,8 @@ from fenrir.common.config import Colors, PATH_TO_RESOURCES
 from fenrir.common.TextBox import TextBox
 from fenrir.common.music import Music
 from fenrir.game.overworld.overworld_npc import overworld_npc as character
-from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
+# from fenrir.game.overworld.overworld_npc_animated import overworld_npc_animated as character_animated
+from fenrir.game.overworld.overworld_hero_animated import overworld_hero_animated as hero
 from fenrir.game.overworld.overworld_boundaries import Boundaries
 from fenrir.game.overworld.overworld_collisions import Collision
 from fenrir.game.overworld.overworld_obstacle import overworld_obstacle as obstacle
@@ -186,13 +187,10 @@ class OverworldScene(Scene):
         # TODO: Need to add secondary list and behavior for entries...
 
         self.level = self.game_state.player_level
-        self.hero = character_animated(self.active_world.hero_spawn[0], self.active_world.hero_spawn[1],
+        self.hero = hero(self.active_world.hero_spawn[0], self.active_world.hero_spawn[1],
                                        os.path.join(PATH_TO_RESOURCES, "gabe_best_resolution.png"),
                                        self.game_state.player_level, [],
                                        False, False, [])
-
-        self.hero.sprite_names = ["gabe_stance_0.png", "gabe_stance_1.png", "gabe_stance_2.png", "gabe_stance_3.png",
-                                  "gabe_stance_4.png", "gabe_stance_5.png", "gabe_stance_6.png"]
 
         self.hero.party = self.formatted_hero_party()
         # pygame.mixer.init()
@@ -215,6 +213,21 @@ class OverworldScene(Scene):
         self.show_hud = True
         self.show_textbox = False
         self.show_inventory = False
+        self.hit_boundary = False
+        self.hit_boundary_name = ""
+        self.hit_boundary_undo = False
+        self.obstacle_lock_key_left = False
+        self.obstacle_lock_key_right = False
+        self.obstacle_lock_key_up = False
+        self.obstacle_lock_key_down = False
+        self.obstacle_solution_key = ""
+        self.window_boundary_lock_key_left = False
+        self.window_boundary_lock_key_right = False
+        self.window_lock_key_up = False
+        self.window_lock_key_down = False
+        self.window_lock_key_left = False
+        self.window_lock_key_right = False
+        self.window_solution_key = ""
 
         # Inventory system
         self.inventory = Inventory(self.textbox, self.hero.party, self.game_state.all_heroes)
@@ -224,50 +237,173 @@ class OverworldScene(Scene):
         self.enemy_index = 0
 
     def handle_event(self, event):
-
+        '''
+        print("hero: hero.x: ", self.hero.x, end='')
+        print(" hero.y: ", self.hero.y, end='')
+        print(" hero.rect.x: ", self.hero.rect.x, end='')
+        print(" hero.rect.y: ", self.hero.rect.y,)
+        '''
         # TRACK MOVEMENT
         # Boundaries class prevent the player character to move outside the current window
         boundaries = Boundaries(self.screen, self.hero)
 
         # Player check player movement for up (w), down (s), left (a), right (d)
-        keys = pygame.key.get_pressed()
+        # keys = pygame.key.get_pressed()
+
+        past_LEFT = self.hero.LEFT_KEY
+        past_RIGHT = self.hero.RIGHT_KEY
+        past_UP = self.hero.UP_KEY
+        past_DOWN = self.hero.DOWN_KEY
+        hit_key = ""
 
         if not self.show_controls and not self.show_textbox and not self.show_inventory and not self._quit_screen:
-            if keys[pygame.K_w]:
-                self.hero.y = boundaries.collision_up()  # Check if player hits top of window
 
-                if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
-                    # For debugging purposes
-                    print("player hit barrier up")
-                    self.hero.y += 10
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a and not self.obstacle_lock_key_left and not self.window_lock_key_left:  # LEFT
+                    self.hero.LEFT_KEY, self.hero.FACING_LEFT = True, True
+                    hit_key = "left"
 
-                self.hero.adjust_movement()
-            if keys[pygame.K_s]:
-                self.hero.y = boundaries.collision_down()  # Check if player hits bottom of window
+                    if self.obstacle_solution_key == hit_key:
+                        print("unlocked RIGHT key")
+                        self.obstacle_lock_key_right = False
+                        self.obstacle_solution_key = ""
 
-                if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
-                    # For debugging purposes
-                    print("player hit barrier down")
-                    self.hero.y -= 10
+                    if self.window_solution_key == hit_key:
+                        print("unlocked RIGHT key")
+                        self.window_lock_key_right = False
+                        self.window_solution_key = ""
 
-                self.hero.adjust_movement()
-            if keys[pygame.K_a]:
-                self.hero.x = boundaries.collision_left()  # Check if player hits left of window
-                if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
-                    # For debugging purposes
-                    print("player hit barrier left")
-                    self.hero.x += 10
+                if event.key == pygame.K_d and not self.obstacle_lock_key_right and not self.window_lock_key_right:  # RIGHT
+                    # self.hero.rect.x = boundaries.collision_right()  # Check if player hits top of window
+                    self.hero.RIGHT_KEY, self.hero.FACING_LEFT = True, False
+                    hit_key = "right"
 
-                self.hero.adjust_movement()
-            if keys[pygame.K_d]:
-                self.hero.x = boundaries.collision_right()  # Check if player hits right of window
+                    if self.obstacle_solution_key == "right":
+                        print("unlocked LEFT key")
+                        self.obstacle_lock_key_left = False
+                        self.obstacle_solution_key = ""
 
-                if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
-                    # For debugging purposes
-                    print("player hit barrier right")
-                    self.hero.x -= 10
+                    if self.window_solution_key == "right":
+                        print("unlocked LEFT key")
+                        self.window_lock_key_left = False
+                        self.window_solution_key = ""
 
-                self.hero.adjust_movement()
+                if event.key == pygame.K_w and not self.obstacle_lock_key_up and not self.window_lock_key_up:  # UP
+                    # self.hero.rect.y = boundaries.collision_up()  # Check if player hits top of window
+                    self.hero.UP_KEY, self.hero.FACING_LEFT = True, self.hero.FACING_LEFT
+                    hit_key = "up"
+
+                    if self.obstacle_solution_key == hit_key:
+                        print("unlocked DOWN key")
+                        self.obstacle_lock_key_down = False
+                        self.obstacle_solution_key = ""
+
+                    if self.window_solution_key == hit_key:
+                        print("unlocked DOWN key")
+                        self.window_lock_key_down = False
+                        self.window_solution_key = ""
+
+                if event.key == pygame.K_s and not self.obstacle_lock_key_down and not self.window_lock_key_down:  # DOWN
+                    # self.hero.rect.y = boundaries.collision_down()  # Check if player hits bottom of window
+                    self.hero.DOWN_KEY, self.hero.FACING_LEFT = True, self.hero.FACING_LEFT
+                    hit_key = "down"
+
+                    if self.obstacle_solution_key == hit_key:
+                        print("unlocked UP key")
+                        self.obstacle_lock_key_up = False
+                        self.obstacle_solution_key = ""
+
+                    if self.window_solution_key == hit_key:
+                        print("unlocked UP key")
+                        self.window_lock_key_up = False
+                        self.window_solution_key = ""
+
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_a:  # LEFT
+                    self.hero.LEFT_KEY = False
+                elif event.key == pygame.K_d:  # RIGHT
+                    self.hero.RIGHT_KEY = False
+                if event.key == pygame.K_w:  # LEFT
+                    self.hero.UP_KEY = False
+                elif event.key == pygame.K_s:  # RIGHT
+                    self.hero.DOWN_KEY = False
+
+        # Update initial movement, update again later if we hit a barrier
+        self.hero.update()
+
+        # Check window barriers
+        if boundaries.collision_left():
+            print("hit LEFT side of screen")
+            self.window_solution_key = "right"
+            self.window_lock_key_left = True
+            print("WINDOW: Locked left key", "solution_key: ", self.window_solution_key)
+            # Force key up UP
+            self.hero.LEFT_KEY = False
+        if boundaries.collision_right():
+            print("hit RIGHT side of screen")
+            self.window_solution_key = "left"
+            self.window_lock_key_right = True
+            print("WINDOW: Locked right key", "solution_key: ", self.window_solution_key)
+            # Force key up UP
+            self.hero.RIGHT_KEY = False
+        if boundaries.collision_up():
+            print("hit TOP side of screen")
+            self.window_solution_key = "down"
+            self.window_lock_key_up = True
+            print("WINDOW: Locked up key", "solution_key: ", self.window_solution_key)
+            # Force key up UP
+            self.hero.UP_KEY = False
+        if boundaries.collision_down():
+            print("hit BOTTOM side of screen")
+            self.window_solution_key = "up"
+            self.window_lock_key_down = True
+            print("WINDOW: Locked down key", "solution_key: ", self.window_solution_key)
+            # Force key up UP
+            self.hero.DOWN_KEY = False
+        #update movement if we hit a barrier
+        self.hero.update()
+
+
+        # If there is an obstacle in the world
+        if self.active_world.obstacles:
+            for i in range(len(self.active_world.obstacles)):
+                if self.collision.barrier_collision(self.hero, self.active_world.obstacles[i]):
+                    print("\n\n\nplayer hit in world obstacle")
+                    if self.collision.hit_wall == "top":
+                        print("\n\nhit top wall")
+                        self.obstacle_solution_key = "down"
+                        self.obstacle_lock_key_up = True
+                        print("Locked up key", "solution_key: ", self.obstacle_solution_key)
+                        # Force key up UP
+                        self.hero.UP_KEY = False
+
+                    if self.collision.hit_wall == "bottom":
+                        print("\n\nhit bottom wall")
+                        self.obstacle_solution_key = "up"
+                        self.obstacle_lock_key_down = True
+                        print("Locked down key", "solution_key: ", self.obstacle_solution_key)
+                        # Force key up DOWN
+                        self.hero.DOWN_KEY = False
+
+                    if self.collision.hit_wall == "left":
+                        print("\n\nhit left wall")
+                        self.obstacle_solution_key = "right"
+                        self.obstacle_lock_key_left = True
+                        print("Locked left key", "solution_key: ", self.obstacle_solution_key)
+                        # Force key up LEFT
+                        self.hero.LEFT_KEY = False
+
+                    if self.collision.hit_wall == "right":
+                        print("\n\nhit right wall")
+                        self.obstacle_solution_key = "left"
+                        self.obstacle_lock_key_right = True
+                        print("Locked right key", "solution_key: ", self.obstacle_solution_key)
+                        # Force key up RIGHT
+                        self.hero.RIGHT_KEY = False
+
+                    self.hero.update()
+
+        self.collision.hit_wall = ""
 
         # If there is an npc in the world
         if self.active_world.npc:
@@ -337,8 +473,10 @@ class OverworldScene(Scene):
                     print("You are in the", self.game_state.game_state_current_map)
                     self.active_world.hero_spawn = [450, 30]
 
+            self.hero.rect.x = self.active_world.hero_spawn[0]
             self.hero.x = self.active_world.hero_spawn[0]
-            self.hero.y = self.active_world.hero_spawn[1]
+            self.hero.rect.y = self.active_world.hero_spawn[1]
+            self.hero.y = self.active_world.hero_spawn[0]
 
         # TRACK INTERACTION
         if event.type == pygame.KEYDOWN:  # Press Enter or Esc to go back to the Main Menu
@@ -440,10 +578,17 @@ class OverworldScene(Scene):
                 if event.key == pygame.K_s:
                     self.quit_game(True)
 
+
     def render(self):
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self.background, (0, 0))
-        self.hero.play_animation()
+        # self.hero.play_animation()
+
+        #if self.hit_boundary:
+           #print("movement locked")
+        #else:
+        #self.hero.update()
+        #self.hero.draw(self.screen)
 
         if self.show_hud:
             self.screen.blit(self.control_hud, (733, 0))
@@ -454,7 +599,8 @@ class OverworldScene(Scene):
 
         # Display hero and npcs
         if self.show_characters:
-            self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
+            #self.screen.blit(self.hero.sprite, (self.hero.x, self.hero.y))
+            self.hero.draw(self.screen)
             # If there is an npc on the map
             if self.active_world.npc:
                 for i in range(len(self.active_world.npc)):
@@ -524,8 +670,8 @@ class OverworldScene(Scene):
     """
 
     def update_game_state(self):
-        self.game_state.game_state_location_x = self.hero.x
-        self.game_state.game_state_location_y = self.hero.y
+        self.game_state.game_state_location_x = self.hero.rect.x
+        self.game_state.game_state_location_y = self.hero.rect.y
 
         self.game_state.player_party.clear()
         self.game_state.enemy_party.clear()

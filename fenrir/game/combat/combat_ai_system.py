@@ -49,6 +49,7 @@ class CombatAISystem:
         self.enemyNextToMe = False
         self.startNode = None
         self.endNode = None
+        self.closestNode = None
         self.listToSearch = None
         self._goalX = None
         self._goalY = None
@@ -105,6 +106,8 @@ class CombatAISystem:
                 self.startNode.set_distanceToGoal(self.enemyX, self.enemyY)
                 self.listToSearch.append(node)
 
+        self.closestNode = self.startNode
+
         while len(self.listToSearch) > 0:
             currentNode = self.listToSearch[0]
             currentNodeIndex = 0
@@ -117,6 +120,9 @@ class CombatAISystem:
                     currentNodeIndex = counter
                 counter += 1
             self.listToSearch.pop(currentNodeIndex)
+
+            if currentNode.get_distanceToGoal() < self.closestNode.get_distanceToGoal():
+                self.closestNode = currentNode
 
             # Found the enemy position in the nodeTree
             if currentNode.get_xPos() == self.enemyX and currentNode.get_yPos() == self.enemyY:
@@ -147,6 +153,9 @@ class CombatAISystem:
                         neighbor.set_givenCost(nodeGivenCost)
                         neighbor.set_parent(currentNode)
                         neighbor.set_finalCost()
+
+        if self.endNode is None:
+            self.endNode = self.closestNode
 
     def set_enemy_path_distance(self):
         counter = 0
@@ -194,7 +203,10 @@ class CombatAISystem:
                     return self._goalX, self._goalY, None
                 else:
                     self.set_ai_goal_position(self.me.move_range)
-                    return self._goalX, self._goalY, self.enemy.get_id()
+                    if abs(self._goalX - self.enemyX) + abs(self._goalY - self.enemyY) > 1:
+                        return self._goalX, self._goalY, None
+                    else:
+                        return self._goalX, self._goalY, self.enemy.get_id()
             else:
                 if self.enemyPathDistance > self.me.move_range:
                     self.set_ai_goal_position(self.me.move_range + math.floor(self.me.move_range * .5))

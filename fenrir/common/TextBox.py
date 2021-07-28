@@ -35,7 +35,7 @@ class TextBox:
     def draw_dialogue(self, text, size, x, y):
         # The current text box can take 72 characters per line
         # keys = pygame.key.get_pressed()
-        chars_per_line = 71
+        chars_per_line = 48
         lines = [text[i:i + chars_per_line] for i in range(0, len(text), chars_per_line)]
         font = pygame.font.Font(os.path.join(PATH_TO_RESOURCES, "fonts/Peepo.ttf"), size)
 
@@ -46,7 +46,7 @@ class TextBox:
             dialogue = font.render(line, True, (0, 0, 0))
             self.screen.blit(dialogue, (x, y - line_height))
             # Next line of text will be below the line before it
-            line_height = line_height - 16
+            line_height = line_height - 25
 
     # Draws a questions and several choices for the player to pick
     def draw_options(self, question, options, size, x, y):

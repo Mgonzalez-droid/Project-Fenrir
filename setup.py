@@ -7,14 +7,20 @@ def read(name):
 
 
 setup(
-    name="Project Fenrir",
+    name="fenrir",
     version="0.0.1",
     author=["Victor Sotomayor Monroy", "Michel Gonzalez", "Barry Congressi", "Bryan Kristofferson", "Roberto Rafael Edde Verde"],
     author_email="victor@ufl.edu",
     description="A fantasy turn-based role-playing game",
     long_description=read('README.md'),
-    lisence="MIT",
+    license="MIT",
     url="https://github.com/Mgonzalez-droid/Project-Fenrir",
     packages=find_packages(),
-    install_requires=["pygame"]
+    install_requires=["pygame"],
+
+    entry_points={
+        "console_scripts": [
+            "fenrir = fenrir.app:run"
+        ]
+    }
 )

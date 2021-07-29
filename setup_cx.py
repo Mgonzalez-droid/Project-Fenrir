@@ -14,5 +14,5 @@ setup(
     version="1.0",
     description="A fantasy turn-based role-playing game",
     options={"build_exe": build_exe_options},
-    executables=[Executable("ProjectFen.py", base=base, targetName="Fenrir.exe")]
+    executables=[Executable("projectfen.py", base=base, targetName="Fenrir.exe")]
 )

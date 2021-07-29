@@ -42,21 +42,21 @@ class OverworldScene(Scene):
             # FILL in with npc data:
             # (x, y, png name, level, party members[], can you interact with npc? (boolean 1),
             # is just text or a choice for the player? (boolean 2), dialogue[])
-            npc=[character("Sensei", 880, 255, os.path.join("fenrir/resources/chars/sensei/sensei.png"), 1,
+            npc=[character("Sensei", 880, 255, os.path.join(PATH_TO_RESOURCES, "chars", "sensei", "sensei.png"), 1,
                            [["knight", "chars/knight/knight_menu.png"]], False, True,
                            ["Hello Gabe, do you wanna go to the combat phase?",
                             "[1] Yes, I am ready to go to the combat phase", "[2] No, I want to keep walking here"]),
-                 character("Mani", 450, 400, os.path.join("fenrir/resources/chars/mani/mani.png"), 1,
+                 character("Mani", 450, 400, os.path.join(PATH_TO_RESOURCES, "chars", "mani", "mani.png"), 1,
                            [["knight", "chars/knight/knight_menu.png"]], False, False,
                            ["Hello Gabe, do you wanna go to the combat phase?",
                             "I am joking, I can't fight today", "Good luck in your adventure!"]),
-                 character("Old Sage", 250, 200, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
+                 character("Old Sage", 250, 200, os.path.join(PATH_TO_RESOURCES, "chars", "hat-guy", "hat-guy.png"), 1,
                            [["mage", "chars/mage/mage_menu.png"]], False, True,
                            ["Fight?",
                             "[1] Yes", "[2] Later"])
                  ],
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/hub_world.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps", "hub_world.png")),
             music="Windless Slopes"
         )
 
@@ -79,12 +79,12 @@ class OverworldScene(Scene):
             entry_dests=[],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=[character("Old Sage", 350, 430, os.path.join("fenrir/resources/chars/hat-guy/hat-guy.png"), 1,
+            npc=[character("Old Sage", 350, 430, os.path.join(PATH_TO_RESOURCES, "chars", "hat-guy", "hat-guy.png"), 1,
                            [["mage", "chars/mage/mage_menu.png"]], False, True,
                            ["Wanna fight?", "[1] Yes", "[2] No"])
                  ],
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/ashlands.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps", "ashlands.png")),
             music="Windless Slopes"
         )
 
@@ -114,12 +114,12 @@ class OverworldScene(Scene):
             ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=[character("Mermaid", 439, 230, os.path.join("fenrir/resources/chars/mermaid/mermaid.png"), 1,
+            npc=[character("Mermaid", 439, 230, os.path.join(PATH_TO_RESOURCES, "chars", "mermaid", "mermaid.png"), 1,
                            [["archer", "chars/archer/archer_menu.png"]], False, True,
                            ["Fight?", "[1] Yeah", "[2] Nope"])
                  ],
             hero_spawn=(400, 25),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/atlantis.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps", "atlantis.png")),
             music="Windless Slopes"
         )
 
@@ -139,7 +139,7 @@ class OverworldScene(Scene):
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
             npc="",
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark_dimension.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps" , "dark_dimension.png")),
             music="Windless Slopes"
         )
 
@@ -157,14 +157,14 @@ class OverworldScene(Scene):
                          ],
             # FILL in with npc data:
             # (x, y, png name, level, party members[], is just text or a choice for the player? (boolean), dialogue[])
-            npc=[character("Gargoyle", 377, 100, os.path.join("fenrir/resources/chars/gargoyle/gargoyle.png"), 1,
+            npc=[character("Gargoyle", 377, 100, os.path.join(PATH_TO_RESOURCES, "chars", "gargoyle", "gargoyle.png"), 1,
                            [["knight", "chars/knight/knight_menu.png"], ["archer", "chars/archer/archer_menu.png"],
                             ["mage", "chars/mage/mage_menu.png"]], False, True,
                            ["Hello Gabe, do you wanna go to the combat phase?",
                             "[1] Yes, I am ready to go to the combat phase", "[2] No, I want to keep walking here"])
                  ],
             hero_spawn=(406, 400),
-            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps/dark_dimension_boss.png")),
+            background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps", "dark_dimension_boss.png")),
             music="Windless Slopes"
         )
 

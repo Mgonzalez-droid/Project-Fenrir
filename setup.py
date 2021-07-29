@@ -3,7 +3,7 @@ import os
 
 
 def read(name):
-    return open(os.path.join(os.path.dirname(__file__), name)).read()
+    return open(os.path.join(os.path.dirname(__file__), name)).read()ga
 
 setup(
     name="fenrir",

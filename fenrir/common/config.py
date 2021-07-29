@@ -2,12 +2,32 @@
 central location
 """
 import os
+import sys
 from enum import Enum
 
 GAME_TITLE = "Project Fenrir"
 
-PATH_TO_RESOURCES = os.path.join("fenrir", "resources")
-PATH_TO_DATABASE = os.path.join("db", "fenrir.db")
+
+def find_abs_file_path():
+    if getattr(sys, "frozen", False):
+        # The application is frozen
+        datadir = os.path.join(os.path.dirname(sys.executable), 'lib')
+        print(datadir, "frozen")
+    else:
+        # The application is not frozen
+        # Change this bit to match where you store your data files:
+        datadir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        print(datadir, "regular")
+    return datadir
+
+
+abs_path = find_abs_file_path()
+
+PATH_TO_RESOURCES = os.path.join(abs_path, "fenrir", "resources")
+print(PATH_TO_RESOURCES, "resources")
+PATH_TO_DATABASE = os.path.join(abs_path, "db", "fenrir.db")
+print(PATH_TO_DATABASE, "db")
+
 
 # screen resolution for game to be displayed, set in app.py
 class DisplaySettings(Enum):

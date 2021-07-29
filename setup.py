@@ -5,7 +5,6 @@ import os
 def read(name):
     return open(os.path.join(os.path.dirname(__file__), name)).read()
 
-
 setup(
     name="fenrir",
     version="0.0.1",
@@ -17,6 +16,7 @@ setup(
     url="https://github.com/Mgonzalez-droid/Project-Fenrir",
     packages=find_packages(),
     install_requires=["pygame"],
+    include_package_data=True,
 
     entry_points={
         "console_scripts": [

@@ -7,7 +7,7 @@ from enum import Enum
 GAME_TITLE = "Project Fenrir"
 
 PATH_TO_RESOURCES = os.path.join("fenrir", "resources")
-
+PATH_TO_DATABASE = os.path.join("db", "fenrir.db")
 
 # screen resolution for game to be displayed, set in app.py
 class DisplaySettings(Enum):

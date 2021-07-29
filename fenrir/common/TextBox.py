@@ -42,8 +42,7 @@ class TextBox:
     # Draw text
     def draw_dialogue(self, text, size, x, y):
         # The current text box can take 72 characters per line
-        # keys = pygame.key.get_pressed()
-        chars_per_line = 48
+        chars_per_line = 52
         lines = [text[i:i + chars_per_line] for i in range(0, len(text), chars_per_line)]
         font = pygame.font.Font(os.path.join(PATH_TO_RESOURCES, "fonts/Peepo.ttf"), size)
 

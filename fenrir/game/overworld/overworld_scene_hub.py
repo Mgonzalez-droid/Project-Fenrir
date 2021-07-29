@@ -40,7 +40,7 @@ class OverworldScene(Scene):
             ],
             entry_dests=[],
             # FILL in with npc data:
-            # (x, y, png name, level, party members[], can you interact with npc? (boolean 1),
+            # character(npc name, x, y, png name, level, party members[], can you interact with npc? (boolean 1),
             # is just text or a choice for the player? (boolean 2), dialogue[])
             npc=[character("Sensei", 880, 255, os.path.join(PATH_TO_RESOURCES, "chars", "sensei", "sensei.png"), 1,
                            [["knight", "chars/knight/knight_menu.png"]], False, True,

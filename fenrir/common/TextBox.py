@@ -15,7 +15,9 @@ class TextBox:
     def load_image(self, x_pos, y_pos, x_scale, y_scale, image):
 
         # Load text box png
-        if image.count('/') == 1:
+        if image.count('/') == 0:
+            self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, image))
+        elif image.count('/') == 1:
             path = image.split('/')
             self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, path[0], path[1]))
         elif image.count('/') == 2:

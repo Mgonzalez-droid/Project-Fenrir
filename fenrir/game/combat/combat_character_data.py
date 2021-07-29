@@ -13,9 +13,6 @@ class CombatCharacterData:
     :param char_id: (int) given id value for the new character.
     :param char_type: (string) the class the unit should be set to 'knight','archer', or 'mage'.
     :param level: (int) level for the new character (can be updated later).
-    :param hp: (float) hp for the new character (can be updated later).
-    :param speed: (float) speed/initiative value for the new character (can be updated later).
-    :param attack: (float) base attack value for new character (can be updated later).
     :param enemy: (boolean) determine if character is enemy. Defaults to false.
 
     Other non-param values:
@@ -25,15 +22,13 @@ class CombatCharacterData:
     :move_range: (int) the distance the unit can move in a battle turn.
     :attack_range: (int) the distance the unit can hit other units from.
     :luck: (int) value provided to the combat system for a chance of an incoming attack to miss.
-    :moveable_tiles: (???)
-    :attackable_tiles: (???)
     :mana: (float) the total amount of energy available to a mage unit.
     :magic_attack: (float) base damage for magic type attacks.
     :magic_defense: (float) base magic defense from magic attacks.
     :defense: (float) base defense from physical type attacks.
     """
 
-    def __init__(self, char_id, char_type, level, hp, speed, attack, enemy=False):
+    def __init__(self, char_id, char_type, level=1, enemy=False):
 
         # id info
         self._id = char_id
@@ -43,11 +38,12 @@ class CombatCharacterData:
 
         # general character traits
         self._level = level
-        self._hp = hp
-        self._speed = speed
+        self._max_hp = 0
+        self._hp = 0
+        self._speed = 0
         self._move_range = 0
         self._attack_range = 0
-        self._luck = 1
+        self._luck = 0
         self._movable_tiles = []
         self._attackable_tiles = []
 
@@ -55,7 +51,7 @@ class CombatCharacterData:
         self._mana = 0
         self._magic_attack = 0
         self._magic_defense = 0
-        self._attack = attack
+        self._attack = 0
         self._defense = 0
 
         self.character_class_setup_by_type()
@@ -92,6 +88,14 @@ class CombatCharacterData:
     @hp.setter
     def hp(self, newHp):
         self._hp = newHp
+
+    @property
+    def max_hp(self):
+        return self._max_hp
+
+    @max_hp.setter
+    def max_hp(self, newMaxHp):
+        self._max_hp = newMaxHp
 
     @property
     def speed(self):
@@ -173,67 +177,53 @@ class CombatCharacterData:
     def ypos(self):
         return self.rect.centery
 
-    def level_up(self, numberOfLevels=1):
-        """Updates character attributes a number of times = numberOfLevels. This updates: level, hp, speed, luck, mana,
-        magic_attack, magic_defense, attack, and defense."""
-        self.level += numberOfLevels
-        self.speed += numberOfLevels
-        self.luck += numberOfLevels
-        self.hp += (numberOfLevels * 5)
-        if self._type == 'mage':
-            self._mana += (numberOfLevels * 5)
-            self.magic_attack += (numberOfLevels * 5)
-            self.magic_defense += (numberOfLevels * 3)
-            self.attack += numberOfLevels
-        elif self._type == 'knight':
-            self.attack += (numberOfLevels * 5)
-            self.defense += (numberOfLevels * 4)
-        elif self._type == 'archer':
-            self.attack += (numberOfLevels * 5)
-            self.defense += (numberOfLevels * 3)
-
     def character_class_setup_by_type(self):
-        """function sets non-defined traits based on given info when character is constructed
+        """function sets all stats based on given level when character is constructed.
         """
-        if self._type == 'knight':
-            self.attack_range = 1
-            self.move_range = 4
-            self.defense = self.attack - 1
-        elif self._type == 'archer':
-            self.attack_range = 4
-            self.move_range = 1
-            self.defense = self.attack - 3
-            if self._enemy:
-                self.defense = self.attack - 2
-        elif self._type == 'mage':
-            self.attack_range = 3
-            self.move_range = 2
-            self.magic_attack = self.attack
-            self.attack = 1
-            self.magic_defense = self.magic_attack - 1
-            self.mana = math.floor(self.level * 2.5)
-            if self._enemy:
-                self.magic_defense = self.magic_attack
-                self.mana = self.level * 3
-        if self.magic_attack <= 0:
-            self.magic_attack = 1
-        if self.magic_defense < 0:
-            self.magic_defense = 1
-        if self.attack <= 0:
-            self.attack = 1
-        if self.defense < 0:
-            self.defense = 1
+        # All characters have same HP at a given level
+        self.max_hp = 75 + (self.level * 25)
+        self.hp = self.max_hp
 
-    def check_if_incoming_attack_misses(self, incomingAttackValue, attackType):
+        # Luck increases 1 each level 3 times then freezes 1 level. So luck doesn't change for levels 4, 8, 12, 16,...
+        self._luck = math.ceil(self.level * .75)
+
+        # knight move is always 4 and range is always 1
+        # archer move is always 1 and range is always 4
+        # mage   move is always 2 and range is always 3
+        if self._type == 'knight':
+            self._move_range = 4
+            self._attack_range = 1
+            self._attack = 20 + (self.level * 3)
+            self._defense = 10 + (self.level * 7)
+            self._speed = 5 + (self.level * 5)
+        elif self._type == 'archer':
+            self.move_range = 2
+            self.attack_range = 4
+            self.attack = 10 + (self.level * 5)
+            self.defense = 20 + (self.level * 5)
+            self._speed = 20 + (self.level * 5)
+        elif self._type == 'mage':
+            self.move_range = 2
+            self.attack_range = 3
+            self.magic_attack = 15 + (self.level * 7)
+            self.magic_defense = 15 + (self.level * 3)
+            self._speed = 15 + (self.level * 5)
+
+        if self.get_is_enemy():
+            self.attack = self.attack + (math.ceil(self.level/5) - 1) * 2
+            self.defense = self.defense + (math.ceil(self.level/5) - 1) * 2
+            self.magic_attack = self.magic_attack + (math.ceil(self.level/5) - 1) * 2
+            self.magic_defense = self.magic_defense + (math.ceil(self.level/5) - 1) * 2
+            self.max_hp = self.max_hp + (math.ceil(self.level/5) - 1) * 5
+            self.hp = self.max_hp
+
+    def check_if_incoming_attack_misses(self, incomingAttackValue):
         """function to calculate chance that an attack misses the character (calculated value must be less than 2 to miss)
         """
-        attackModifier = incomingAttackValue / 100
-        if attackType == 'magic':
-            attackModifier *= 2
-        else:
-            attackModifier *= 1.5
-        chanceTheyMissed = random.uniform(0, 10) + attackModifier - (self.luck / 5)
-        if chanceTheyMissed <= 2:
+        # TODO this function needs to be reworked to scale correctly
+        attackModifier = (incomingAttackValue / 100) * 1.5
+        chanceTheyMissed = random.uniform(0, 10) + attackModifier + (self.luck / 5)
+        if chanceTheyMissed <= 2 * self.luck:
             return True
         return False
 
@@ -241,42 +231,17 @@ class CombatCharacterData:
         """Calculate the damage an incoming attack does on the character and update the hp value. Returns 0, 1 or 2 for
         miss, hit or critical hit respectively.
         """
-        damage = 0
-        if attackType == 'magic':
-            damage = incomingAttackValue - self.magic_defense
+        damage = incomingAttackValue
+        if attackType == 'magic' and self._type == "mage":
+            damage = damage - math.floor(self.magic_defense / 2)
         elif attackType == 'physical':
-            damage = incomingAttackValue - self.defense
-        didTheyMiss = self.check_if_incoming_attack_misses(incomingAttackValue, attackType)
-        if not didTheyMiss:
-            damageSuccess = 1
-            self.hp -= damage
-            if self.hp <= 0:
-                self.hp = 0
-                self.alive = False
-                damageSuccess = 2
-        else:
-            damageSuccess = 0
+            damage = damage - math.floor(self.defense / 2)
+        # didTheyMiss = self.check_if_incoming_attack_misses(damage)
+        if damage < 5:
+            damage = 5
+        self.hp -= damage
+        if self.hp <= 0:
+            self.hp = 0
+            self.alive = False
 
-    # NOTE: selectable_tiles should be an EMPTY list (either movable or attackable tiles)
-    # If they aren't empty they SHOULD BE CLEARED before using them as a param for this function
-    # Tilemap has to be accessed as tilemap[y][x], it HAS to be backwards
-    def find_tiles_in_range(self, input_range, selectable_tiles, combat_map, select_type="movement"):
-        range_counter = input_range
-        if range_counter > 0:
-            for tile in combat_map.tilemap[int((self.ypos - 30) / 60)][int((self.xpos - 30) / 60)].adjacencies:
-                _unique = True
-                for tile_c in selectable_tiles:
-                    if tile_c.id == tile.id:
-                        _unique = False
-                if _unique:
-                    if select_type == "movement":
-                        if not tile.is_blocking or not tile.is_wall:
-                            selectable_tiles.append(tile)
-                    elif select_type == "attack":
-                        if not tile.is_wall:
-                            selectable_tiles.append(tile)
-            range_counter -= 1
-            selectable_tiles = self.find_tiles_in_range(range_counter, selectable_tiles, combat_map, select_type)
-            return selectable_tiles
-        else:
-            return selectable_tiles
+

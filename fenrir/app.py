@@ -2,19 +2,20 @@
 import os
 
 import pygame
-from fenrir.common.wsl import *
 from fenrir.common.config import *
 from fenrir.game.menu.menu_scene import MainMenuScene
 from fenrir.common.global_game_state import GameState
+from fenrir.data.db_connection import initialize_db
+
 
 def run():
-    # this is required to set display for xserver and wsl
-    set_display_to_host()
+    # this will initialize the database if not done
+    initialize_db()
 
     # initialize the pygame module
     pygame.init()
 
-    screen = pygame.display.set_mode(DisplaySettings.SCREEN_RESOLUTION.value)
+    screen = pygame.display.set_mode(DisplaySettings.SCREEN_RESOLUTION.value, pygame.DOUBLEBUF)
     clock = pygame.time.Clock()
 
     pygame.display.set_caption(GAME_TITLE)
@@ -40,4 +41,3 @@ def run():
 
         pygame.display.flip()
         clock.tick(DisplaySettings.FPS.value)
-

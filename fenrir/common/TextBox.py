@@ -1,7 +1,6 @@
 import pygame
 import os
 from fenrir.common.config import *
-from fenrir.common.wsl import *
 
 
 class TextBox:
@@ -13,9 +12,15 @@ class TextBox:
         self.text_box = " "
 
     # Load and scale Text box for dialogue
-    def load_textbox(self, x_pos, y_pos, x_scale, y_scale):
+    def load_image(self, x_pos, y_pos, x_scale, y_scale, image):
+
         # Load text box png
-        self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "UI/generic-rpg-ui-text-box.png"))
+        if image.count('/') == 1:
+            path = image.split('/')
+            self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, path[0], path[1]))
+        elif image.count('/') == 2:
+            path = image.split('/')
+            self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, path[0], path[1], path[2]))
 
         # Default Text box position on window
         if x_pos > self.text_box.get_width() and y_pos > self.text_box.get_height():
@@ -36,7 +41,7 @@ class TextBox:
     def draw_dialogue(self, text, size, x, y):
         # The current text box can take 72 characters per line
         # keys = pygame.key.get_pressed()
-        chars_per_line = 71
+        chars_per_line = 48
         lines = [text[i:i + chars_per_line] for i in range(0, len(text), chars_per_line)]
         font = pygame.font.Font(os.path.join(PATH_TO_RESOURCES, "fonts/Peepo.ttf"), size)
 
@@ -47,7 +52,7 @@ class TextBox:
             dialogue = font.render(line, True, (0, 0, 0))
             self.screen.blit(dialogue, (x, y - line_height))
             # Next line of text will be below the line before it
-            line_height = line_height - 16
+            line_height = line_height - 25
 
     # Draws a questions and several choices for the player to pick
     def draw_options(self, question, options, size, x, y):

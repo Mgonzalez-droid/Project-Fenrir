@@ -1,40 +1,46 @@
 """ .. module:: scene
     :synopsis: Module will load combat mode into game
-
 """
 
 import os
 import pygame
 from fenrir.common.scene import Scene
 from fenrir.common.TextBox import TextBox
-import fenrir.game.overworld.overworld_scene as overscene
-from fenrir.game.combat.combat_chars import MageChar, KnightChar
+import fenrir.game.overworld.overworld_scene_hub as overscene
+from fenrir.game.combat.combat_chars import ArcherChar, KnightChar, MageChar
 import fenrir.game.combat.combat_map_data as md
-from fenrir.common.config import Colors, PATH_TO_RESOURCES
+from fenrir.common.config import Colors, DisplaySettings, PATH_TO_RESOURCES, GameConstants
 from fenrir.game.combat.combat_initiative_system import CombatInitiativeSystem
-
-# Todo import ai node tree and instantiate it
+from fenrir.game.combat.combat_grid_system import CombatGridSystem
+from fenrir.game.combat.combat_move_list import combat_move_list
 from fenrir.game.combat.combat_ai_system import CombatAISystem
 from fenrir.game.combat.combat_ai_nodeTree import CombatAINodeTree
 
 
 class CombatScene(Scene):
 
-    def __init__(self, screen, game_state, map_name):
+    def __init__(self, screen, game_state):
         super().__init__(screen, game_state)
-        self._map_name = map_name
-        self._map = md.MapData(map_name, 16, 9)
+        self._map_name = "combat_" + self.game_state.game_state_current_map
+        self._map = md.MapData(self._map_name, 16, 9)
         self._ai_Tree_init = CombatAINodeTree(16, 9, self._map)
         self._ai_Tree = self._ai_Tree_init.get_ai_node_tree()
-        self._background = pygame.image.load(os.path.join(PATH_TO_RESOURCES, "combat_maps", str(map_name + ".png")))
-        self._participants = []
+        self._background = pygame.image.load(
+            os.path.join(PATH_TO_RESOURCES, "combat_maps", str(self._map_name + ".png")))
+        self._participants = self.add_participants()
         self._player_list = pygame.sprite.Group()
+        self._combat_grid_system = CombatGridSystem(9, 16, self.screen)
 
-        # Player char
-        self._participants.append(KnightChar(0, 5, False))
+        self._textbox = TextBox(self.screen)
+        # used to hide large prompt in middle of screen
+        self._hide_prompt = False
 
-        # Enemy char
-        self._participants.append(MageChar(1, 10, True))
+        # Play Music
+        pygame.mixer.init()
+        pygame.mixer.music.load(os.path.join(PATH_TO_RESOURCES, "soundtrack", "The Arrival (BATTLE II).wav"))
+        pygame.mixer.music.set_volume(.4)
+        pygame.mixer.music.play(-1)
+        self._sound_effects = {}
 
         # used for displaying on screen surface
         for player in self._participants:
@@ -46,8 +52,9 @@ class CombatScene(Scene):
         self.next_player = self.initiative_system.get_next_player_up()  # next player in the queue
 
         # key binding values
-        self.key_dict = {'UP': False, 'DOWN': False, 'LEFT': False, 'RIGHT': False, 'SELECT': False, 'BACK': False,
-                         '1': False, '2': False, '3': False, '4': False, '5': False}
+        self.key_dict = {'SELECT': False, 'BACK': False, '1': False, '2': False,
+                         '3': False, 'L_CLICK': False, 'R_CLICK': False, 'SPACE': False}
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
         # spawn players to the map
         self.spawn_participants()
@@ -63,40 +70,61 @@ class CombatScene(Scene):
         self.player_turn = False
 
         # used for player choices
+        self.wait_for_action = False  # This flag will prevent multiple inputs while an action is being animated
         self.player_attacking = False
         self.attack_complete = False
         self.player_moving = False
         self.move_complete = False
+        self.move_counter = 2
+        self.player_used_attack = False
         self.ai_thinking = False
         self.ai_completed_decision = True  # this flag will be set when AI is thinking and True when not thinking
         self.enemy_attack_after_move = False
-        self.movement_info = ""
-        self.attack_info = ""
 
         # used for enemy choices
         self.enemy_attacked = False
         self.enemy_moved = False
 
+        # ai values
+        self.ai_new_x = None
+        self.ai_new_y = None
+        self.target_to_attack = None
+        self.ai_brain = None
+        self.ai_first_pass = False
+        self.ai_turn_finished = False
+        self.ai_movement_finished = False
+        self.ai_attack_finished = False
+
         # game won info
         self.game_over = False
         self.player_won = False
+        # used to only play victory sound once
+        self.played_victory_sound = False
+
+        # used for killing players
+        self.dead_player = None
+
+        # quitting combat screen
+        self._quit_screen = False
+
+        # used for highlighting current player
+        self._highlight_curr_player = False
+        self._move_list = []
+        self._move_selected = False
+        self._attack_selected = False
 
     def handle_event(self, event):
         """Example event handling. Will return to main menu if you press q
         """
+
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                # currently the q button will quit and return to main menu
-                # TODO make a dialogue with text box (Are you sure? Yes/No) ...
-                self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
-            elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                self.key_dict['DOWN'] = True
-            elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                self.key_dict['LEFT'] = True
-            elif event.key == pygame.K_w or event.key == pygame.K_UP:
-                self.key_dict['UP'] = True
-            elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                self.key_dict['RIGHT'] = True
+            if self._quit_screen:
+                if event.key == pygame.K_y:
+                    self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
+                elif event.key == pygame.K_n:
+                    self._quit_screen = False
+            elif event.key == pygame.K_ESCAPE:
+                self._quit_screen = True
             elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                 self.key_dict['SELECT'] = True
             elif event.key == pygame.K_b:
@@ -107,43 +135,98 @@ class CombatScene(Scene):
                 self.key_dict['2'] = True
             elif event.key == pygame.K_3:
                 self.key_dict['3'] = True
-            elif event.key == pygame.K_4:
-                self.key_dict['4'] = True
-            elif event.key == pygame.K_5:
-                self.key_dict['5'] = True
+            elif event.key == pygame.K_SPACE:
+                self._hide_prompt = not self._hide_prompt
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                self.key_dict['L_CLICK'] = True
+            if event.button == 3:
+                self.key_dict['R_CLICK'] = True
+
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
 
     def render(self):
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self._background, (0, 0))
+        self._combat_grid_system.draw_grid(self.mouse_x, self.mouse_y, self.curr_player.xpos, self.curr_player.ypos,
+                                           self._highlight_curr_player)
         self._player_list.draw(self.screen)
 
-        if self.show_text_box:
-            tb = TextBox(self.screen)
-            tb.load_textbox(300, 370, 600, 100)
-            tb.draw_options(self.prompt, self.prompt_options, 24, 210, 400)
+        for player in self._participants:
+            player.draw_health_bar(self.screen)
+
+        self._combat_grid_system.clear_highlights()
+
+        if (self.player_attacking or self.player_moving) and (not self._move_selected and not self._attack_selected) \
+                and not self._quit_screen:
+            self._textbox.load_image(10, DisplaySettings.SCREEN_RESOLUTION.value[1] - 45, 360, 40,
+                                     "UI/generic-rpg-ui-text-box.png")
+            option = "Attack" if self.player_attacking else "Move"
+            self._textbox.draw_dialogue(f"Click tile to {option} or press [b] to cancel", 18, 20,
+                                        DisplaySettings.SCREEN_RESOLUTION.value[1] - 42)
+        elif self.show_text_box and not self._quit_screen:
+            if not self._hide_prompt:
+                text_box_height = 40 + 30 * len(self.prompt_options)
+                self._textbox.load_image(400, 370, 430, text_box_height, "UI/generic-rpg-ui-text-box.png")
+                self._textbox.draw_options(self.prompt, self.prompt_options, 24, 300, 400)
+            else:
+                self._textbox.load_image(DisplaySettings.SCREEN_RESOLUTION.value[0] - 200,
+                                         DisplaySettings.SCREEN_RESOLUTION.value[1] - 75, 290, 40,
+                                         "UI/generic-rpg-ui-text-box.png")
+                self._textbox.draw_dialogue(f"Press [SPACE] to show prompt.", 18,
+                                            DisplaySettings.SCREEN_RESOLUTION.value[0] - 300,
+                                            DisplaySettings.SCREEN_RESOLUTION.value[1] - 40)
+        elif self._quit_screen:
+            self._textbox.load_image(400, 150, 400, 150, "UI/generic-rpg-ui-text-box.png")
+            options = ["[Y]    YES", "[N]    NO"]
+            size = 24
+            x, y = 320, 200
+            self._textbox.draw_options("Are you sure you want to quit?", options, size, x, y)
 
     def update(self):
         self.play_game()
-
-        for player in self._player_list:
-            player.update()
+        self._player_list.update()
 
     #########################################
     # Helper functions for combat game play #
     #########################################
+    def add_participants(self):
+        participants = []
+        unit_id = 0
+        player_level = self.game_state.player_level
+        for unit in self.game_state.player_party:
+            if unit == "knight":
+                participants.append(KnightChar(unit_id, player_level, False))
+            elif unit == "archer":
+                participants.append(ArcherChar(unit_id, player_level, False))
+            elif unit == "mage":
+                participants.append(MageChar(unit_id, player_level, False))
+            unit_id += 1
+
+        enemy_level = self.game_state.enemy_level
+        for unit in self.game_state.enemy_party:
+            if unit == "knight":
+                participants.append(KnightChar(unit_id, enemy_level, True))
+            elif unit == "archer":
+                participants.append(ArcherChar(unit_id, enemy_level, True))
+            elif unit == "mage":
+                participants.append(MageChar(unit_id, enemy_level, True))
+            unit_id += 1
+
+        return participants
 
     def spawn_participants(self):
         for player in self._participants:
             if player.get_is_enemy():
                 for tile in self._map.enemyspawn:
                     if not tile.is_occupied:
-                        player.rect.center = (tile.x_coord + 30, tile.y_coord + 30)
+                        player.set_player_loc(tile.x_coord + 30, tile.y_coord + 30)
                         tile.occupy(player.get_id())
                         break
             else:
                 for tile in self._map.playerspawn:
                     if not tile.is_occupied:
-                        player.rect.center = (tile.x_coord + 30, tile.y_coord + 30)
+                        player.set_player_loc(tile.x_coord + 30, tile.y_coord + 30)
                         tile.occupy(player.get_id())
                         break
 
@@ -162,14 +245,13 @@ class CombatScene(Scene):
         self.prompt_options = ""
 
     def update_initiative_system(self):
+        # will update initiative system with new list if player was removed
         self.initiative_system.update_system()
         self.curr_player = self.initiative_system.get_current_player()
         self.next_player = self.initiative_system.get_next_player_up()
 
     def next_move(self):
         # this function resets all the logic needed to move to next turn
-
-        self.update_initiative_system()
         self.clear_prompt()
         self.reset_keys()
         self.turn_counter += 1
@@ -177,149 +259,186 @@ class CombatScene(Scene):
         self.attack_complete = False
         self.player_moving = False
         self.move_complete = False
-        self.attack_info = ""
-        self.movement_info = ""
+        self._move_selected = False
+        self.move_counter = 2
+        self.player_used_attack = False
+        self._hide_prompt = False
+        self.ai_first_pass = False
+        self.ai_turn_finished = False
+        self.ai_movement_finished = False
+        self.ai_attack_finished = False
+        self.update_initiative_system()
 
-    def get_prompt_directions(self, directions):
-        result_list = []
+    def remove_dead_players(self):
+        index = 0
+        for player in self._participants:
+            if player.hp <= 0:
+                self._map.tilemap[(player.ypos - 30) // 60][
+                    (player.xpos - 30) // 60].unoccupy()
+                self.play_death_sound()
+                player.kill_player()
+                self.dead_player = player
+                self._participants.pop(index)
+                self.initiative_system.remove_player(player.get_id())
+                return True
+            else:
+                index += 1
 
-        if directions[0]:
-            result_list.append("[w] Up")
-
-        if directions[1]:
-            result_list.append("[s] Down")
-
-        if directions[2]:
-            result_list.append("[a] Left")
-
-        if directions[3]:
-            result_list.append("[d] Right")
-
-        return " --- ".join(result_list)
+        return False
 
     def process_player_move(self):
         self.player_moving = True
 
-        x, y = self.curr_player.get_tile_loc()
+        movable_tiles = self.find_tiles_in_range(int(self.curr_player.xpos / 60), int(self.curr_player.ypos / 60),
+                                                 self.curr_player.move_range, self._map.tilemap, "movement")
+        highlight_tiles = []
+        for tile in movable_tiles:
+            x = int(tile.id[0] / 60)
+            y = int(tile.id[1] / 60)
+            highlight_tiles.append((y, x))
 
-        # Up, Down, Left, Right     :     Indices for Bools
-        available_moves = [True, True, True, True]
-        if x == 0 or self._map.tilemap[y][x - 1].is_blocking or self._map.tilemap[y][x - 1].is_wall \
-                or self._map.tilemap[y][x - 1].is_occupied:
-            available_moves[2] = False
-        if y == 0 or self._map.tilemap[y - 1][x].is_blocking or self._map.tilemap[y - 1][x].is_wall \
-                or self._map.tilemap[y - 1][x].is_occupied:
-            available_moves[0] = False
-        if x == len(self._map.tilemap) - 1 or self._map.tilemap[y][x + 1].is_blocking \
-                or self._map.tilemap[y][x + 1].is_wall or self._map.tilemap[y][x + 1].is_occupied:
-            available_moves[3] = False
-        if y == len(self._map.tilemap[y]) - 1 or self._map.tilemap[y + 1][x].is_blocking \
-                or self._map.tilemap[y + 1][x].is_wall or self._map.tilemap[y + 1][x].is_occupied:
-            available_moves[1] = False
-
-        self.show_prompt("Which direction do you want to move?",
-                         [self.get_prompt_directions(available_moves), "[b] Cancel"])
+        if not self._move_selected:
+            self._combat_grid_system.highlight_tiles(highlight_tiles, Colors.BLUE.value)
+        else:
+            self.show_prompt(f"{self.game_state.player_name}'s choice",
+                             [f"{self.curr_player.get_type().capitalize()} Moved!"])
 
         if self.key_dict['BACK']:
             self.player_moving = False
             self.clear_prompt()
-        elif self.key_dict['UP']:
-            if available_moves[0]:
-                self.curr_player.move(0, -60)
-                self._map.tilemap[y][x].unoccupy()
-                self._map.tilemap[y-1][x].occupy(self.curr_player.get_id)
-                self.movement_info = "UP"
-                self.move_complete = True
-        elif self.key_dict['DOWN']:
-            if available_moves[1]:
-                self.curr_player.move(0, 60)
-                self._map.tilemap[y][x].unoccupy()
-                self._map.tilemap[y + 1][x].occupy(self.curr_player.get_id)
-                self.movement_info = "DOWN"
-                self.move_complete = True
-        elif self.key_dict['LEFT']:
-            if available_moves[2]:
-                self.curr_player.move(-60, 0)
-                self._map.tilemap[y][x].unoccupy()
-                self._map.tilemap[y][x-1].occupy(self.curr_player.get_id)
-                self.movement_info = "LEFT"
-                self.move_complete = True
-        elif self.key_dict['RIGHT']:
-            if available_moves[3]:
-                self.curr_player.move(60, 0)
-                self._map.tilemap[y][x].unoccupy()
-                self._map.tilemap[y][x+1].occupy(self.curr_player.get_id)
-                self.movement_info = "RIGHT"
-                self.move_complete = True
+        elif self.key_dict['L_CLICK']:
+            # Need to have unit object
+            # selectable_tiles needs to be created upon a player selecting they want to move and cleared after
+            if not self.wait_for_action:
+                end_tile = self.select_tile()
+                selectable = False
+                for tile in movable_tiles:
+                    if tile.id == end_tile:
+                        selectable = True
+                if selectable:
+                    startingX = int((self.curr_player.xpos - 30) // 60)
+                    startingY = int((self.curr_player.ypos - 30) // 60)
+                    endingX = int((end_tile[0]) // 60)
+                    endingY = int((end_tile[1]) // 60)
+                    self._move_list = combat_move_list(startingX, startingY, endingX, endingY, self._ai_Tree, self._map)
+
+                    # initial move starts here
+                    self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                        (self.curr_player.xpos - 30) // 60].unoccupy()
+                    self._map.tilemap[endingY][endingX].occupy(self.curr_player.get_id)
+                    self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                             (self._move_list[-1].get_yPos() * 60) + 30)
+
+                    self.play_movement_sound()
+                    self._move_list.pop()
+                    self._highlight_curr_player = False
+                    self._move_selected = True
+                    self.wait_for_action = True
+
+                    self._combat_grid_system.clear_highlights()
 
         if self.move_complete:
-            self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You Moved {self.movement_info}!"])
+            # need to clear highlights after move complete
             if not self.curr_player.is_animating():
-                self.next_move()
+                self.player_moving = False
+                self._move_selected = False
+                self.move_complete = False
+                self.wait_for_action = False
+                self.move_counter -= 1
+        elif self._move_list:
+            if not self.curr_player.is_animating():
+                self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                         (self._move_list[-1].get_yPos() * 60) + 30)
+
+                self.play_movement_sound()
+                self._move_list.pop()
+
+            if not self._move_list:
+                self.move_complete = True
+        elif self._move_selected:
+            self.move_complete = True
 
     def process_player_attack(self):
         self.player_attacking = True
 
-        x, y = self.curr_player.get_tile_loc()
-        # Up, Down, Left, Right     :     Indices for Bools
-        available_attacks = [True, True, True, True]
-        if x == 0 or self._map.tilemap[y][x - 1].is_wall:
-            available_attacks[2] = False
-        if y == 0 or self._map.tilemap[y - 1][x].is_wall:
-            available_attacks[0] = False
-        if x == len(self._map.tilemap) - 1 or self._map.tilemap[y][x + 1].is_wall:
-            available_attacks[3] = False
-        if y == len(self._map.tilemap[y]) - 1 or self._map.tilemap[y + 1][x].is_wall:
-            available_attacks[1] = False
+        attack_tiles = self.find_tiles_in_range(int(self.curr_player.xpos / 60), int(self.curr_player.ypos / 60),
+                                                self.curr_player.attack_range, self._map.tilemap, "attack")
+        highlight_tiles = []
+        for tile in attack_tiles:
+            x = int(tile.id[0] / 60)
+            y = int(tile.id[1] / 60)
+            highlight_tiles.append((y, x))
 
-        self.show_prompt("Which direction do you want to Attack?",
-                         [self.get_prompt_directions(available_attacks), "[b] Cancel"])
+        self._combat_grid_system.highlight_tiles(highlight_tiles, Colors.BLUE.value)
+
+        self.show_prompt("Click a tile to attack!",
+                         ["[b] Cancel"])
 
         if self.key_dict['BACK']:
             self.player_attacking = False
-            self.attack_complete = True
-        elif self.key_dict['UP']:
-            if available_attacks[0]:
-                self.curr_player.attack_enemy()
-                self.attack_info = "UP"
-                self.attack_complete = True
-        elif self.key_dict['DOWN']:
-            if available_attacks[1]:
-                self.curr_player.attack_enemy()
-                self.attack_info = "DOWN"
-                self.attack_complete = True
-        elif self.key_dict['LEFT']:
-            if available_attacks[2]:
-                self.curr_player.attack_enemy(True)
-                self.attack_info = "LEFT"
-                self.attack_complete = True
-        elif self.key_dict['RIGHT']:
-            if available_attacks[3]:
-                self.curr_player.attack_enemy(False)
-                self.attack_info = "RIGHT"
-                self.attack_complete = True
+            self.clear_prompt()
+        elif self.key_dict['L_CLICK']:
+            # Need to have unit object
+            # selectable_tiles needs to be created upon a player selecting they want to move and cleared after
+            if not self.wait_for_action:
+                end_tile = self.select_tile()
+                selectable = False
+                for tile in attack_tiles:
+                    if tile.id == end_tile:
+                        selectable = True
+                if selectable:
+                    # will be used to get player on tile to attack
+                    x = int(end_tile[0] / 60)
+                    y = int(end_tile[1] / 60)
+                    enemy_id = self._map.tilemap[y][x].unit
+                    for character in self._participants:
+                        if character.get_id() == enemy_id:
+                            if self.curr_player.get_type() == 'mage':
+                                character.take_damage(self.curr_player.magic_attack, 'magic')
+                                character.animate_damage()
+                            else:
+                                character.take_damage(self.curr_player.attack, 'physical')
+                                character.animate_damage()
+                            break
+                    if self.curr_player.xpos == end_tile[0] + 30:
+                        left = None
+                    else:
+                        if self.curr_player.xpos < end_tile[0]:
+                            left = False
+                        else:
+                            left = True
+                    self.play_attack_sound()
+                    self.curr_player.attack_enemy(left)
+                    self.attack_complete = True
+                    self.wait_for_action = True
 
         if self.attack_complete:
-            self.show_prompt(f"{self.game_state.player_name}'s Turn", [f"You attacked {self.attack_info}!"])
+            self._highlight_curr_player = False
+            self.show_prompt(f"{self.game_state.player_name}'s Turn",
+                             [f"{self.curr_player.get_type().capitalize()} attacked!"])
+            # need to clear highlights after move complete
+            self._combat_grid_system.clear_highlights()
             if not self.curr_player.is_animating():
-                self.next_move()
+                self.player_attacking = False
+                self.player_used_attack = True
+                self.wait_for_action = False
+                self.move_counter -= 1
 
     def check_for_winner(self):
-        player = False
-        enemy = False
+        player_alive = False
+        enemy_alive = False
 
         for player in self._participants:
-            if player.alive:
-                if player.get_is_enemy():
-                    enemy = True
-                else:
-                    player = True
+            if player.get_is_enemy():
+                enemy_alive = True
+            else:
+                player_alive = True
 
-        if not player:
+        if not player_alive:
             self.player_won = False
             self.game_over = True
-        elif not enemy:
-            self.player_won = False
+        elif not enemy_alive:
+            self.player_won = True
             self.game_over = True
 
     ##########################################################################
@@ -327,75 +446,168 @@ class CombatScene(Scene):
     ##########################################################################
 
     def play_game(self):
-        self.check_for_winner()
+
+        if self.remove_dead_players():
+            self.check_for_winner()
+            if self.game_over:
+                self.next_move()
 
         if self.game_over:
-            self.clear_prompt()
             # Need data to show who one ect...
+            pygame.mixer.music.stop()
             if self.player_won:
-                winner = self.game_state.player_name
-            else:
-                winner = "Sensei"
+                if self.game_state.player_level == GameConstants.MAX_LEVEL.value:
+                    statement = "You are already at the maximum level!"
+                else:
+                    statement = f"You leveled up to level {self.game_state.player_level + 1}!"
 
-            self.show_prompt("Battle Complete",
-                             [f"{winner} won the battle!", "Press [enter] to return to overworld"])
+                if not self.played_victory_sound:
+                    self.play_sound_effect("victory")
+                self.show_prompt("Battle Complete",
+                                 [f"You won the battle!",
+                                  statement,
+                                  "Press [enter] to exit."])
+                if self.game_state.game_state_current_map == "dark_dimension_boss":
+                    self.game_state.final_victory = 1
+            else:
+                if not self.played_victory_sound:
+                    self.play_sound_effect("lose")
+                self.show_prompt("Battle Complete",
+                                 [f"{self.game_state.enemy_name} won the battle!",
+                                  "Press [enter] to exit."])
+
+            self.played_victory_sound = True
 
             if self.key_dict['SELECT']:
-                # Todo this will increase player level now regardless of victory or not. Need to update this later
                 self.game_state.increase_player_level()
+                pygame.mixer.stop()
                 self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
 
         elif self.turn_counter == 0:
-            self.show_prompt("Welcome to combat", ["Press [Enter] to get started"])
+            self.show_prompt("Welcome to combat", ["Press [Enter] to get started!",
+                                                   "[Space] will hide prompt."])
             if self.key_dict['SELECT']:
                 self.clear_prompt()
                 self.turn_counter += 1
         else:
             if self.curr_player.get_is_enemy():
-
-                if not self.ai_thinking:
-                    self.show_prompt("Sensei's Turn", ["Sensei is deciding..."])
-                    self.ai_thinking = True
+                # if the ai not done with the turn enter
+                if not self.ai_turn_finished:
                     self.ai_completed_decision = False
+
                     #####################
                     # AI Turn  - Start  #
                     #####################
+
                     # Determines target, builds path to target
-                    ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
-                    ai_new_x, ai_new_y, target_to_attack = ai_brain.decide_ai_action()
-                    if ai_new_x is None and ai_new_y is None and target_to_attack is None:
-                        self.ai_thinking = True
-                        self.game_over = True
-                    elif target_to_attack is None:
-                        self.curr_player.move_to(ai_new_x, ai_new_y)
-                        self.enemy_moved = True
+                    # Sets up all the flags for the ai turn
+                    # Occurs on the first entry into the ai for the turn
+                    if not self.ai_first_pass:
+                        self.show_prompt(f"{self.game_state.enemy_name}'s Turn", [f"{self.game_state.enemy_name} is deciding..."])
+                        self.ai_brain = CombatAISystem(self._participants, self.curr_player, self._ai_Tree, self._map)
+                        self.ai_new_x, self.ai_new_y, self.target_to_attack = self.ai_brain.decide_ai_action()
+
+                        if self.ai_new_x is not None and self.ai_new_y is not None:
+                            self.ai_movement_finished = False
+                            self.enemy_moved = True
+                        else:
+                            self.ai_movement_finished = True
+                            self.enemy_moved = False
+
+                        if self.target_to_attack is not None:
+                            self.ai_attack_finished = False
+                            self.enemy_attacked = True
+                        else:
+                            self.ai_attack_finished = True
+                            self.enemy_attacked = False
+
+                    # if there is no movement and no target then game is over
+                    if self.ai_new_x is None and self.ai_new_y is None and self.target_to_attack is None:
+                        self.ai_turn_finished = True
                         self.ai_completed_decision = True
-                    else:
-                        if self.curr_player.xpos != ai_new_x and self.curr_player.ypos != ai_new_y:
-                            self.curr_player.move_to(ai_new_x, ai_new_y)
-                            self.ai_completed_decision = True
+                        self.game_over = True
+
+                    # if there is a movement that needs to be made
+                    if not self.ai_movement_finished:
+                        # if this is a mage they teleport
+                        if self.curr_player.get_type() == "mage":
+                            self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                                (self.curr_player.xpos - 30) // 60].unoccupy()
+                            self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
+                                self.curr_player.get_id())
+                            self.curr_player.move_to(self.ai_new_x, self.ai_new_y)
+                            self._highlight_curr_player = False
+                            self.play_movement_sound()
+                            self.ai_first_pass = True
+                            self.ai_movement_finished = True
+                        elif self.curr_player.get_type() != "mage":
+                            if not self.ai_first_pass:
+                                # set parameters for building the list of tiles to move through (for knight and archer)
+                                self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                                    (self.curr_player.xpos - 30) // 60].unoccupy()
+                                startingX = int((self.curr_player.xpos - 30) / 60)
+                                startingY = int((self.curr_player.ypos - 30) / 60)
+                                endingX = int((self.ai_new_x - 30) / 60)
+                                endingY = int((self.ai_new_y - 30) / 60)
+                                self._move_list = combat_move_list(startingX, startingY, endingX, endingY,
+                                                                   self._ai_Tree, self._map)
+                                if len(self._move_list) > 0:
+                                    self._map.tilemap[(self.curr_player.ypos - 30) // 60][
+                                        (self.curr_player.xpos - 30) // 60].unoccupy()
+                                    self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                                             (self._move_list[-1].get_yPos() * 60) + 30)
+                                    self._map.tilemap[(self.ai_new_y - 30) // 60][(self.ai_new_x - 30) // 60].occupy(
+                                        self.curr_player.get_id())
+                                    self._highlight_curr_player = False
+                                    self.play_movement_sound()
+                                    self.ai_first_pass = True
+                                    self._move_list.pop()
+                                else:
+                                    self.ai_movement_finished = True
+                                    self.enemy_moved = False
+                                    self.ai_attack_finished = True
+                                    self.enemy_attacked = False
+
+                            if self._move_list:
+                                if not self.curr_player.is_animating():
+                                    self.curr_player.move_to((self._move_list[-1].get_xPos() * 60) + 30,
+                                                             (self._move_list[-1].get_yPos() * 60) + 30)
+                                    self.play_movement_sound()
+                                    self._move_list.pop()
+                            else:
+                                if not self.curr_player.is_animating():
+                                    self.ai_movement_finished = True
+
+                    if self.ai_movement_finished and not self.ai_attack_finished:
                         for character in self._participants:
-                            if character.get_id() == target_to_attack:
+                            if character.get_id() == self.target_to_attack:
                                 if self.curr_player.get_type() == 'mage':
                                     character.take_damage(self.curr_player.magic_attack, 'magic')
-                                    self.enemy_attacked = True
-                                    self.curr_player.attack_enemy()
-                                    self.ai_completed_decision = True
+                                    character.animate_damage()
                                 else:
                                     character.take_damage(self.curr_player.attack, 'physical')
-                                    self.enemy_attacked = True
-                                    self.enemy_attack_after_move = True
-                                    self.ai_completed_decision = True
+                                    character.animate_damage()
+                                if character.rect.centerx < self.curr_player.xpos:
+                                    left = True
+                                else:
+                                    left = False
+                                self.curr_player.attack_enemy(left)
+                                self.play_attack_sound()
+                                self.ai_attack_finished = True
                                 break
+
+                    if self.ai_attack_finished and self.ai_movement_finished:
+                        self.ai_turn_finished = True
+                        self.ai_completed_decision = True
+                        if self.enemy_moved and self.enemy_attacked:
+                            self.enemy_attack_after_move = True
+
                     #####################
                     # AI Turn  - Finish #
                     #####################
 
                 elif self.enemy_attack_after_move and not self.curr_player.is_animating():
-
-                    self.curr_player.attack_enemy()
                     self.enemy_attack_after_move = False
-                    self.ai_thinking = False
 
                 elif not self.curr_player.is_animating() and self.ai_completed_decision:
                     self.clear_prompt()
@@ -403,29 +615,152 @@ class CombatScene(Scene):
                         enemy_choice = "moved and attacked!"
                     elif self.enemy_moved:
                         enemy_choice = "moved!"
-                    else:
+                    elif self.enemy_attacked:
                         enemy_choice = "attacked!"
+                    else:
+                        enemy_choice = "skipped Turn!"
 
-                    self.show_prompt("Sensei's turn", [f"Sensei {enemy_choice}!", "Press [Enter] to continue..."])
-                    if self.key_dict['SELECT']:
-                        self.ai_thinking = False
+                    if self.game_over:
                         self.enemy_moved = False
                         self.enemy_attacked = False
                         self.next_move()
+                    else:
+                        self.show_prompt(f"{self.game_state.enemy_name}'s turn",
+                                         [f"{self.game_state.enemy_name} {enemy_choice}!",
+                                          "[Right Click] to continue..."])
+                        if self.key_dict['R_CLICK']:
+                            self.enemy_moved = False
+                            self.enemy_attacked = False
+                            self.next_move()
             else:
                 if not self.player_attacking and not self.player_moving:
-                    self.show_prompt("Your turn!", ["[1] Attack", "[2] Move"])
-                    if self.key_dict['1']:
-                        self.player_attacking = True
-                        self.clear_prompt()
-                        self.reset_keys()
-                    elif self.key_dict['2']:
-                        self.player_moving = True
-                        self.clear_prompt()
-                        self.reset_keys()
+                    if self.move_counter:
+                        # highlights current player on board
+                        self._highlight_curr_player = True
+
+                        # options depending on possible moves left
+                        choices = ["[1] Move", "[2] Skip Turn"] if self.player_used_attack else ["[1] Move",
+                                                                                                 "[2] Attack",
+                                                                                                 "[3] Skip Turn"]
+                        prompt_text = f"You have {self.move_counter}"
+                        if self.move_counter == 2:
+                            prompt_text += " choices left"
+                        else:
+                            prompt_text += " choice left"
+
+                        prompt_text += f" for {self.curr_player.get_type().capitalize()}!"
+                        self.show_prompt(prompt_text, choices)
+
+                        # keys depending on choices available
+                        if self.key_dict['1']:
+                            self.player_moving = True
+                            self.clear_prompt()
+                            self.reset_keys()
+                        elif self.key_dict['2']:
+                            if len(choices) == 2:
+                                self.next_move()
+                            else:
+                                self.player_attacking = True
+                                self.clear_prompt()
+                                self.reset_keys()
+                        elif self.key_dict['3']:
+                            if len(choices) == 3:
+                                self.next_move()
+                    else:
+                        self.next_move()
                 elif self.player_attacking:
                     self.process_player_attack()
                 elif self.player_moving:
                     self.process_player_move()
 
         self.reset_keys()
+
+    def select_tile(self):
+        # Checks where the mouse is on screen and returns x, y of a tile when called
+        # Should only be called on left click when player move or player attack
+        mouse_pos = pygame.mouse.get_pos()
+        x_pos = int(mouse_pos[0] / 60) * 60
+        y_pos = int(mouse_pos[1] / 60) * 60
+        return x_pos, y_pos
+
+    def find_tiles_in_range(self, x_pos, y_pos, input_range, combat_map, select_type):
+        selectable_tiles = []
+        for tile in combat_map[y_pos][x_pos].adjacencies:
+            if select_type == "movement":
+                if not tile.is_wall and not tile.is_blocking and not tile.is_occupied:
+                    selectable_tiles.append(tile)
+            elif select_type == "attack":
+                if not tile.is_wall:
+                    selectable_tiles.append(tile)
+        input_range -= 1
+        while input_range > 0:
+            new_tiles = []
+            for i in range(len(selectable_tiles)):
+                for tile in selectable_tiles[i].adjacencies:
+                    _unique = True
+                    for s_tile in selectable_tiles:
+                        if tile.id == s_tile.id:
+                            _unique = False
+                    if _unique:
+                        if select_type == "movement":
+                            if not tile.is_wall and not tile.is_blocking and not tile.is_occupied:
+                                new_tiles.append(tile)
+                        elif select_type == "attack":
+                            if not tile.is_wall:
+                                new_tiles.append(tile)
+            selectable_tiles.extend(new_tiles)
+            input_range -= 1
+        s_tile_ids = []
+        semi_selectable_tiles = []
+        final_selectable_tiles = []
+        for tile in selectable_tiles:
+            if tile.id not in s_tile_ids:
+                s_tile_ids.append(tile.id)
+        for tile_id in s_tile_ids:
+            semi_selectable_tiles.append(combat_map[int(tile_id[1] / 60)][int(tile_id[0] / 60)])
+        for tile in semi_selectable_tiles:
+            if select_type == "movement":
+                final_selectable_tiles = semi_selectable_tiles
+            elif select_type == "attack":
+                if not tile.is_occupied:
+                    final_selectable_tiles.append(tile)
+                elif tile.is_occupied:
+                    occ = "player"
+                    occ_id = tile.unit
+                    for units in self._participants:
+                        if occ_id == units.get_id() and not units.get_is_enemy():
+                            occ = "player"
+                        elif occ_id == units.get_id() and units.get_is_enemy():
+                            occ = "enemy"
+                    if occ == "enemy":
+                        final_selectable_tiles.append(tile)
+        return final_selectable_tiles
+
+    def play_sound_effect(self, sound_name, time_lim=None):
+        # function play sound from library or load it if not there yet
+
+        if sound_name in self._sound_effects.keys():
+            sound = self._sound_effects[sound_name]
+        else:
+            path = os.path.join(PATH_TO_RESOURCES, "soundtrack", "combat_char_sounds", sound_name + ".wav")
+            sound = pygame.mixer.Sound(path)
+            self._sound_effects[sound_name] = sound
+        sound.set_volume(.7)
+
+        # optional time limit for sound effect, currently used for walking to match char pace
+        if time_lim:
+            sound.play(maxtime=time_lim)
+        else:
+            sound.play()
+
+    def play_movement_sound(self):
+        if self.curr_player.get_type() == "mage":
+            self.play_sound_effect("teleport")
+        else:
+            self.play_sound_effect("walk", 900)
+
+    def play_attack_sound(self):
+        self.play_sound_effect("attack_" + self.curr_player.get_type())
+
+    def play_death_sound(self):
+        self.play_sound_effect("death")

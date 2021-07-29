@@ -1,5 +1,3 @@
-import db
-from fenrir import *
 from fenrir import app
 
 

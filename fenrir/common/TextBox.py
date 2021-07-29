@@ -13,8 +13,14 @@ class TextBox:
 
     # Load and scale Text box for dialogue
     def load_image(self, x_pos, y_pos, x_scale, y_scale, image):
+
         # Load text box png
-        self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, image))
+        if image.count('/') == 1:
+            path = image.split('/')
+            self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, path[0], path[1]))
+        elif image.count('/') == 2:
+            path = image.split('/')
+            self.text_box = pygame.image.load(os.path.join(PATH_TO_RESOURCES, path[0], path[1], path[2]))
 
         # Default Text box position on window
         if x_pos > self.text_box.get_width() and y_pos > self.text_box.get_height():

@@ -231,8 +231,13 @@ class OverworldScene(Scene):
         self.inventory = Inventory(self.textbox, self.hero.party, self.game_state.all_heroes)
         self.party_section = True
         self.hero_index = 0
+
+        # Index for displaying npc test
         self.text_index = -1
+        # Index for selecting enemy npc player will fight
         self.enemy_index = 0
+
+        self.hero_left = False
 
     def handle_event(self, event):
 
@@ -258,7 +263,7 @@ class OverworldScene(Scene):
                     print("player hit barrier up")
                     self.hero.y += 10
 
-                self.hero.adjust_movement()
+                self.hero.adjust_movement(self.hero_left)
             if keys[pygame.K_s]:
                 self.hero_walking = True
                 self.hero.y = boundaries.collision_down()  # Check if player hits bottom of window
@@ -268,17 +273,20 @@ class OverworldScene(Scene):
                     print("player hit barrier down")
                     self.hero.y -= 10
 
-                self.hero.adjust_movement()
+                self.hero.adjust_movement(self.hero_left)
             if keys[pygame.K_a]:
+                self.hero_left = True
                 self.hero_walking = True
                 self.hero.x = boundaries.collision_left()  # Check if player hits left of window
+
                 if self.collision.barrier_collision(self.hero, self.active_world.obstacles):
                     # For debugging purposes
                     print("player hit barrier left")
                     self.hero.x += 10
 
-                self.hero.adjust_movement()
+                self.hero.adjust_movement(self.hero_left)
             if keys[pygame.K_d]:
+                self.hero_left = False
                 self.hero_walking = True
                 self.hero.x = boundaries.collision_right()  # Check if player hits right of window
 
@@ -287,7 +295,7 @@ class OverworldScene(Scene):
                     print("player hit barrier right")
                     self.hero.x -= 10
 
-                self.hero.adjust_movement()
+                self.hero.adjust_movement(self.hero_left)
 
             # if these are all
             if not (keys[pygame.K_d] or keys[pygame.K_a] or keys[pygame.K_w] or keys[pygame.K_s]):
@@ -481,7 +489,7 @@ class OverworldScene(Scene):
     def render(self):
         self.screen.fill(Colors.WHITE.value)
         self.screen.blit(self.background, (0, 0))
-        self.hero.play_animation()
+        # self.hero.play_animation(self.hero_left)
 
         if self.show_hud:
             self.screen.blit(self.control_hud, (733, 0))

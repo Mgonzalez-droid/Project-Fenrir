@@ -1,11 +1,10 @@
 import sqlite3
-import os
+from fenrir.common.config import PATH_TO_DATABASE
 
 """ This function will initialize the database on the users local hard drive. It will 
     create the tables needed. This will be run at start up.
 
 """
-PATH_TO_DATABASE = os.path.join('db', 'fenrir.db')
 
 
 def initialize_db():

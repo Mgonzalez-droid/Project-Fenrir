@@ -58,7 +58,3 @@ class overworld_npc_animated(overworld_npc):
         if left:
             self.sprite = pygame.transform.flip(self.sprite, True, False)
 
-    def play_animation(self, left):
-        if self.__animate:
-            for sprites in self.__sprite_names:
-                self.adjust_movement(left)

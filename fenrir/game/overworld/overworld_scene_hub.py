@@ -67,6 +67,7 @@ class OverworldScene(Scene):
                                "Your party and your ability to guide them will be   your strongest weapon in the coming trials.",
                                "If you want review the controllers again you can    either press [q] or talk to me again.",
                                "Okay! Now that I finish explaining things you should talk to sensei to learn about combat"]),
+
                  ],
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps", "hub_world.png")),
@@ -544,6 +545,7 @@ class OverworldScene(Scene):
 
         # Draw Text box
         if self.show_textbox:
+
             # load_textbox(x, y, x_scale, y_scale)
             self.textbox.load_image(300, 370, 600, 100, "UI/generic-rpg-ui-text-box.png")
 
@@ -588,15 +590,14 @@ class OverworldScene(Scene):
             # Display character sprites in the inventory menu
             self.inventory.display_heroes(self.inventory.party, self.inventory.heroes)
 
+    def update(self):
         if self.hero_walking and not self.walk_sound_effect_started:
             self.walk_sound_effect_started = True
             self.walk_sound_effect.play(-1)
         elif not self.hero_walking and self.walk_sound_effect_started:
-            self.walk_sound_effect.stop()
-            self.walk_sound_effect_started = False
-
-    def update(self):
-        pass
+            self.stop_walk_sound_effect()
+        elif self.show_textbox or self.show_inventory or self.show_controls:
+            self.stop_walk_sound_effect()
 
     """NOTE: To switch to another scene like main menu or combat scene you enter the following
         to combat: self.switch_to_scene(CombatScene(self.screen))
@@ -659,3 +660,8 @@ class OverworldScene(Scene):
         sound = pygame.mixer.Sound(path)
         sound.set_volume(.7)
         return sound
+
+    def stop_walk_sound_effect(self):
+        self.walk_sound_effect.stop()
+        self.walk_sound_effect_started = False
+        self.hero_walking = False

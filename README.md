@@ -21,10 +21,10 @@
 	
 Run the following commands on your machine or in a virtual environment using python3:
 
-	-Open dist folder and run "fenrir-1.0-amd64.msi"
-	-Change install location to a directory of your choice
-	-Click next until install is finished
-	-Open install directory and run "Project Fenrir.exe"
+	- Open dist folder and run "fenrir-1.0-amd64.msi"
+	- Change install location to a directory of your choice
+	- Click next until install is finished
+	- Open install directory and run "Project Fenrir.exe"
 	
 	Note: Default install directory is in AppData, we advise you change
 		  it into a directory you have easy access to. (i.e., Documents)

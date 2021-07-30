@@ -68,14 +68,6 @@ class OverworldScene(Scene):
                                "If you want review the controllers again you can    either press [q] or talk to me again.",
                                "Okay! Now that I finish explaining things you should talk to sensei to learn about combat"]),
 
-                 character("Apprentice big brother", 400, 170,
-                           os.path.join(PATH_TO_RESOURCES, "chars", "hat-guy", "hat-guy-left.png"), 1,
-                           [], False, False,
-                           [
-                               "Hey Gabe I know I can't stop you, but I would really recommend you to train first by going to path on   the bridge",
-                               "Some of my brothers are there so it will be a good  practice for you",
-                               "But if think you are strong enough to go toe to toe against the demon lord, I will not be in your way",
-                               "Good luck Gabe!"]),
                  ],
             hero_spawn=(self.game_state.game_state_location_x, self.game_state.game_state_location_y),
             background=pygame.image.load(os.path.join(PATH_TO_RESOURCES, "overworld_maps", "hub_world.png")),
@@ -268,6 +260,7 @@ class OverworldScene(Scene):
         self.enemy_index = 0
 
         self.hero_left = False
+        self.boss_closed = True
 
     def handle_event(self, event):
 
@@ -335,8 +328,15 @@ class OverworldScene(Scene):
                     # self.show_interaction = False
 
         if self.collision.entry_collision(self.hero, self.active_world.entries):
+
             prev = self.active_world
             self.active_world = self.active_world.entry_dests[self.collision.get_collided_entry()]
+
+            if self.active_world == self.dark_dimension_boss and self.hero.level < 4:
+                self.active_world = prev
+                self.show_textbox = True
+            elif self.active_world == self.dark_dimension_boss and self.hero.level >= 4:
+                self.boss_closed = False
 
             # Store the current map name in the game state
             self.game_state.game_state_current_map = self.active_world.map_name
@@ -471,7 +471,11 @@ class OverworldScene(Scene):
             # Select options from the text box
             if self.show_textbox:
                 # If game was won
-                if self.game_state.final_victory == 1:
+                if self.boss_closed and self.active_world == self.dark_dimension:
+                    if event.key == pygame.K_SPACE:
+                        self.show_textbox = False
+
+                elif self.game_state.final_victory == 1:
                     if event.key == pygame.K_SPACE:
                         self.show_textbox = False
                         self.game_state.final_victory = 0
@@ -544,6 +548,12 @@ class OverworldScene(Scene):
 
             # load_textbox(x, y, x_scale, y_scale)
             self.textbox.load_image(300, 370, 600, 100, "UI/generic-rpg-ui-text-box.png")
+
+            if self.boss_closed and self.active_world == self.dark_dimension:
+                self.textbox.draw_dialogue(
+                    "You are not strong enough to even set a foot in     my domains. Come back with "
+                    "at least level 4"
+                    , 24, 200, 397)
 
             # If the game was won display victory message
             if self.game_state.final_victory == 1:

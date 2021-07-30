@@ -65,7 +65,7 @@ class OverworldScene(Scene):
                                ,
                                "Pressing [i] will open the inventory. That is where you will be able to view and manage your party.",
                                "Your party and your ability to guide them will be   your strongest weapon in the coming trials.",
-                               "If you want review the controls again you can    either press [q] or talk to me again.",
+                               "If you want review the controls again you can either press [q] or talk to me again.",
                                "Okay! Now that I finish explaining things you should talk to sensei to learn about combat"]),
 
                  ],
@@ -547,7 +547,7 @@ class OverworldScene(Scene):
         if self.show_textbox:
 
             # load_textbox(x, y, x_scale, y_scale)
-            self.textbox.load_image(300, 370, 600, 100, "UI/generic-rpg-ui-text-box.png")
+            self.textbox.load_image(300, 370, 615, 100, "UI/generic-rpg-ui-text-box.png")
 
             if self.boss_closed and self.active_world == self.dark_dimension:
                 self.textbox.draw_dialogue(

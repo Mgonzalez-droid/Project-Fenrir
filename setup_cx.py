@@ -16,6 +16,6 @@ setup(
     options={"build_exe": build_exe_options},
     executables=[Executable("projectfen.py",
                             base=base,
-                            targetName="Fenrir.exe",
+                            target_name="Project Fenrir",
                             icon="icon.ico")]
 )

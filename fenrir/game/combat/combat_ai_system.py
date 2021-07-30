@@ -169,7 +169,12 @@ class CombatAISystem:
 
     def set_ai_goal_position(self, numberOfNodesToMove):
         currentNode = self.endNode
-        if self.endNode.get_xPos() == self.enemyX and self.endNode.get_yPos() == self.enemyY:
+        if self.distanceToFar:
+            for _ in range(self.enemyPathDistance - numberOfNodesToMove):
+                currentNode = currentNode.get_parent()
+            self._goalX = (currentNode.get_xPos() * 60) + 30
+            self._goalY = (currentNode.get_yPos() * 60) + 30
+        elif self.endNode.get_xPos() == self.enemyX and self.endNode.get_yPos() == self.enemyY:
             # Stop next to enemy
             numberOfNodesToMove -= 1
             for _ in range(self.enemyPathDistance - numberOfNodesToMove):

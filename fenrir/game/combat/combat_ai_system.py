@@ -140,7 +140,7 @@ class CombatAISystem:
             for neighbor in currentNode.get_neighbors():
                 # TODO determine what to do about occupied spaces
                 if self._copyOfMapData.tilemap[neighbor.get_yPos()][neighbor.get_xPos()].is_occupied:
-                    if neighbor.get_xPos() != self.enemyX and neighbor.get_yPos() != self.enemyY:
+                    if neighbor.get_xPos() != self.enemyX or neighbor.get_yPos() != self.enemyY:
                         continue
                 nodeGivenCost = neighbor.calculate_givenCost(currentNode.get_givenCost())
                 if neighbor.get_parent() is None and neighbor != self.startNode:
@@ -205,7 +205,7 @@ class CombatAISystem:
                     return self._goalX, self._goalY, None
                 else:
                     self.set_ai_goal_position(self.me.move_range)
-                    if abs(self._goalX - self.enemyX) + abs(self._goalY - self.enemyY) > 1:
+                    if abs(((self._goalX - 30) / 60) - self.enemyX) + abs(((self._goalY - 30) / 60) - self.enemyY) > 1:
                         return self._goalX, self._goalY, None
                     else:
                         return self._goalX, self._goalY, self.enemy.get_id()

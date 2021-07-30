@@ -1,6 +1,4 @@
 import pygame
-from fenrir.game.overworld.Spritesheet import Spritesheet
-
 
 class overworld_npc:
     def __init__(self, name, x, y,  filename, level, party, show_interaction, is_choice, dialogue):
@@ -45,14 +43,6 @@ class overworld_npc:
     @sprite.setter
     def sprite(self, sprite):
         self.__sprite = sprite
-
-    def scale_sprite(self, x, y):
-        self.sprite = pygame.transform.scale(self.sprite, (x, y))
-        # self.sprite = pygame.transform.scale(self.sprite, (75, 75))
-
-    def flip_sprite(self, left, flip):
-        self.sprite = pygame.transform.flip(self.sprite, left, flip)
-        # self.sprite = pygame.transform.flip(self.sprite, True, False)
 
     @property
     def level(self):

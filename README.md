@@ -21,8 +21,8 @@
 	
 Run the following commands on your machine or in a virtual environment using python3:
 
-	python3 setup.py install -user
-	python3 fenrir
+	python3 setup.py install
+	fenrir
 		
 ### GitHub Repository:
 Github - [Link to Repository](https://github.com/Mgonzalez-droid/Project-Fenrir)

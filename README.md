@@ -21,8 +21,16 @@
 	
 Run the following commands on your machine or in a virtual environment using python3:
 
-	python3 setup.py install
-	fenrir
+	-Open dist folder and run "fenrir-1.0-amd64.msi"
+	-Change install location to a directory of your choice
+	-Click next until install is finished
+	-Open install directory and run "Project Fenrir.exe"
+	
+	Note: Default install directory is in AppData, we advise you change
+		  it into a directory you have easy access to. (i.e., Documents)
+	Note: The install does not create a folder for the files, we advise
+		  that you create a folder in the directory of your choice and
+		  select that folder as your install directory.
 		
 ### GitHub Repository:
 Github - [Link to Repository](https://github.com/Mgonzalez-droid/Project-Fenrir)

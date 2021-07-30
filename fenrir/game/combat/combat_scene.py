@@ -600,7 +600,7 @@ class CombatScene(Scene):
             pygame.mixer.music.stop()
             if self.player_won:
                 if self.game_state.player_level == GameConstants.MAX_LEVEL.value:
-                    statement = "You are already at the maximum level!"
+                    statement = "You are already at maximum level!"
                 else:
                     statement = f"You leveled up to level {self.game_state.player_level + 1}!"
 
@@ -622,7 +622,8 @@ class CombatScene(Scene):
             self.played_victory_sound = True
 
             if self.key_dict['SELECT']:
-                self.game_state.increase_player_level()
+                if self.player_won:
+                    self.game_state.increase_player_level()
                 pygame.mixer.stop()
                 self.switch_to_scene(overscene.OverworldScene(self.screen, self.game_state))
 

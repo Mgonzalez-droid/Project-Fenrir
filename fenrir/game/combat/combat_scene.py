@@ -479,8 +479,6 @@ class CombatScene(Scene):
                 elif self.curr_player.get_type() != "mage":
                     if not self.ai_first_pass:
                         # set parameters for building the list of tiles to move through (for knight and archer)
-                        self._map.tilemap[(self.curr_player.ypos - 30) // 60][
-                            (self.curr_player.xpos - 30) // 60].unoccupy()
                         startingX = int((self.curr_player.xpos - 30) / 60)
                         startingY = int((self.curr_player.ypos - 30) / 60)
                         endingX = int((self.ai_new_x - 30) / 60)

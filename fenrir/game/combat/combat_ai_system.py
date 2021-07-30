@@ -53,6 +53,7 @@ class CombatAISystem:
         self.listToSearch = None
         self._goalX = None
         self._goalY = None
+        self.distanceToFar = False
 
     def decide_who_to_attack(self):
         """Uses distance from each target and type checking to decide which target should be the focus this turn.
@@ -156,6 +157,7 @@ class CombatAISystem:
 
         if self.endNode is None:
             self.endNode = self.closestNode
+            self.distanceToFar = True
 
     def set_enemy_path_distance(self):
         counter = 0
@@ -208,7 +210,7 @@ class CombatAISystem:
                     else:
                         return self._goalX, self._goalY, self.enemy.get_id()
             else:
-                if self.enemyPathDistance > self.me.move_range:
+                if self.enemyPathDistance > self.me.move_range or self.distanceToFar:
                     self.set_ai_goal_position(self.me.move_range + math.floor(self.me.move_range * .5))
                     return self._goalX, self._goalY, None
                 else:

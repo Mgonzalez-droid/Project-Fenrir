@@ -65,7 +65,7 @@ class OverworldScene(Scene):
                                ,
                                "Pressing [i] will open the inventory. That is where you will be able to view and manage your party.",
                                "Your party and your ability to guide them will be   your strongest weapon in the coming trials.",
-                               "If you want review the controllers again you can    either press [q] or talk to me again.",
+                               "If you want review the controls again you can    either press [q] or talk to me again.",
                                "Okay! Now that I finish explaining things you should talk to sensei to learn about combat"]),
 
                  ],
@@ -91,7 +91,7 @@ class OverworldScene(Scene):
                 obstacle(490, 0, 120, 1),  # atlantis
             ],
             entry_dests=[],
-            npc=[character("Other Twin Apprentice", 350, 430,
+            npc=[character("Twin Apprentice", 350, 430,
                            os.path.join(PATH_TO_RESOURCES, "chars", "hat-guy", "hat-guy.png"), 2,
                            [], False, False,
                            ["Oh Gabe! Good to see you here!",
@@ -101,7 +101,7 @@ class OverworldScene(Scene):
                             "If the rumors are true and something is there, I    am confident it will help you train to defeat the   demon lord.",
                             "I think it is worth giving it a try"]),
 
-                 character("Twin Apprentice", 850, 240,
+                 character("Apprentice", 850, 240,
                            os.path.join(PATH_TO_RESOURCES, "chars", "hat-guy", "hat-guy-left.png"), 2,
                            [["knight", "chars/knight/knight_menu.png"], ["mage", "chars/mage/mage_menu.png"],
                             ["archer", "chars/archer/archer_menu.png"], ["archer", "chars/archer/archer_menu.png"]],
@@ -557,7 +557,7 @@ class OverworldScene(Scene):
 
             # If the game was won display victory message
             if self.game_state.final_victory == 1:
-                self.textbox.draw_dialogue("Congratulations Gabe, you saved the world from the forces of evil!"
+                self.textbox.draw_dialogue("Congratulations Gabe, you saved the world from       the forces of evil!"
                                            , 24, 200, 397)
             else:  # Display regular messages
                 # If the npc need the player to take a choice
